@@ -335,15 +335,27 @@ body {
   display: flex; align-items: center;
   gap: 7px; margin-top: -2px;
 }
-.register-cta-label {
+.register-cta-label,
+.microsite-cta-label {
   font-size: 11px; font-weight: 700; color: var(--maroon); white-space: nowrap;
 }
-.register-url {
+.register-url,
+.microsite-url {
   display: inline-block;
   font-size: 11px; color: var(--maroon);
   background: #fff; border: 1px solid var(--border-rose);
   border-radius: 4px; padding: 2px 9px;
   font-family: monospace; letter-spacing: 0.02em;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.microsite-row {
+  display: flex; align-items: center;
+  gap: 7px; margin-top: -4px;
+}
+.microsite-url {
+  font-size: 10.5px;
+  background: #FCF8F9;
 }
 
 .print-surface.layout-classic .presenter-cred {
@@ -355,10 +367,14 @@ body {
 .print-surface.layout-classic .register-cta-label {
   color: #333;
 }
-.print-surface.layout-classic .register-url {
+.print-surface.layout-classic .register-url,
+.print-surface.layout-classic .microsite-url {
   color: #1a1a1a;
   background: #F5F5F5;
   border-color: #DDD;
+}
+.print-surface.layout-classic .microsite-row {
+  display: none;
 }
 
 /* RIGHT — QR */
@@ -419,8 +435,10 @@ body {
 .print-surface.size-3x5 .date-pill-date     { font-size: 9.5px; }
 .print-surface.size-3x5 .tz-row             { font-size: 8.5px; }
 .print-surface.size-3x5 .session-desc       { font-size: 9.5px; line-height: 1.45; }
-.print-surface.size-3x5 .register-cta-label { font-size: 9.5px; }
-.print-surface.size-3x5 .register-url       { font-size: 9px; }
+.print-surface.size-3x5 .register-cta-label,
+.print-surface.size-3x5 .microsite-cta-label { font-size: 9.5px; }
+.print-surface.size-3x5 .register-url,
+.print-surface.size-3x5 .microsite-url       { font-size: 9px; }
 .print-surface.size-3x5 .content-col        { gap: 5px; }
 .print-surface.size-3x5 .qr-box             { width: 58px; height: 58px; }
 .print-surface.size-3x5 .qr-box img         { width: 54px; height: 54px; }
@@ -596,6 +614,11 @@ body {
         <div class="register-row">
           <span class="register-cta-label">Register free:</span>
           <span class="register-url" id="register-url">somebodytotalkto.com/register</span>
+        </div>
+
+        <div class="microsite-row">
+          <span class="microsite-cta-label">Microsite:</span>
+          <a class="microsite-url" id="microsite-url" href="https://uchicago.oneamyloidosisvoice.com/" target="_blank" rel="noopener">uchicago.oneamyloidosisvoice.com</a>
         </div>
       </div>
 

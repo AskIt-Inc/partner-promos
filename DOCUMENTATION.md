@@ -132,6 +132,7 @@ Three fixed-width columns:
   - `#tz-row`: "6:00 PM ET · 5:00 PM CT · 4:00 PM MT · 3:00 PM PT"
 - `#session-desc`: 11.5px body text, HTML-stripped
 - `.register-row`: "Register free:" label + `#register-url` monospace chip
+- `.microsite-row`: static UChicago microsite link, hidden on the classic/non-spotlight layout
 
 **Column 3 — QR Code (`.qr-col`)**
 
@@ -259,6 +260,7 @@ Maps API response fields onto DOM elements. Detailed field-by-field mapping:
 | `row.headshot_base64`  | `#headshot-img`       | Set as `src`; toggles img/fallback visibility                  |
 | `row.qr_base64`        | `#qr-img`             | Set as `src`; toggles img/placeholder visibility               |
 | `row.short_url`        | `#register-url`       | Prefers short URL; falls back to `row.reg_link.url`; strips `https://`; truncates at 36 chars if no short URL |
+| Static UChicago link   | `#microsite-url`      | Displays `uchicago.oneamyloidosisvoice.com`; hidden on classic layout |
 
 **Card reveal:** On the first `populateCard()` call, `#controls-bar` and `#preview-wrapper` have their `display:none` removed, revealing the card and export controls.
 
