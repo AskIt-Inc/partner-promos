@@ -17,8 +17,8 @@ index.html
 │   ├── CDN: jsPDF@2.5.2               (PNG → PDF wrapper)
 │   └── <style>                        (all CSS, ~400 lines)
 └── <body>
-    ├── .search-panel                  (card-type dropdown + session search)
-    ├── .controls (hidden initially)   (size toggle + export buttons)
+    ├── .search-panel                  (card-type dropdown + timezone dropdown + session search)
+    ├── .controls (hidden initially)   (card side, size + export buttons)
     └── .preview-wrapper (hidden)      (the actual print card)
         └── .print-surface             (the 4-zone card)
             ├── Zone 1: .logo-bar
@@ -123,13 +123,14 @@ Three fixed-width columns:
 - `#headshot-fallback`: shown when no headshot; text "No photo"
 - `#presenter-name`: maroon, 11.5px, 800 weight — assembled from title + first/last + suffix
 - `#presenter-cred`: populated from `presenter.name_suffix`
-- `#presenter-role`: populated with `row.partner`
+- `#presenter-role`: populated with presenter employer fields when available; does not use the session `row.partner`
 
 **Column 2 — Content (`.content-col`)**
 
 - `.date-pill`: rose bg pill with calendar SVG icon
   - `#date-pill-date`: "May 18, 2026"
-  - `#tz-row`: "6:00 PM ET · 5:00 PM CT · 4:00 PM MT · 3:00 PM PT"
+  - `#tz-row`: selected timezone only, e.g. "6:00 PM ET"
+  - `#timezone-select`: visible form dropdown with Eastern, Central, Mountain, Arizona, Pacific, Alaska, and Hawaii options; defaults to Eastern Time and persists in `localStorage`
 - `#session-desc`: 11.5px body text, HTML-stripped
 - `.register-row`: "Register free:" label + `#register-url` monospace chip
 - `.microsite-row`: static UChicago microsite link, hidden on the classic/non-spotlight layout
@@ -246,16 +247,16 @@ Maps API response fields onto DOM elements. Detailed field-by-field mapping:
 | API Field              | DOM Element           | Transform applied                                              |
 |------------------------|-----------------------|----------------------------------------------------------------|
 | `row.date`             | `#header-date`        | Still populated for compatibility, but hidden in current layout |
-| `row.times_by_zone.CT` | `#header-time`        | Populates the classic Non Spotlight center header time; falls back to ET/time if CT is missing |
+| selected timezone value | `#header-time`        | Populates the classic Non Spotlight center header time using the persisted timezone dropdown; uses API-provided ET/CT/MT/PT when available and converts from ET for Arizona/Alaska/Hawaii |
 | `row.series_label`     | `#band-series-label`  | Sets text; adds `.visible` to `#band-series-row` if non-empty  |
 | `row.indication` / variants | `.logo-left` / `.logo-right` | Matched against `/api/session-editor/indications`; uses `field_indication_logo.data` as a 24-hour local cache |
 | `row.title`            | `#band-title`         | Text is preserved; if the full title does not fit on one line, `Session Type:` becomes line one and the remaining title becomes line two |
 | `row.partner`          | `#uoc-pill`           | Adds `.visible` to the header partner logo if non-empty        |
 | `row.presenters[0]`    | `#presenter-name`     | Assembled: `title + first + last`                              |
 | `presenter.name_suffix`| `#presenter-cred`     | Displays credential/suffix under presenter name                |
-| `row.partner`          | `#presenter-role`     | Displays partner name in role/partner slot                     |
+| presenter employer field | `#presenter-role` | Displays the presenter's employer when available; does not use the session `row.partner` |
 | `row.date`             | `#date-pill-date`     | Raw string, no transform                                       |
-| `row.times_by_zone`    | `#tz-row`             | ET/CT/MT/PT joined with ` · `                                  |
+| selected timezone value | `#tz-row`             | Displays only the timezone selected in `#timezone-select`; defaults to Eastern Time, persists in `localStorage`, and converts from ET for zones missing from the API response |
 | `row.description`      | `#session-desc`       | HTML-stripped via temp `<div>.textContent`                     |
 | `row.headshot_base64`  | `#headshot-img`       | Set as `src`; toggles img/fallback visibility                  |
 | `row.qr_base64`        | `#qr-img`             | Set as `src`; toggles img/placeholder visibility               |
@@ -317,9 +318,9 @@ Expected shape from `GET /api/spotlight/microsite/session/search?q=`:
 
 ## 7. Known Quirks and Debt
 
-### `#presenter-role` displays `row.partner`
+### `#presenter-role` displays presenter employer
 
-The DOM element ID suggests it holds the presenter's role or job title. In practice it is populated with `row.partner` (the institutional partner name). The API does not currently expose a separate presenter job-title field.
+The DOM element ID is used for the presenter employer line under credentials. The frontend supports common presenter field names such as `employer`, `employer_name`, `organization`, `company`, and `institution`. It intentionally does not fall back to the session-level `row.partner`, because that is the session/program partner rather than the presenter's employer.
 
 ### Credential display uses `name_suffix`
 
