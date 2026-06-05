@@ -98,6 +98,19 @@ body {
   flex: 1;
   min-height: 0;
 }
+.session-front-side,
+.session-back-side { display: none; }
+.print-surface.layout-session-front > .front-side,
+.print-surface.layout-session-front > .card-back {
+  display: none !important;
+}
+.print-surface.layout-session-front:not(.show-back) > .session-front-side,
+.print-surface.layout-session-front.show-back > .session-back-side {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
 
 /* ══════════════════════════════════════════════════
    ZONE 1: LOGO BAR
@@ -588,6 +601,310 @@ body {
 }
 
 /* ══════════════════════════════════════════════════
+   SEPARATE FRONT PROMO CARD
+   4 × 6 inch · 1800 × 1200 px at 300 DPI
+   ══════════════════════════════════════════════════ */
+.session-promo-card {
+  background: #fff;
+  color: #171717;
+}
+.session-promo-top {
+  height: 64px;
+  padding: 8px 26px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  flex-shrink: 0;
+}
+.session-promo-top .logo-divider {
+  order: 0;
+  height: 38px;
+  margin: 0;
+}
+.session-promo-top img {
+  height: 42px;
+  width: auto;
+  object-fit: contain;
+  max-width: 178px;
+}
+.session-promo-logo--uoc {
+  max-width: 142px;
+}
+.session-promo-logo--oav {
+  max-width: 122px;
+}
+.session-promo-logo--sttt {
+  max-width: 178px;
+}
+.session-promo-kicker {
+  height: 30px;
+  background: var(--maroon);
+  color: var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 22px;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.session-promo-main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 132px;
+  column-gap: 0px;
+  padding: 10px 16px;
+  min-height: 0;
+  overflow: hidden;
+}
+.session-promo-content {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  overflow: hidden;
+}
+.session-promo-title {
+  color: var(--maroon);
+  font-size: 22px;
+  line-height: 1.08;
+  font-weight: 800;
+  letter-spacing: 0;
+  margin-bottom: 12px;
+}
+.session-promo-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 9px;
+}
+.session-promo-chip {
+  border: 1px solid var(--border-rose);
+  background: var(--bg-rose);
+  border-radius: 4px;
+  color: var(--maroon);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.2;
+  padding: 5px 8px;
+  white-space: nowrap;
+}
+.session-promo-presenter {
+  border-left: 4px solid var(--maroon);
+  padding-left: 10px;
+  margin-bottom: 8px;
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  column-gap: 10px;
+  align-items: center;
+  min-height: 52px;
+}
+.session-promo-headshot {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 2px solid var(--border-rose);
+  background: var(--bg-rose);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.session-promo-headshot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+.session-promo-headshot-fallback {
+  color: var(--maroon);
+  font-size: 8px;
+  font-weight: 800;
+  line-height: 1.05;
+  text-align: center;
+  text-transform: uppercase;
+}
+.session-promo-presenter-copy {
+  min-width: 0;
+}
+.session-promo-presenter-name {
+  color: #111;
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1.2;
+}
+.session-promo-presenter-detail {
+  color: #555;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.35;
+  margin-top: 2px;
+}
+.session-promo-copy {
+  color: #333;
+  font-size: 11.3px;
+  line-height: 1.45;
+  max-height: 84px;
+  overflow: hidden;
+}
+.session-promo-register {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding-top: 2px;
+}
+.session-promo-qr {
+  width: 122px;
+  height: 122px;
+  border: 2px solid var(--border-rose);
+  border-radius: 6px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.session-promo-qr img {
+  width: 116px;
+  height: 116px;
+  display: none;
+  border-radius: 4px;
+}
+.session-promo-qr-placeholder {
+  color: #999;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+  padding: 8px;
+}
+.session-promo-qr-label {
+  color: var(--maroon);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.15;
+  text-align: center;
+}
+.session-promo-url {
+  max-width: 132px;
+  border: 1px solid var(--border-rose);
+  background: #FCF8F9;
+  border-radius: 4px;
+  color: var(--maroon);
+  font-family: monospace;
+  font-size: 9.5px;
+  line-height: 1.2;
+  padding: 4px 6px;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.session-promo-footer {
+  border-top: 1px solid #F0F0F0;
+  color: #5b5b5b;
+  font-size: 9.4px;
+  font-style: italic;
+  line-height: 1.25;
+  padding: 6px 26px 7px;
+  flex-shrink: 0;
+}
+.session-back-card {
+  background: #fff;
+  color: #171717;
+}
+.session-back-hero {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 136px;
+  column-gap: 0px;
+  padding: 10px 16px;
+  min-height: 0;
+  overflow: hidden;
+}
+.session-back-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 6px;
+}
+.session-back-eyebrow {
+  color: var(--maroon);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.session-back-title {
+  color: var(--maroon);
+  font-size: 22px;
+  line-height: 1.08;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+.session-back-text {
+  color: #222;
+  font-size: 12px;
+  line-height: 1.35;
+}
+.session-back-text strong {
+  color: var(--maroon);
+  font-weight: 800;
+}
+.session-back-link {
+  width: fit-content;
+  max-width: 100%;
+  border: 1px solid var(--border-rose);
+  background: #FCF8F9;
+  border-radius: 4px;
+  color: var(--maroon);
+  font-family: monospace;
+  font-size: 10px;
+  line-height: 1.2;
+  padding: 5px 8px;
+  overflow-wrap: anywhere;
+}
+.session-back-qr-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.session-back-qr {
+  width: 128px;
+  height: 128px;
+  border: 2px solid var(--border-rose);
+  border-radius: 6px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.session-back-qr img {
+  width: 122px;
+  height: 122px;
+  display: block;
+  border-radius: 4px;
+}
+.session-back-qr-label {
+  color: var(--maroon);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.15;
+  text-align: center;
+}
+
+/* ══════════════════════════════════════════════════
    3×5 OVERRIDES
    ══════════════════════════════════════════════════ */
 .print-surface.size-3x5 .logo-bar           { height: 50px; padding: 5px 14px; }
@@ -719,6 +1036,7 @@ body {
     <select id="session-card-type" aria-label="Card type">
       <option value="foundation">Medical Amyloidosis Session - Spotlight</option>
       <option value="classic">Medical Amyloidosis Session - Non Spotlight</option>
+      <option value="session-front">Session Registration Promo Card</option>
     </select>
     <select id="timezone-select" aria-label="Front card time zone">
       <option value="ET">Eastern Time - New York</option>
@@ -853,6 +1171,89 @@ body {
       Receive session registration links and program updates directly to your inbox. Subscribing is free and your information will not be shared with third parties.
     </div>
 
+    <section class="session-front-side session-promo-card" aria-label="Session registration promo card">
+      <div class="session-promo-top">
+        <img id="session-promo-uoc-logo" class="session-promo-logo--uoc" src="" alt="University of Chicago Medicine">
+        <div class="logo-divider"></div>
+        <img id="session-promo-oav-logo" class="session-promo-logo--oav" src="" alt="oneAMYLOIDOSISvoice">
+        <div class="logo-divider"></div>
+        <img id="session-promo-sttt-logo" class="session-promo-logo--sttt" src="" alt="Somebody To Talk To">
+      </div>
+
+      <div class="session-promo-kicker" id="session-promo-kicker">June Spotlight Series</div>
+
+      <div class="session-promo-main">
+        <div class="session-promo-content">
+          <h2 class="session-promo-title" id="session-promo-title">Load a session to create the promo card</h2>
+          <div class="session-promo-meta">
+            <span class="session-promo-chip" id="session-promo-date">Date</span>
+            <span class="session-promo-chip" id="session-promo-time">Time</span>
+          </div>
+          <div class="session-promo-presenter">
+            <div class="session-promo-headshot">
+              <img id="session-promo-headshot-img" src="" alt="Presenter headshot">
+              <div class="session-promo-headshot-fallback" id="session-promo-headshot-fallback">No<br>photo</div>
+            </div>
+            <div class="session-promo-presenter-copy">
+              <div class="session-promo-presenter-name" id="session-promo-presenter-name">Presenter</div>
+              <div class="session-promo-presenter-detail" id="session-promo-presenter-detail"></div>
+            </div>
+          </div>
+          <p class="session-promo-copy" id="session-promo-copy"></p>
+        </div>
+
+        <div class="session-promo-register">
+          <div class="session-promo-qr">
+            <img id="session-promo-qr-img" src="" alt="QR code to register">
+            <div class="session-promo-qr-placeholder" id="session-promo-qr-placeholder">Load a session<br>to generate QR</div>
+          </div>
+          <div class="session-promo-qr-label">Scan to<br>Register</div>
+          <div class="session-promo-url" id="session-promo-url">somebodytotalkto.com/register</div>
+        </div>
+      </div>
+
+      <div class="session-promo-footer">
+        Register to receive session links and program updates. Your information will not be shared with third parties.
+      </div>
+    </section>
+
+    <section class="session-back-side session-back-card" aria-label="June Spotlight microsite promo card back">
+      <div class="session-promo-top">
+        <img id="session-back-uoc-logo" class="session-promo-logo--uoc" src="" alt="University of Chicago Medicine">
+        <div class="logo-divider"></div>
+        <img id="session-back-oav-logo" class="session-promo-logo--oav" src="" alt="oneAMYLOIDOSISvoice">
+        <div class="logo-divider"></div>
+        <img id="session-back-sttt-logo" class="session-promo-logo--sttt" src="" alt="Somebody To Talk To">
+      </div>
+
+      <div class="session-promo-kicker">June Spotlight Series</div>
+
+      <div class="session-back-hero">
+        <div class="session-back-copy">
+          <div class="session-back-eyebrow">UOC / Endeavor Amyloidosis Program</div>
+          <h2 class="session-back-title">Learn more about the June Spotlight series</h2>
+          <p class="session-back-text">
+            Visit the microsite for program details, upcoming sessions, completed sessions, and clinical research information from the UOC and Endeavor amyloidosis teams.
+          </p>
+          <p class="session-back-text">
+            <strong>Use the microsite</strong> to review the series and share the resource with patients, caregivers, and families.
+          </p>
+          <div class="session-back-link">uchicago.oneamyloidosisvoice.com</div>
+        </div>
+
+        <div class="session-back-qr-wrap">
+          <div class="session-back-qr">
+            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAADwAQMAAAAEm3vRAAAABlBMVEX///8AAABVwtN+AAAACXBIWXMAAA7EAAAOxAGVKw4bAAABqUlEQVRYhe2YPa6DQAyEB1FQcoQchaOFo3EUjkBJgdZvxmbJi5I6kjdxgWA/Gv/bC/zk8zKaC7qD7xswLXfr4mzLjVepx5Nj8LNlmq0rrnJ2PJnN1NtsB2626N/S8+srsMyy0/cr/Y2WMNDvwybFKd+BI85LvzOyq79f0iAhjiokPGzjevMEfilc7eF/IsySPOO9JMOu96zHrpLMBAZKd0RYN4xVhO+0xNlib+FqOxtuakxFodkhWiwz2EonHJIXYzLzFsoeOtqKqEyXQ1vFytm70RLeYlcokCm9JonUOBSHl1x7E8jtYk5JUZm8TLHVgO62yyxpMRNYlQnRavRl51fTeKQh1Go4JsnfMpKOrzTIi1e4pp0KEwN5mSKQh8eU2yimVaDp3o/5s7clDNUsuTEig33K9ZH3qIGcGSsp2TYHX7A5IoVD641Jo/gUTUlnq5mr83Pjax+r77oCK1eraRcrZREXC2En1am+DsGZ8eQ3RcV7qPl0/xznzWOJdhzNDr21gqXpY8i90rth7HGunH2sa6Zrhuw4lIw9FPB1za/AngtXc/gnn5Y/R03fCdq1IT4AAAAASUVORK5CYII=" alt="Scan to visit uchicago.oneamyloidosisvoice.com">
+          </div>
+          <div class="session-back-qr-label">Scan for<br>Microsite</div>
+        </div>
+      </div>
+
+      <div class="session-promo-footer">
+        Visit the microsite for June Spotlight series information and related amyloidosis resources.
+      </div>
+    </section>
+
     <section class="card-back" aria-label="Subscribe card back">
       <div class="program-back-header">
         <img id="back-logo-left" class="back-logo-left" src="" alt="Amyloidosis Foundation">
@@ -907,6 +1308,7 @@ const logoBar = document.querySelector('.logo-bar');
 const sessionBand = document.querySelector('.session-band');
 const bandLeft = document.querySelector('.band-left');
 const headerPartnerLogo = document.getElementById('uoc-pill');
+const uocLogoImg = headerPartnerLogo ? headerPartnerLogo.querySelector('img') : null;
 const cardTypeSelect = document.getElementById('session-card-type');
 const timezoneSelect = document.getElementById('timezone-select');
 const leftLogo = document.querySelector('.logo-left');
@@ -929,6 +1331,10 @@ const TIMEZONE_OPTIONS = {
 };
 const VALID_TIMEZONES = Object.keys(TIMEZONE_OPTIONS);
 let selectedTimezone = loadSelectedTimezone();
+
+function isSessionFrontLayout() {
+  return surface.classList.contains('layout-session-front');
+}
 
 function loadSelectedTimezone() {
   try {
@@ -1029,6 +1435,10 @@ function getZoneTime(row, zone = selectedTimezone) {
 function updateSelectedTimezoneDisplay() {
   const timeText = currentSessionRow ? getZoneTime(currentSessionRow) : '';
   document.getElementById('tz-row').textContent = timeText || '';
+  const promoTimeEl = document.getElementById('session-promo-time');
+  if (promoTimeEl && currentSessionRow) {
+    promoTimeEl.textContent = timeText || 'Time TBA';
+  }
 
   const headerTimeEl = document.getElementById('header-time');
   if (!headerTimeEl || !currentSessionRow) return;
@@ -1058,9 +1468,45 @@ function syncBackLogos() {
   if (backRight) backRight.src = stttLogoSrc;
 }
 
+function syncSessionPromoLogos() {
+  const promoUoc = document.getElementById('session-promo-uoc-logo');
+  const promoOav = document.getElementById('session-promo-oav-logo');
+  const promoSttt = document.getElementById('session-promo-sttt-logo');
+  const backUoc = document.getElementById('session-back-uoc-logo');
+  const backOav = document.getElementById('session-back-oav-logo');
+  const backSttt = document.getElementById('session-back-sttt-logo');
+  const partnerSrc = uocLogoImg ? uocLogoImg.src : defaultLeftLogoSrc;
+  if (promoUoc) {
+    promoUoc.src = partnerSrc;
+    promoUoc.alt = 'University of Chicago Medicine';
+  }
+  if (promoOav) {
+    promoOav.src = oavLogoSrc;
+    promoOav.alt = 'oneAMYLOIDOSISvoice';
+  }
+  if (promoSttt) {
+    promoSttt.src = stttLogoSrc;
+    promoSttt.alt = 'Somebody To Talk To';
+  }
+  if (backUoc) {
+    backUoc.src = partnerSrc;
+    backUoc.alt = 'University of Chicago Medicine';
+  }
+  if (backOav) {
+    backOav.src = oavLogoSrc;
+    backOav.alt = 'oneAMYLOIDOSISvoice';
+  }
+  if (backSttt) {
+    backSttt.src = stttLogoSrc;
+    backSttt.alt = 'Somebody To Talk To';
+  }
+}
+
 function updateSizeLabel() {
   const is3x5 = surface.classList.contains('size-3x5');
-  const layoutLabel = surface.classList.contains('layout-classic') ? 'Classic card' : '3-logo card';
+  const layoutLabel = isSessionFrontLayout()
+    ? 'Session registration promo card'
+    : (surface.classList.contains('layout-classic') ? 'Classic card' : '3-logo card');
   const sideLabel = currentSide === 'back' ? 'Back side' : 'Front side';
   lbl.textContent = is3x5
     ? '3 × 5 inch · 1500 × 900 px @ 300 DPI · ' + layoutLabel + ' · ' + sideLabel
@@ -1068,6 +1514,7 @@ function updateSizeLabel() {
 }
 
 function getLayoutTag() {
+  if (isSessionFrontLayout()) return 'session-registration';
   return surface.classList.contains('layout-classic') ? 'classic' : '3-logo';
 }
 
@@ -1077,6 +1524,22 @@ function setSide(side) {
   document.getElementById('btn-front').classList.toggle('active', currentSide === 'front');
   document.getElementById('btn-back').classList.toggle('active', currentSide === 'back');
   updateSizeLabel();
+}
+
+function updateControlAvailability() {
+  const sessionFront = isSessionFrontLayout();
+  const btnBack = document.getElementById('btn-back');
+  const btn3x5 = document.getElementById('btn-3x5');
+  if (btnBack) {
+    btnBack.disabled = false;
+    btnBack.style.opacity = '';
+    btnBack.style.cursor = '';
+  }
+  if (btn3x5) {
+    btn3x5.disabled = sessionFront;
+    btn3x5.style.opacity = sessionFront ? '0.45' : '';
+    btn3x5.style.cursor = sessionFront ? 'default' : '';
+  }
 }
 
 if (timezoneSelect) {
@@ -1224,12 +1687,23 @@ function updateHeaderLogos() {
       rightLogo.alt = isClassic ? 'Somebody To Talk To' : 'oneAmyloidosisvoice';
     }
   }
+
+  syncSessionPromoLogos();
 }
 
 function setLayout(layout) {
   const isClassic = layout === 'classic';
+  const isSessionFront = layout === 'session-front';
   surface.classList.toggle('layout-classic', isClassic);
-  surface.classList.toggle('layout-foundation', !isClassic);
+  surface.classList.toggle('layout-foundation', !isClassic && !isSessionFront);
+  surface.classList.toggle('layout-session-front', isSessionFront);
+
+  if (isSessionFront) {
+    surface.classList.remove('show-back', 'size-3x5');
+    currentSide = 'front';
+    document.getElementById('btn-4x6').classList.add('active');
+    document.getElementById('btn-3x5').classList.remove('active');
+  }
 
   if (headerPartnerLogo) {
     if (isClassic && sessionBand && bandLeft) {
@@ -1244,6 +1718,7 @@ function setLayout(layout) {
   if (cardTypeSelect && cardTypeSelect.value !== layout) {
     cardTypeSelect.value = layout;
   }
+  updateControlAvailability();
   updateSizeLabel();
   fitBandTitle();
 }
@@ -1251,6 +1726,10 @@ setLayout('foundation');
 syncBackLogos();
 
 function setSize(s) {
+  if (isSessionFrontLayout() && s === '3x5') {
+    setSize('4x6');
+    return;
+  }
   if (s === '3x5') {
     surface.classList.add('size-3x5');
     document.getElementById('btn-3x5').classList.add('active');
@@ -1260,6 +1739,7 @@ function setSize(s) {
     document.getElementById('btn-4x6').classList.add('active');
     document.getElementById('btn-3x5').classList.remove('active');
   }
+  updateControlAvailability();
   updateSizeLabel();
 }
 
@@ -1525,6 +2005,83 @@ function getPresenterEmployer(presenter) {
   return '';
 }
 
+function getPresenterDisplay(row) {
+  const presenter = (row.presenters || [])[0] || {};
+  const titleVal = (presenter.title || '').trim();
+  const baseName = [presenter.first_name, presenter.last_name].filter(Boolean).join(' ') || presenter.display_name || '';
+  const suffix = (presenter.name_suffix || '').trim();
+  const employer = getPresenterEmployer(presenter);
+  return {
+    name: titleVal ? titleVal + ' ' + baseName : baseName,
+    detail: [suffix, employer].filter(Boolean).join(' · ')
+  };
+}
+
+function syncSessionRegistrationPromo(row, displayUrl, displayText) {
+  document.getElementById('session-promo-kicker').textContent = (row.series_label || '').trim() || 'Session Registration';
+  document.getElementById('session-promo-title').textContent = row.title || 'Session Registration';
+  document.getElementById('session-promo-date').textContent = row.date || 'Date TBA';
+  document.getElementById('session-promo-time').textContent = getZoneTime(row) || 'Time TBA';
+
+  const presenter = getPresenterDisplay(row);
+  document.getElementById('session-promo-presenter-name').textContent = presenter.name || 'Presenter TBA';
+  document.getElementById('session-promo-presenter-detail').textContent = presenter.detail;
+
+  const promoHeadshotImg = document.getElementById('session-promo-headshot-img');
+  const promoHeadshotFallback = document.getElementById('session-promo-headshot-fallback');
+  if (row.headshot_base64) {
+    promoHeadshotImg.src = row.headshot_base64;
+    promoHeadshotImg.style.display = 'block';
+    promoHeadshotFallback.style.display = 'none';
+  } else {
+    promoHeadshotImg.removeAttribute('src');
+    promoHeadshotImg.style.display = 'none';
+    promoHeadshotFallback.style.display = 'block';
+    promoHeadshotFallback.innerHTML = 'No<br>photo';
+  }
+
+  const tmp = document.createElement('div');
+  tmp.innerHTML = row.description || '';
+  document.getElementById('session-promo-copy').textContent = tmp.textContent || tmp.innerText || '';
+
+  const promoQrImg = document.getElementById('session-promo-qr-img');
+  const promoQrPlaceholder = document.getElementById('session-promo-qr-placeholder');
+  if (row.qr_base64) {
+    promoQrImg.src = row.qr_base64;
+    promoQrImg.style.display = 'block';
+    promoQrPlaceholder.style.display = 'none';
+  } else {
+    promoQrImg.style.display = 'none';
+    promoQrPlaceholder.style.display = 'block';
+  }
+
+  const promoUrl = document.getElementById('session-promo-url');
+  promoUrl.textContent = displayText || displayUrl.replace(/^https?:\/\//, '') || 'somebodytotalkto.com/register';
+}
+
+function fitSessionPromoLayout() {
+  const card = document.querySelector('.session-promo-card');
+  const main = document.querySelector('.session-promo-main');
+  const content = document.querySelector('.session-promo-content');
+  const title = document.getElementById('session-promo-title');
+  const copy = document.getElementById('session-promo-copy');
+  if (!card || !main || !content || !title || !copy) return;
+
+  title.style.fontSize = '';
+  copy.style.display = '';
+  copy.style.webkitBoxOrient = '';
+  copy.style.webkitLineClamp = '';
+
+  const overflows = () =>
+    main.scrollHeight > main.clientHeight + 1 ||
+    content.scrollHeight > content.clientHeight + 1 ||
+    card.scrollHeight > card.clientHeight + 1;
+
+  for (let size = 22; size >= 18 && overflows(); size--) {
+    title.style.fontSize = size + 'px';
+  }
+}
+
 /* ══════════════════════════════════════════════════
    POPULATE CARD
    API fields:
@@ -1603,12 +2160,10 @@ function populateCard(row) {
   // Presenter identity
   const presenter  = (row.presenters || [])[0] || {};
   const presNameEl = document.getElementById('presenter-name');
-  const titleVal   = (presenter.title || '').trim();
-  const baseName   = [presenter.first_name, presenter.last_name].filter(Boolean).join(' ') || presenter.display_name || '';
+  const presenterDisplay = getPresenterDisplay(row);
   const suffix     = (presenter.name_suffix || '').trim();
   // title -> prefix before full name; name_suffix -> credential line below name.
-  const displayName = titleVal ? titleVal + ' ' + baseName : baseName;
-  presNameEl.innerHTML = escapeHtml(displayName);
+  presNameEl.innerHTML = escapeHtml(presenterDisplay.name);
 
   document.getElementById('presenter-cred').textContent = suffix;
   document.getElementById('presenter-role').textContent = getPresenterEmployer(presenter);
@@ -1662,11 +2217,14 @@ function populateCard(row) {
     displayText = displayText.substring(0, 33) + '…';
   }
   regUrlEl.textContent = displayText;
+  syncSessionRegistrationPromo(row, displayUrl, displayText);
 
   // Reveal the card and controls on first load.
   document.getElementById('controls-bar').style.display = '';
   document.getElementById('preview-wrapper').style.display = '';
+  updateControlAvailability();
   fitBandTitle();
+  fitSessionPromoLayout();
 }
 </script>
 </body>

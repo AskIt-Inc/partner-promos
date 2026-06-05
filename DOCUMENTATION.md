@@ -32,12 +32,13 @@ index.html
 
 **Initial state:** `.controls` and `.preview-wrapper` are hidden via `style="display:none"`. They are only revealed on the first successful call to `populateCard()`, ensuring the user always searches before seeing a card.
 
-**Card type selector:** `#session-card-type` sits beside the search input. The search row also includes `#btn-clear`, which resets the current search/card state. The selector has two options:
+**Card type selector:** `#session-card-type` sits beside the search input. The search row also includes `#btn-clear`, which resets the current search/card state. The selector has three options:
 
 | Label | Value | Layout |
 |-------|-------|--------|
 | Medical Amyloidosis Session - Spotlight | `foundation` | New 3-logo card |
 | Medical Amyloidosis Session - Non Spotlight | `classic` | Original card |
+| Session Registration Promo Card | `session-front` | Separate 4×6 registration front with June Spotlight microsite back |
 
 Changing the dropdown calls `setLayout()` and then `resetSearchState()`: the search text is cleared, results are removed, controls/preview are hidden, and the user is prompted to enter a new search term.
 
@@ -159,18 +160,21 @@ Two sizes available via the size toggle buttons.
 
 The 3×5 variant uses a cascade of `.print-surface.size-3x5 .{component}` overrides to scale down every font, spacing, and image dimension proportionally. There are 20 override rules covering all zones.
 
+The `Session Registration Promo Card` layout is 4×6 only. Switching to that layout removes `.size-3x5`, disables the 3×5 control, and keeps export output at 1800 × 1200 px for the 300 DPI print target. The Front/Back buttons remain available: Front is the session registration card with presenter headshot, and Back is the June Spotlight microsite promo side. Both Front and Back headers show UOC, OAV, and STTT logos.
+
 ---
 
 ## 5. JavaScript Modules
 
 ### 5.1 Card Type — `setLayout(layout)`
 
-Switches between the two card types selected in `#session-card-type`.
+Switches between the three card types selected in `#session-card-type`.
 
 | Dropdown label | Internal value | Surface class | Behaviour |
 |----------------|----------------|---------------|-----------|
 | Medical Amyloidosis Session - Spotlight | `foundation` | `.layout-foundation` | New 3-logo header layout; partner logo moves to Zone 1; right logo defaults to OAV, then switches to matched indication logo when available |
 | Medical Amyloidosis Session - Non Spotlight | `classic` | `.layout-classic` | Original layout; partner logo moves back to the maroon band; right logo stays STTT; left logo switches to matched indication logo when available |
+| Session Registration Promo Card | `session-front` | `.layout-session-front` | Separate 4×6 card mode; Front uses session registration/privacy copy and Back promotes the June Spotlight microsite with a microsite QR |
 
 The dropdown `change` handler calls `resetSearchState()` after switching layout, so stale session data is never reused across card types.
 
@@ -336,7 +340,7 @@ The default header logos are embedded as base64. The partner logo shown in `#uoc
 
 ### File size
 
-At ~301 KB, the file is large for an HTML document. Most of that size is base64-encoded image data. This is intentional for portability but makes the file impractical to diff or code-review in a standard tool.
+At ~320 KB, the file is large for an HTML document. Most of that size is base64-encoded image data. This is intentional for portability but makes the file impractical to diff or code-review in a standard tool.
 
 ---
 
@@ -344,10 +348,10 @@ At ~301 KB, the file is large for an HTML document. Most of that size is base64-
 
 | Format | Size  | Pixel dimensions | Colour profile | Filename                 |
 |--------|-------|------------------|----------------|--------------------------|
-| PNG    | 4×6   | 1800 × 1200      | sRGB           | `facebook-promo-{layout}-4x6.png` |
-| PNG    | 3×5   | 1500 × 900       | sRGB           | `facebook-promo-{layout}-3x5.png` |
-| PDF    | 4×6   | 1800 × 1200 img  | landscape, 6×4in | `facebook-promo-{layout}-4x6.pdf` |
-| PDF    | 3×5   | 1500 × 900 img   | landscape, 5×3in | `facebook-promo-{layout}-3x5.pdf` |
+| PNG    | 4×6   | 1800 × 1200      | sRGB           | `facebook-promo-{layout}-{side}-4x6.png` |
+| PNG    | 3×5   | 1500 × 900       | sRGB           | `facebook-promo-{layout}-{side}-3x5.png` |
+| PDF    | 4×6   | 1800 × 1200 img  | landscape, 6×4in | `facebook-promo-{layout}-{side}-4x6.pdf` |
+| PDF    | 3×5   | 1500 × 900 img   | landscape, 5×3in | `facebook-promo-{layout}-{side}-3x5.pdf` |
 | Print  | both  | @page native      | exact colour   | _(browser print dialog)_ |
 
 The PDF is image-only (rasterised PNG embedded in a PDF wrapper). It is not a vector PDF. Text is not selectable in the output PDF.
