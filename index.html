@@ -124,6 +124,325 @@ body {
   flex: 1;
   min-height: 0;
 }
+.calendar-card-front-side { display: none; }
+.print-surface.layout-calendar-card {
+  width: 4in;
+  height: 6in;
+}
+.print-surface.layout-calendar-card > .front-side,
+.print-surface.layout-calendar-card > .card-back,
+.print-surface.layout-calendar-card > .session-back-side,
+.print-surface.layout-calendar-card > .coming-soon-front-side {
+  display: none !important;
+}
+.print-surface.layout-calendar-card:not(.show-back) > .calendar-card-front-side,
+.print-surface.layout-calendar-card.show-back > .coming-soon-back-side {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+/* City of Hope API calendar card */
+.calendar-card-front-side {
+  background: #fff;
+  color: #111;
+}
+.calendar-logo-bar {
+  height: 60px;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.calendar-logo-slot {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 8px 12px;
+}
+.calendar-logo-slot img {
+  max-height: 38px;
+  max-width: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+.calendar-logo-bar .logo-divider {
+  width: 1px;
+  height: 36px;
+  background: #B9DEE6;
+  margin: 0;
+  order: 0;
+}
+.calendar-spotlight-band {
+  background: #006E8E;
+  padding: 7px 20px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.calendar-band-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.calendar-band-eyebrow-text {
+  font-size: 10px;
+  font-weight: 800;
+  font-style: italic;
+  color: #FFE8A3;
+  letter-spacing: 0.02em;
+}
+.calendar-band-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.1;
+  letter-spacing: 0;
+}
+.calendar-sessions {
+  flex: 1;
+  padding: 3px 16px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.calendar-session-row {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 38px 1fr;
+  gap: 11px;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 0.5px solid #B9DEE6;
+}
+.calendar-session-row:last-child { border-bottom: none; }
+.calendar-sessions.calendar-sessions-filtered .calendar-session-row {
+  flex: 0;
+}
+.calendar-date-chip {
+  text-align: center;
+  background: #006E8E;
+  border-radius: 5px;
+  padding: 3px 2px 2px;
+  align-self: start;
+  flex-shrink: 0;
+}
+.calendar-chip-month {
+  font-size: 6.5px;
+  font-weight: 800;
+  color: #FFE8A3;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+.calendar-chip-day {
+  font-size: 16px;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1;
+}
+.calendar-chip-weekday {
+  font-size: 5.6px;
+  color: #fff;
+  line-height: 1.2;
+}
+.calendar-session-title {
+  font-size: 8.35px;
+  font-weight: 700;
+  color: #111;
+  margin: 0 0 1px;
+  line-height: 1.12;
+}
+.calendar-session-presenter {
+  font-size: 7.4px;
+  color: #006E8E;
+  font-weight: 700;
+  margin: 0 0 1px;
+  line-height: 1.12;
+}
+.calendar-session-meta {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+.calendar-specialty-badge {
+  display: inline-block;
+  font-size: 5.3px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 1px 3px;
+  border-radius: 3px;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+.calendar-badge-cardiology { background: #e6eef7; color: #1a4070; }
+.calendar-badge-hematology { background: #f0eaf7; color: #3a1060; }
+.calendar-badge-support { background: #e6f2ec; color: #0a4020; }
+.calendar-card-footer {
+  background: #fff;
+  border-top: 1px solid var(--border);
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  flex-shrink: 0;
+}
+.calendar-footer-main {
+  padding: 6px 16px 5px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+.calendar-footer-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.calendar-footer-cta-label {
+  font-size: 11px;
+  font-weight: 900;
+  color: #006E8E;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.calendar-footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.calendar-footer-url {
+  font-size: 9px;
+  font-weight: 700;
+  color: #333;
+  line-height: 1.15;
+}
+.calendar-footer-disclaimer {
+  font-size: 7px;
+  color: #666;
+  font-style: italic;
+  line-height: 1.35;
+  margin-top: 1px;
+}
+.calendar-footer-qr-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.calendar-footer-qr-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.calendar-footer-qr-wrap img {
+  width: 44px;
+  height: 44px;
+  border-radius: 3px;
+  display: block;
+}
+.calendar-footer-qr-scan {
+  font-size: 6px;
+  color: #006E8E;
+  white-space: nowrap;
+  text-transform: uppercase;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+.calendar-footer-privacy {
+  border-top: 1px solid var(--border);
+  padding: 4px 16px 5px;
+  font-size: 7px;
+  line-height: 1.25;
+  color: #333;
+  font-style: italic;
+}
+.print-surface.layout-calendar-card .coming-soon-logo-bar {
+  height: 60px;
+  padding: 8px 12px;
+  gap: 6px;
+}
+.print-surface.layout-calendar-card .coming-soon-logo-bar img {
+  height: 32px;
+  max-width: 102px;
+}
+.print-surface.layout-calendar-card .coming-soon-logo-bar img.coming-logo-af {
+  height: 32px;
+}
+.print-surface.layout-calendar-card .coming-soon-logo-bar .logo-divider {
+  height: 34px;
+  margin: 0 4px;
+  order: 0;
+}
+.print-surface.layout-calendar-card .coming-soon-title-strip {
+  padding: 6px 16px;
+  gap: 7px;
+}
+.print-surface.layout-calendar-card .coming-soon-program-name {
+  font-size: 10px;
+}
+.print-surface.layout-calendar-card .coming-soon-date,
+.print-surface.layout-calendar-card .coming-soon-dot {
+  display: none;
+}
+.print-surface.layout-calendar-card .coming-soon-badge {
+  font-size: 7px;
+  padding: 2px 8px;
+}
+.print-surface.layout-calendar-card .coming-soon-band {
+  padding: 9px 16px 10px;
+}
+.print-surface.layout-calendar-card .coming-soon-label span {
+  font-size: 8px;
+}
+.print-surface.layout-calendar-card .coming-soon-feature-name {
+  font-size: 21px;
+}
+.print-surface.layout-calendar-card .coming-soon-body {
+  padding: 12px 16px 8px;
+  grid-template-columns: 1fr 92px;
+  column-gap: 12px;
+}
+.print-surface.layout-calendar-card .coming-soon-copy p {
+  font-size: 11.5px;
+  line-height: 1.35;
+}
+.print-surface.layout-calendar-card .coming-soon-cta {
+  font-size: 11px;
+}
+.print-surface.layout-calendar-card .coming-soon-url {
+  font-size: 8.5px;
+  padding: 3px 7px;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.print-surface.layout-calendar-card .coming-soon-qr-box {
+  width: 84px;
+  height: 84px;
+}
+.print-surface.layout-calendar-card .coming-soon-qr-box img {
+  width: 78px;
+  height: 78px;
+}
+.print-surface.layout-calendar-card .coming-soon-qr-label {
+  font-size: 6.5px;
+}
+.print-surface.layout-calendar-card .coming-soon-fine-print {
+  font-size: 7px;
+  padding: 4px 16px 6px;
+}
 
 /* Coming Soon card */
 .coming-soon-logo-bar {
@@ -1488,6 +1807,7 @@ body {
         <option value="" disabled selected>Select Card</option>
         <option value="foundation">Medical Amyloidosis Session - Spotlight</option>
         <option value="classic">Medical Amyloidosis Session - Non Spotlight</option>
+        <option value="calendar-card">Calendar Card</option>
         <option value="partner-back">Partner Back Card</option>
         <option value="coming-soon">Coming Soon Card</option>
       </select>
@@ -1626,6 +1946,11 @@ body {
   <label>Size:</label>
   <button id="btn-4x6" class="active" onclick="setSize('4x6')">4&times;6</button>
   <button id="btn-3x5" onclick="setSize('3x5')">3&times;5</button>
+  <span class="control-divider calendar-filter-control">|</span>
+  <label class="calendar-filter-control">Filter:</label>
+  <button class="calendar-filter-control calendar-filter-btn active" data-calendar-filter="all" type="button">All</button>
+  <button class="calendar-filter-control calendar-filter-btn" data-calendar-filter="Mon" type="button">Monday</button>
+  <button class="calendar-filter-control calendar-filter-btn" data-calendar-filter="Wed" type="button">Wednesday</button>
   <button class="btn-print" onclick="handlePrint()">&#128438; Print</button>
   <button class="btn-png" id="btn-download-png" onclick="downloadPNG()">&#8595; PNG</button>
   <button class="btn-pdf" id="btn-download-pdf" onclick="downloadPDF()">&#8595; PDF</button>
@@ -1799,7 +2124,7 @@ body {
       </div>
 
       <div class="session-promo-footer">
-        Subscribing is free and your information will not be shared with third parties.
+        Registering is free and your information will not be shared with third parties.
       </div>
     </section>
 
@@ -1847,6 +2172,76 @@ body {
       <div id="coming-fine-print" class="coming-soon-fine-print"></div>
     </section>
 
+    <section class="calendar-card-front-side" aria-label="City of Hope July 2026 calendar card front">
+      <div class="calendar-logo-bar">
+        <div class="calendar-logo-slot">
+          <img id="calendar-logo-coh" src="coh_logo.svg" alt="City of Hope">
+        </div>
+        <div class="logo-divider"></div>
+        <div class="calendar-logo-slot">
+          <img id="calendar-logo-af" src="" alt="Amyloidosis Foundation">
+        </div>
+        <div class="logo-divider"></div>
+        <div class="calendar-logo-slot">
+          <img id="calendar-logo-oav" src="" alt="oneAMYLOIDOSISvoice">
+        </div>
+      </div>
+
+      <div class="calendar-spotlight-band">
+        <div class="calendar-band-eyebrow">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFE8A3" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <circle cx="12" cy="10" r="3"></circle>
+            <line x1="12" y1="1" x2="12" y2="4"></line>
+            <line x1="4.22" y1="3.22" x2="6.34" y2="5.34"></line>
+            <line x1="1" y1="10" x2="4" y2="10"></line>
+            <line x1="19.78" y1="3.22" x2="17.66" y2="5.34"></line>
+            <line x1="23" y1="10" x2="20" y2="10"></line>
+            <path d="M7 17l1.5-4h7L17 17"></path>
+            <line x1="5" y1="21" x2="19" y2="21"></line>
+          </svg>
+          <span class="calendar-band-eyebrow-text">Amyloidosis Program Spotlight Series</span>
+        </div>
+        <p class="calendar-band-title">City of Hope Amyloidosis Program</p>
+      </div>
+
+      <div class="calendar-sessions" id="calendar-sessions-list">
+        <div class="calendar-session-row">
+          <div class="calendar-date-chip">
+            <p class="calendar-chip-month">Jul</p>
+            <p class="calendar-chip-day">1</p>
+            <p class="calendar-chip-weekday">Wed</p>
+          </div>
+          <div>
+            <p class="calendar-session-title">Second line options for relapsed/refractory disease COH experience with venetoclax for AL Amyloidosis</p>
+            <p class="calendar-session-presenter">Michael Rosenzweig, MD, MS</p>
+            <div class="calendar-session-meta">
+              <span class="calendar-specialty-badge calendar-badge-hematology">AL Amyloidosis</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="calendar-card-footer">
+        <div class="calendar-footer-main">
+          <div class="calendar-footer-left">
+            <p class="calendar-footer-cta-label">Subscribe &amp; Register</p>
+            <div class="calendar-footer-links">
+              <p class="calendar-footer-url">cityofhope.oneamyloidosisvoice.com</p>
+              <p class="calendar-footer-url">somebodytotalkto.com/subscribe</p>
+            </div>
+            <p id="calendar-footer-timezone" class="calendar-footer-disclaimer">Mondays &amp; Wednesdays in July &middot; 3:00 PM PT</p>
+          </div>
+          <div class="calendar-footer-qr-group">
+            <div class="calendar-footer-qr-wrap">
+              <img id="calendar-subscribe-qr-code" src="sttt_subscribe_qr.png" alt="QR code for SomebodyToTalkTo subscribe page">
+              <p class="calendar-footer-qr-scan">Subscribe &amp; Register</p>
+            </div>
+          </div>
+        </div>
+        <div class="calendar-footer-privacy">Registering is free and your information will not be shared with third parties.</div>
+      </div>
+    </section>
+
     <section class="coming-soon-back-side" aria-label="Coming Soon subscribe card back">
       <div class="coming-soon-logo-bar">
         <img id="coming-back-logo-af" class="coming-logo-af" src="" alt="Amyloidosis Foundation">
@@ -1857,35 +2252,35 @@ body {
       </div>
 
       <div class="coming-soon-title-strip">
-        <span class="coming-soon-badge">Subscribe</span>
-        <span class="coming-soon-program-name">SomeBodyToTalkTo</span>
+        <span id="coming-back-badge" class="coming-soon-badge">Subscribe</span>
+        <span id="coming-back-program-name" class="coming-soon-program-name">SomeBodyToTalkTo</span>
         <span class="coming-soon-dot">-</span>
-        <span class="coming-soon-date">Free weekly online sessions</span>
+        <span id="coming-back-program-date" class="coming-soon-date">Free weekly online sessions</span>
       </div>
 
       <div class="coming-soon-band">
         <div class="coming-soon-band-left">
-          <div class="coming-soon-label"><span>Stay Updated</span></div>
-          <div class="coming-soon-feature-name">Subscribe for session registration links</div>
+          <div class="coming-soon-label"><span id="coming-back-label">Stay Updated</span></div>
+          <div id="coming-back-feature-name" class="coming-soon-feature-name">Subscribe for session registration links</div>
         </div>
       </div>
 
       <div class="coming-soon-body">
         <div class="coming-soon-copy">
           <p id="coming-back-primary"></p>
-          <div class="coming-soon-cta">Subscribe or scan the QR code</div>
-          <span class="coming-soon-url">somebodytotalkto.com/subscribe</span>
-          <p>Subscribing is free and helps you stay connected to upcoming online sessions.</p>
+          <div id="coming-back-cta" class="coming-soon-cta">Subscribe or scan the QR code</div>
+          <span id="coming-back-link" class="coming-soon-url">somebodytotalkto.com/subscribe</span>
+          <p id="coming-back-secondary">Subscribing is free and helps you stay connected to upcoming online sessions.</p>
         </div>
         <div class="coming-soon-qr-block">
           <div class="coming-soon-qr-box">
             <img id="coming-back-qr-img" src="sttt_subscribe_qr.png" alt="Scan to subscribe at somebodytotalkto.com/subscribe">
           </div>
-          <span class="coming-soon-qr-label">scan to<br>subscribe</span>
+          <span id="coming-back-qr-label" class="coming-soon-qr-label">scan to<br>subscribe</span>
         </div>
       </div>
 
-      <div class="coming-soon-fine-print">
+      <div id="coming-back-fine-print" class="coming-soon-fine-print">
         * Subscribing is free and your information is never shared with third parties.
       </div>
     </section>
@@ -2029,9 +2424,9 @@ const PARTNER_CONFIG_FALLBACK = {
         featureTitle: 'City of Hope Amyloidosis Program',
         featureProgram: '',
         eyebrow: 'City of Hope Amyloidosis Program',
-        title: 'Learn more about the July Spotlight series',
-        primaryText: 'Visit the microsite for program details, upcoming sessions, completed sessions, and clinical research information from the City of Hope amyloidosis team.',
-        secondaryHtml: '<strong>Use the microsite</strong> to review the series and share the resource with patients, caregivers, and families.',
+        title: 'City of Hope July Spotlight Session Calendar',
+        primaryText: 'Use the City of Hope Amyloidosis Program microsite to review July session details, meet the care team, and access registration links for the Wednesday spotlight sessions and Monday patient education sessions.',
+        secondaryHtml: '<strong>July series:</strong> free online sessions with City of Hope specialists and support staff for patients, caregivers, families, and healthcare professionals.',
         linkText: 'https://cityofhope.oneamyloidosisvoice.com/',
         qrSrc: 'coh_microsite_qr.png',
         qrAlt: 'Scan to visit https://cityofhope.oneamyloidosisvoice.com/',
@@ -2107,7 +2502,19 @@ const COMING_SOON_CONFIGS = {
     fullLink: 'https://cityofhope.oneamyloidosisvoice.com/',
     primaryHtml: '<strong>Visit the City of Hope microsite</strong> for program details, speaker updates, session information, and registration links for the Amyloidosis Program Spotlight Series.',
     secondaryText: 'Keep this card for the latest City of Hope spotlight information and registration access.',
-    backPrimaryHtml: '<strong>Subscribe to SomeBodyToTalkTo</strong> to receive session registration links, City of Hope program updates, and free weekly amyloidosis session reminders directly to your inbox.',
+    backPrimaryHtml: '<strong>Visit the City of Hope microsite</strong> for the July session calendar, program details, care team information, and registration links for the Amyloidosis Program Spotlight Series.',
+    backBadge: 'Calendar',
+    backProgramName: 'City of Hope',
+    backProgramDate: 'July 2026 Spotlight Series',
+    backLabel: 'July Sessions',
+    backFeatureName: 'City of Hope July Spotlight Session Calendar',
+    backCtaText: 'Visit the microsite or scan the QR code',
+    backLink: 'cityofhope.oneamyloidosisvoice.com',
+    backQr: 'coh_microsite_qr.png',
+    backQrAlt: 'Scan to visit cityofhope.oneamyloidosisvoice.com',
+    backQrLabelHtml: 'scan to<br>visit',
+    backSecondaryText: 'Review the July calendar before sharing the card so patients and caregivers have the current City of Hope session details.',
+    backFinePrint: 'Registering is free and your information will not be shared with third parties.',
     colors: {
       primary: '#006E8E',
       accent: '#F58220',
@@ -2143,6 +2550,17 @@ let selectedTitleFontSize = loadFontSize(TITLE_FONT_STORAGE_KEY, DEFAULT_TITLE_F
 let selectedTitlePrefixFontSize = loadFontSize(TITLE_PREFIX_FONT_STORAGE_KEY, DEFAULT_TITLE_PREFIX_FONT_SIZE);
 let selectedTitleSuffixFontSize = loadFontSize(TITLE_SUFFIX_FONT_STORAGE_KEY, DEFAULT_TITLE_SUFFIX_FONT_SIZE);
 let selectedDescFontSize = loadFontSize(DESC_FONT_STORAGE_KEY, DEFAULT_DESC_FONT_SIZE);
+const CALENDAR_SESSIONS_API_URL = 'https://somebodytotalkto.com/api/spotlight/microsite/sessions?indication=4,12362&partner=12759';
+const CALENDAR_PROFILES_API_URL = 'https://somebodytotalkto.com/api/spotlight/microsite/profiles?indication=4,5&partner=12759';
+const CALENDAR_DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const CALENDAR_MONTH_INDEX = {
+  Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+  Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
+};
+let calendarSessionsLoaded = false;
+let calendarSessionsPromise = null;
+let calendarSessionsData = { sessions: [], profiles: [] };
+let selectedCalendarFilter = 'all';
 
 function normalizePartnerConfig(config) {
   const merged = config && config.partners ? config : PARTNER_CONFIG_FALLBACK;
@@ -2205,6 +2623,7 @@ function applyPartnerTheme() {
   syncSessionPromoLogos();
   syncSessionBackContent();
   syncComingSoonCard();
+  syncCalendarCard();
   updateSizeLabel();
 }
 
@@ -2247,7 +2666,7 @@ function syncComingSoonCard() {
   setImg('coming-back-logo-sttt', stttLogoSrc, 'Somebody To Talk To');
   setImg('coming-partner-logo', cfg.logo, cfg.logoAlt);
   setImg('coming-qr-img', cfg.qr, cfg.qrAlt);
-  setImg('coming-back-qr-img', 'sttt_subscribe_qr.png', 'Scan to subscribe at somebodytotalkto.com/subscribe');
+  setImg('coming-back-qr-img', cfg.backQr || 'sttt_subscribe_qr.png', cfg.backQrAlt || 'Scan to subscribe at somebodytotalkto.com/subscribe');
 
   setText('coming-program-date', cfg.date);
   setHtml('coming-feature-name', cfg.featureName);
@@ -2255,7 +2674,233 @@ function syncComingSoonCard() {
   setText('coming-link', cfg.link);
   setText('coming-secondary-text', cfg.secondaryText);
   setHtml('coming-back-primary', cfg.backPrimaryHtml);
+  setText('coming-back-badge', cfg.backBadge || 'Subscribe');
+  setText('coming-back-program-name', cfg.backProgramName || 'SomeBodyToTalkTo');
+  setText('coming-back-program-date', cfg.backProgramDate || 'Free weekly online sessions');
+  setText('coming-back-label', cfg.backLabel || 'Stay Updated');
+  setHtml('coming-back-feature-name', cfg.backFeatureName || 'Subscribe for session registration links');
+  setText('coming-back-cta', cfg.backCtaText || 'Subscribe or scan the QR code');
+  setText('coming-back-link', cfg.backLink || 'somebodytotalkto.com/subscribe');
+  setHtml('coming-back-qr-label', cfg.backQrLabelHtml || 'scan to<br>subscribe');
+  setText('coming-back-secondary', cfg.backSecondaryText || 'Subscribing is free and helps you stay connected to upcoming online sessions.');
+  setText('coming-back-fine-print', cfg.backFinePrint || '* Subscribing is free and your information is never shared with third parties.');
   setHtml('coming-fine-print', '* Microsite link: <strong>' + (cfg.fullLink || '') + '</strong>');
+}
+
+function calendarNormalizeSpaces(value) {
+  return String(value || '').replace(/\s{2,}/g, ' ').trim();
+}
+
+function calendarNormalizeSuffix(value) {
+  return calendarNormalizeSpaces(value)
+    .replace(/\./g, '')
+    .split(',')
+    .map(part => calendarNormalizeSpaces(part))
+    .filter(Boolean)
+    .join(', ');
+}
+
+function calendarPersonKey(firstName, lastName) {
+  return [firstName, lastName]
+    .map(value => calendarNormalizeSpaces(value).toLowerCase())
+    .join('|');
+}
+
+function calendarFormatPerson(firstName, lastName, suffix, title) {
+  const cleanSuffix = calendarNormalizeSuffix(suffix);
+  const fullName = [calendarNormalizeSpaces(firstName), calendarNormalizeSpaces(lastName)].filter(Boolean).join(' ');
+  if (fullName && cleanSuffix) return fullName + ', ' + cleanSuffix;
+  return [calendarNormalizeSpaces(title), fullName].filter(Boolean).join(' ');
+}
+
+function calendarParseApiDate(dateText) {
+  const parts = calendarNormalizeSpaces(dateText).split(' ');
+  const monthToken = parts[0] || '';
+  const day = (parts[1] || '').replace(',', '');
+  const year = Number.parseInt(parts[2] || '', 10);
+  const monthIndex = CALENDAR_MONTH_INDEX[monthToken];
+  const dayNumber = Number.parseInt(day, 10);
+  const weekday = monthIndex !== undefined && Number.isFinite(year) && Number.isFinite(dayNumber)
+    ? CALENDAR_DAY_NAMES[new Date(Date.UTC(year, monthIndex, dayNumber)).getUTCDay()]
+    : '';
+
+  return { month: monthToken, day, weekday };
+}
+
+function calendarBadgeClass(label) {
+  const lower = calendarNormalizeSpaces(label).toLowerCase();
+  if (lower.includes('cardio')) return 'calendar-badge-cardiology';
+  if (lower.includes('nurse') || lower.includes('patient')) return 'calendar-badge-support';
+  return 'calendar-badge-hematology';
+}
+
+function calendarBuildProfileMap(profiles) {
+  const map = new Map();
+  profiles.forEach(profile => {
+    map.set(calendarPersonKey(profile.first_name, profile.last_name), profile);
+  });
+  return map;
+}
+
+function syncCalendarCard() {
+  const setImg = (id, src, alt) => {
+    const img = document.getElementById(id);
+    if (!img) return;
+    img.src = src || '';
+    img.alt = alt || '';
+  };
+
+  setImg('calendar-logo-coh', 'coh_logo.svg', 'City of Hope');
+  setImg('calendar-logo-af', defaultLeftLogoSrc, 'Amyloidosis Foundation');
+  setImg('calendar-logo-oav', oavLogoSrc, 'oneAMYLOIDOSISvoice');
+  updateCalendarTimezoneDisplay();
+
+  if (isCalendarCardLayout() && !calendarSessionsLoaded) {
+    loadCalendarSessions();
+  }
+}
+
+function getCalendarProgramTime(zone = selectedTimezone) {
+  const option = TIMEZONE_OPTIONS[zone] || TIMEZONE_OPTIONS.PT;
+  const utcMs = zonedTimeToUtcMs({
+    year: 2026,
+    month: 7,
+    day: 1,
+    hour: 15,
+    minute: 0
+  }, TIMEZONE_OPTIONS.PT.iana);
+
+  const raw = new Intl.DateTimeFormat('en-US', {
+    timeZone: option.iana,
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+  }).format(new Date(utcMs));
+
+  return raw + ' ' + option.short;
+}
+
+function updateCalendarTimezoneDisplay() {
+  const el = document.getElementById('calendar-footer-timezone');
+  if (!el) return;
+  el.textContent = 'Mondays & Wednesdays in July · ' + getCalendarProgramTime();
+}
+
+function renderCalendarSessionsFromApi(sessions, profiles) {
+  const list = document.getElementById('calendar-sessions-list');
+  if (!list) return;
+
+  calendarSessionsData = {
+    sessions: Array.isArray(sessions) ? sessions : [],
+    profiles: Array.isArray(profiles) ? profiles : []
+  };
+  const profileMap = calendarBuildProfileMap(Array.isArray(profiles) ? profiles : []);
+  const sorted = (Array.isArray(sessions) ? sessions : [])
+    .slice()
+    .sort((a, b) => Number(a.timestamp || 0) - Number(b.timestamp || 0));
+  const filtered = selectedCalendarFilter === 'all'
+    ? sorted
+    : sorted.filter(session => calendarParseApiDate(session.date).weekday === selectedCalendarFilter);
+
+  if (!filtered.length) return;
+
+  list.replaceChildren();
+  list.classList.toggle('calendar-sessions-filtered', selectedCalendarFilter !== 'all');
+
+  filtered.forEach(session => {
+    const presenter = (session.presenters && session.presenters[0]) || {};
+    const profile = profileMap.get(calendarPersonKey(presenter.first_name, presenter.last_name)) || {};
+    const date = calendarParseApiDate(session.date);
+    const presenterName = calendarFormatPerson(
+      profile.first_name || presenter.first_name,
+      profile.last_name || presenter.last_name,
+      profile.name_suffix || presenter.name_suffix,
+      profile.title || presenter.title
+    );
+    const fallbackIndication = Array.isArray(session.indications) ? session.indications[0] : '';
+    const badgeLabel = calendarNormalizeSpaces(fallbackIndication).toLowerCase() === 'patient best practices'
+      ? calendarNormalizeSpaces(fallbackIndication)
+      : calendarNormalizeSpaces(profile.spotlight_card_tag) || calendarNormalizeSpaces(fallbackIndication);
+
+    const row = document.createElement('div');
+    row.className = 'calendar-session-row';
+
+    const chip = document.createElement('div');
+    chip.className = 'calendar-date-chip';
+
+    const month = document.createElement('p');
+    month.className = 'calendar-chip-month';
+    month.textContent = date.month;
+
+    const day = document.createElement('p');
+    day.className = 'calendar-chip-day';
+    day.textContent = date.day;
+
+    const weekday = document.createElement('p');
+    weekday.className = 'calendar-chip-weekday';
+    weekday.textContent = date.weekday;
+
+    chip.append(month, day, weekday);
+
+    const content = document.createElement('div');
+
+    const title = document.createElement('p');
+    title.className = 'calendar-session-title';
+    title.textContent = calendarNormalizeSpaces(session.title);
+
+    const presenterEl = document.createElement('p');
+    presenterEl.className = 'calendar-session-presenter';
+    presenterEl.textContent = presenterName;
+
+    const meta = document.createElement('div');
+    meta.className = 'calendar-session-meta';
+
+    if (badgeLabel) {
+      const badge = document.createElement('span');
+      badge.className = 'calendar-specialty-badge ' + calendarBadgeClass(badgeLabel);
+      badge.textContent = badgeLabel;
+      meta.appendChild(badge);
+    }
+
+    content.append(title, presenterEl, meta);
+    row.append(chip, content);
+    list.appendChild(row);
+  });
+
+  calendarSessionsLoaded = true;
+}
+
+function setCalendarFilter(filter) {
+  selectedCalendarFilter = ['all', 'Mon', 'Wed'].includes(filter) ? filter : 'all';
+  document.querySelectorAll('.calendar-filter-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.calendarFilter === selectedCalendarFilter);
+  });
+  if (calendarSessionsLoaded) {
+    renderCalendarSessionsFromApi(calendarSessionsData.sessions, calendarSessionsData.profiles);
+  }
+}
+
+async function loadCalendarSessions() {
+  if (calendarSessionsPromise) return calendarSessionsPromise;
+
+  calendarSessionsPromise = Promise.all([
+    fetch(CALENDAR_SESSIONS_API_URL, { mode: 'cors', headers: { Accept: 'application/json' } }),
+    fetch(CALENDAR_PROFILES_API_URL, { mode: 'cors', headers: { Accept: 'application/json' } })
+  ])
+    .then(async ([sessionsRes, profilesRes]) => {
+      if (!sessionsRes.ok || !profilesRes.ok) throw new Error('API request failed');
+      const sessionsJson = await sessionsRes.json();
+      const profilesJson = await profilesRes.json();
+      renderCalendarSessionsFromApi(sessionsJson.data || [], profilesJson.data || []);
+    })
+    .catch(e => {
+      console.warn('[COH calendar card] API unavailable; using static fallback.', e);
+    })
+    .finally(() => {
+      calendarSessionsPromise = null;
+    });
+
+  return calendarSessionsPromise;
 }
 
 async function loadPartnerConfigs() {
@@ -2285,11 +2930,15 @@ function isPartnerBackLayout() {
 }
 
 function isImmediatePreviewLayout() {
-  return isPartnerBackLayout() || isComingSoonLayout();
+  return isPartnerBackLayout() || isComingSoonLayout() || isCalendarCardLayout();
 }
 
 function isComingSoonLayout() {
   return surface.classList.contains('layout-coming-soon');
+}
+
+function isCalendarCardLayout() {
+  return surface.classList.contains('layout-calendar-card');
 }
 
 function loadSelectedTimezone() {
@@ -2413,6 +3062,7 @@ function getZoneTime(row, zone = selectedTimezone) {
 }
 
 function updateSelectedTimezoneDisplay() {
+  updateCalendarTimezoneDisplay();
   const timeText = currentSessionRow ? getZoneTime(currentSessionRow) : '';
   document.getElementById('tz-row').textContent = timeText || '';
   const promoTimeEl = document.getElementById('session-promo-time');
@@ -2555,14 +3205,21 @@ function updateSizeLabel() {
     ? 'Coming Soon card'
     : (isPartnerBackLayout()
       ? 'Partner Back Card'
-      : (surface.classList.contains('layout-classic') ? 'Classic card' : '3-logo card'));
+      : (isCalendarCardLayout()
+        ? 'Calendar Card'
+        : (surface.classList.contains('layout-classic') ? 'Classic card' : '3-logo card')));
   const sideLabel = currentSide === 'back' ? 'Back side' : 'Front side';
+  if (isCalendarCardLayout()) {
+    lbl.textContent = '4 × 6 inch · 1200 × 1800 px @ 300 DPI · ' + layoutLabel + ' · ' + sideLabel;
+    return;
+  }
   lbl.textContent = is3x5
     ? '3 × 5 inch · 1500 × 900 px @ 300 DPI · ' + layoutLabel + ' · ' + sideLabel
     : '4 × 6 inch · 1800 × 1200 px @ 300 DPI · ' + layoutLabel + ' · ' + sideLabel;
 }
 
 function getLayoutTag() {
+  if (isCalendarCardLayout()) return 'calendar-card';
   if (isComingSoonLayout()) return 'coming-soon';
   if (isPartnerBackLayout()) return 'partner-back';
   return surface.classList.contains('layout-classic') ? 'classic' : '3-logo';
@@ -2582,6 +3239,7 @@ function setSide(side) {
 
 function updateControlAvailability() {
   const partnerBack = isPartnerBackLayout();
+  const calendarCard = isCalendarCardLayout();
   const immediatePreview = isImmediatePreviewLayout();
   const ready = hasReadySelection();
   const sessionFontControlsVisible = ready && (surface.classList.contains('layout-foundation') || surface.classList.contains('layout-classic'));
@@ -2594,8 +3252,14 @@ function updateControlAvailability() {
   document.querySelectorAll('.font-size-control').forEach(el => {
     el.style.display = sessionFontControlsVisible ? '' : 'none';
   });
-  document.querySelectorAll('.timezone-control, .search-control').forEach(el => {
+  document.querySelectorAll('.timezone-control').forEach(el => {
+    el.style.display = ready && (sessionLookupVisible || calendarCard) ? '' : 'none';
+  });
+  document.querySelectorAll('.search-control').forEach(el => {
     el.style.display = sessionLookupVisible ? '' : 'none';
+  });
+  document.querySelectorAll('.calendar-filter-control').forEach(el => {
+    el.style.display = ready && calendarCard ? '' : 'none';
   });
   if (btnBack) {
     btnBack.disabled = false;
@@ -2603,9 +3267,9 @@ function updateControlAvailability() {
     btnBack.style.cursor = '';
   }
   if (btn3x5) {
-    btn3x5.disabled = partnerBack;
-    btn3x5.style.opacity = partnerBack ? '0.45' : '';
-    btn3x5.style.cursor = partnerBack ? 'default' : '';
+    btn3x5.disabled = partnerBack || calendarCard;
+    btn3x5.style.opacity = partnerBack || calendarCard ? '0.45' : '';
+    btn3x5.style.cursor = partnerBack || calendarCard ? 'default' : '';
   }
 }
 
@@ -2649,6 +3313,12 @@ if (descFontSelect) {
   });
 }
 
+document.querySelectorAll('.calendar-filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    setCalendarFilter(btn.dataset.calendarFilter);
+  });
+});
+
 if (partnerSelect) {
   partnerSelect.value = '';
   partnerSelect.addEventListener('change', () => {
@@ -2668,7 +3338,9 @@ if (partnerSelect) {
         ? 'Partner changed. Coming Soon card is ready.'
         : (isPartnerBackLayout()
           ? 'Partner changed. Partner Back Card is ready.'
-          : 'Partner changed. Enter text in the search box to load a session.'))
+          : (isCalendarCardLayout()
+            ? 'Partner changed. Calendar Card loaded from City of Hope API.'
+            : 'Partner changed. Enter text in the search box to load a session.')))
       : 'Select Card.');
   });
 }
@@ -2818,10 +3490,12 @@ function setLayout(layout) {
   const isClassic = layout === 'classic';
   const isPartnerBack = layout === 'partner-back';
   const isComingSoon = layout === 'coming-soon';
+  const isCalendarCard = layout === 'calendar-card';
   surface.classList.toggle('layout-classic', isClassic);
   surface.classList.toggle('layout-foundation', layout === 'foundation');
   surface.classList.toggle('layout-partner-back', isPartnerBack);
   surface.classList.toggle('layout-coming-soon', isComingSoon);
+  surface.classList.toggle('layout-calendar-card', isCalendarCard);
 
   if (isPartnerBack) {
     surface.classList.remove('show-back', 'size-3x5');
@@ -2832,6 +3506,14 @@ function setLayout(layout) {
   if (isComingSoon) {
     setSide('front');
     syncComingSoonCard();
+  }
+  if (isCalendarCard) {
+    surface.classList.remove('size-3x5');
+    document.getElementById('btn-4x6').classList.add('active');
+    document.getElementById('btn-3x5').classList.remove('active');
+    setSide('front');
+    syncComingSoonCard();
+    syncCalendarCard();
   }
 
   if (headerPartnerLogo) {
@@ -2856,7 +3538,7 @@ syncBackLogos();
 loadPartnerConfigs();
 
 function setSize(s) {
-  if (isPartnerBackLayout() && s === '3x5') {
+  if ((isPartnerBackLayout() || isCalendarCardLayout()) && s === '3x5') {
     setSize('4x6');
     return;
   }
@@ -2873,14 +3555,22 @@ function setSize(s) {
   updateSizeLabel();
 }
 
+function getExportDimensions() {
+  if (isCalendarCardLayout()) {
+    return { pxW: 1200, pxH: 1800, wIn: 4, hIn: 6, tag: '4x6', orientation: 'portrait' };
+  }
+  if (surface.classList.contains('size-3x5')) {
+    return { pxW: 1500, pxH: 900, wIn: 5, hIn: 3, tag: '3x5', orientation: 'landscape' };
+  }
+  return { pxW: 1800, pxH: 1200, wIn: 6, hIn: 4, tag: '4x6', orientation: 'landscape' };
+}
+
 /* ── Print ── */
 function handlePrint() {
-  const is3x5 = surface.classList.contains('size-3x5');
+  const cfg = getExportDimensions();
   const style = document.createElement('style');
   style.id = '__print-page-style';
-  style.textContent = is3x5
-    ? '@page { size: 5in 3in landscape; margin: 0; } * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }'
-    : '@page { size: 6in 4in landscape; margin: 0; } * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }';
+  style.textContent = '@page { size: ' + cfg.wIn + 'in ' + cfg.hIn + 'in ' + cfg.orientation + '; margin: 0; } * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }';
   document.head.appendChild(style);
   window.print();
   setTimeout(() => { const s = document.getElementById('__print-page-style'); if (s) s.remove(); }, 1000);
@@ -2934,10 +3624,7 @@ async function captureCard(scale, pxW, pxH) {
 
 async function downloadPNG() {
   const btn   = document.getElementById('btn-download-png');
-  const is3x5 = surface.classList.contains('size-3x5');
-  const cfg   = is3x5
-    ? { pxW: 1500, pxH: 900,  wIn: 5, hIn: 3, tag: '3x5' }
-    : { pxW: 1800, pxH: 1200, wIn: 6, hIn: 4, tag: '4x6' };
+  const cfg   = getExportDimensions();
   const scale = cfg.pxW / surface.offsetWidth;
   btn.textContent = 'Exporting…'; btn.disabled = true;
   try {
@@ -2952,16 +3639,13 @@ async function downloadPNG() {
 /* ── PDF export ── */
 async function downloadPDF() {
   const btn   = document.getElementById('btn-download-pdf');
-  const is3x5 = surface.classList.contains('size-3x5');
-  const cfg   = is3x5
-    ? { pxW: 1500, pxH: 900,  wIn: 5, hIn: 3, tag: '3x5' }
-    : { pxW: 1800, pxH: 1200, wIn: 6, hIn: 4, tag: '4x6' };
+  const cfg   = getExportDimensions();
   const scale = cfg.pxW / surface.offsetWidth;
   btn.textContent = 'Exporting…'; btn.disabled = true;
   try {
     const dataUrl = await captureCard(scale, cfg.pxW, cfg.pxH);
     const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({ orientation: 'landscape', unit: 'in', format: [cfg.wIn, cfg.hIn] });
+    const pdf = new jsPDF({ orientation: cfg.orientation, unit: 'in', format: [cfg.wIn, cfg.hIn] });
     pdf.addImage(dataUrl, 'PNG', 0, 0, cfg.wIn, cfg.hIn);
     pdf.save(`facebook-promo-${getExportPartnerSlug()}-${getLayoutTag()}-${currentSide}-${cfg.tag}.pdf`);
   } catch(e) { alert('PDF export failed: ' + e.message); }
@@ -2987,7 +3671,9 @@ cardTypeSelect.addEventListener('change', () => {
       ? 'Coming Soon card is ready. Use Front and Back to preview both sides.'
       : (isPartnerBackLayout()
         ? 'Partner Back Card is ready.'
-        : 'Card type changed. Enter text in the search box to load a session.'))
+        : (isCalendarCardLayout()
+          ? 'Calendar Card loaded from City of Hope API. Use Front and Back to preview both sides.'
+          : 'Card type changed. Enter text in the search box to load a session.')))
     : 'Select Partner.');
 });
 
@@ -3096,6 +3782,7 @@ function resetSearchState(message = 'Enter text in the search box to load a sess
   document.getElementById('preview-wrapper').style.display = ready && isImmediatePreviewLayout() ? '' : 'none';
   updateHeaderLogos();
   syncComingSoonCard();
+  syncCalendarCard();
   updateControlAvailability();
   setStatus(message);
   if (ready && !isImmediatePreviewLayout()) searchInput.focus();
