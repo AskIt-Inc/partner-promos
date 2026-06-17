@@ -253,40 +253,19 @@ body {
   line-height: 1.2;
 }
 .calendar-session-title {
-  font-size: 8.35px;
+  font-size: 10.35px;
   font-weight: 700;
   color: #111;
   margin: 0 0 1px;
   line-height: 1.12;
 }
 .calendar-session-presenter {
-  font-size: 7.4px;
+  font-size: 9.4px;
   color: #006E8E;
   font-weight: 700;
   margin: 0 0 1px;
   line-height: 1.12;
 }
-.calendar-session-meta {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  flex-wrap: wrap;
-  margin-top: 2px;
-}
-.calendar-specialty-badge {
-  display: inline-block;
-  font-size: 5.3px;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  padding: 1px 3px;
-  border-radius: 3px;
-  white-space: nowrap;
-  line-height: 1.2;
-}
-.calendar-badge-cardiology { background: #e6eef7; color: #1a4070; }
-.calendar-badge-hematology { background: #f0eaf7; color: #3a1060; }
-.calendar-badge-support { background: #e6f2ec; color: #0a4020; }
 .calendar-card-footer {
   background: #fff;
   border-top: 1px solid var(--border);
@@ -2214,9 +2193,6 @@ body {
           <div>
             <p class="calendar-session-title">Second line options for relapsed/refractory disease COH experience with venetoclax for AL Amyloidosis</p>
             <p class="calendar-session-presenter">Michael Rosenzweig, MD, MS</p>
-            <div class="calendar-session-meta">
-              <span class="calendar-specialty-badge calendar-badge-hematology">AL Amyloidosis</span>
-            </div>
           </div>
         </div>
       </div>
@@ -2727,13 +2703,6 @@ function calendarParseApiDate(dateText) {
   return { month: monthToken, day, weekday };
 }
 
-function calendarBadgeClass(label) {
-  const lower = calendarNormalizeSpaces(label).toLowerCase();
-  if (lower.includes('cardio')) return 'calendar-badge-cardiology';
-  if (lower.includes('nurse') || lower.includes('patient')) return 'calendar-badge-support';
-  return 'calendar-badge-hematology';
-}
-
 function calendarBuildProfileMap(profiles) {
   const map = new Map();
   profiles.forEach(profile => {
@@ -2817,9 +2786,6 @@ function renderCalendarSessionsFromApi(sessions, profiles) {
       profile.name_suffix || presenter.name_suffix,
       profile.title || presenter.title
     );
-    const fallbackIndication = Array.isArray(session.indications) ? session.indications[0] : '';
-    const badgeLabel = calendarNormalizeSpaces(profile.spotlight_card_tag) || calendarNormalizeSpaces(fallbackIndication);
-
     const row = document.createElement('div');
     row.className = 'calendar-session-row';
 
@@ -2850,17 +2816,7 @@ function renderCalendarSessionsFromApi(sessions, profiles) {
     presenterEl.className = 'calendar-session-presenter';
     presenterEl.textContent = presenterName;
 
-    const meta = document.createElement('div');
-    meta.className = 'calendar-session-meta';
-
-    if (badgeLabel) {
-      const badge = document.createElement('span');
-      badge.className = 'calendar-specialty-badge ' + calendarBadgeClass(badgeLabel);
-      badge.textContent = badgeLabel;
-      meta.appendChild(badge);
-    }
-
-    content.append(title, presenterEl, meta);
+    content.append(title, presenterEl);
     row.append(chip, content);
     list.appendChild(row);
   });
