@@ -2818,9 +2818,7 @@ function renderCalendarSessionsFromApi(sessions, profiles) {
       profile.title || presenter.title
     );
     const fallbackIndication = Array.isArray(session.indications) ? session.indications[0] : '';
-    const badgeLabel = calendarNormalizeSpaces(fallbackIndication).toLowerCase() === 'patient best practices'
-      ? calendarNormalizeSpaces(fallbackIndication)
-      : calendarNormalizeSpaces(profile.spotlight_card_tag) || calendarNormalizeSpaces(fallbackIndication);
+    const badgeLabel = calendarNormalizeSpaces(profile.spotlight_card_tag) || calendarNormalizeSpaces(fallbackIndication);
 
     const row = document.createElement('div');
     row.className = 'calendar-session-row';
