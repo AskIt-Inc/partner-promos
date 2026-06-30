@@ -7,6 +7,20 @@
       "partnerLogo": "vamp-logo.png",
       "partnerLogoAlt": "Vanderbilt Amyloidosis Multidisciplinary Program",
       "defaultTimezone": "CT",
+      "sessionsApiUrl": "https://somebodytotalkto.com/api/spotlight/microsite/sessions?partner=12351&status=all",
+      "calendar": {
+        "programTitle": "Vanderbilt Amyloidosis Multidisciplinary Program",
+        "monthLabel": "August",
+        "seriesLabel": "Amyloidosis Program Spotlight Series",
+        "micrositeUrl": "vanderbilt.oneamyloidosisvoice.com",
+        "qrSrc": "vamp_microsite_qr.png",
+        "qrAlt": "Scan to visit vanderbilt.oneamyloidosisvoice.com",
+        "sourceTimezone": "ET",
+        "sourceHour": 18,
+        "sourceMinute": 0,
+        "sessionsApiUrl": "https://somebodytotalkto.com/api/spotlight/microsite/sessions?partner=12351&status=all",
+        "profilesApiUrl": "https://somebodytotalkto.com/api/spotlight/microsite/profiles?partner=12351"
+      },
       "sessionBack": {
         "seriesDate": "August 2026",
         "featureTitle": "Vanderbilt Amyloidosis Multidisciplinary Program",
@@ -35,6 +49,7 @@
       "partnerLogo": "__embedded_uoc_logo__",
       "partnerLogoAlt": "UChicago Medicine and Endeavor Health",
       "defaultTimezone": "CT",
+      "sessionsApiUrl": "https://somebodytotalkto.com/api/spotlight/microsite/sessions?indication=4&partner=12758&status=completed",
       "sessionBack": {
         "seriesDate": "June 2026",
         "featureTitle": "University of Chicago & Endeavor Health",
@@ -62,6 +77,20 @@
       "partnerLogo": "coh_logo.svg",
       "partnerLogoAlt": "City of Hope",
       "defaultTimezone": "PT",
+      "sessionsApiUrl": "https://somebodytotalkto.com/api/spotlight/microsite/sessions?indication=4,12362&partner=12759",
+      "calendar": {
+        "programTitle": "City of Hope Amyloidosis Program",
+        "monthLabel": "July",
+        "seriesLabel": "Amyloidosis Program Spotlight Series",
+        "micrositeUrl": "cityofhope.oneamyloidosisvoice.com",
+        "qrSrc": "coh_microsite_qr.png",
+        "qrAlt": "Scan to visit cityofhope.oneamyloidosisvoice.com",
+        "sourceTimezone": "PT",
+        "sourceHour": 15,
+        "sourceMinute": 0,
+        "sessionsApiUrl": "https://somebodytotalkto.com/api/spotlight/microsite/sessions?indication=4,12362&partner=12759",
+        "profilesApiUrl": "https://somebodytotalkto.com/api/spotlight/microsite/profiles?indication=4,5&partner=12759"
+      },
       "sessionBack": {
         "seriesDate": "July 2026",
         "featureTitle": "City of Hope Amyloidosis Program",

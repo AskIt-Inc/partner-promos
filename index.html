@@ -8,7 +8,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/dom-to-image-more@3.4.5/dist/dom-to-image-more.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
 <style>
 /* ══════════════════════════════════════════════════
    CARD SIZE CONFIG
@@ -24,6 +23,15 @@
   --border-rose: #DDD0D2;
   --bg-rose:     #f5eaec;
   --session-band-bg: var(--maroon);
+  --calendar-primary: #006E8E;
+  --calendar-border: #B9DEE6;
+  --calendar-accent: #FFE8A3;
+  --calendar-series-size: 10px;
+  --calendar-band-title-size: 15px;
+  --calendar-session-title-size: 10.35px;
+  --calendar-session-presenter-size: 9.4px;
+  --calendar-dense-session-title-size: 8.2px;
+  --calendar-dense-session-presenter-size: 7.6px;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -33,9 +41,59 @@ body {
   background: #e8e8e8;
   display: flex;
   flex-direction: column;
+  align-items: stretch;
+  min-height: 100vh;
+  padding: 32px 20px;
+}
+
+.app-shell {
+  width: min(100%, 1540px);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.app-sidebar {
+  position: sticky;
+  top: 24px;
+  align-self: start;
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.app-preview-pane {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  padding: 40px 20px;
-  gap: 28px;
+  gap: 18px;
+}
+
+.preview-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.app-shell.spotlight-session-layout {
+  width: min(100%, 1600px);
+  grid-template-columns: minmax(300px, 360px) minmax(280px, 340px) minmax(0, 1fr);
+}
+
+.app-shell.spotlight-session-layout .app-sidebar {
+  grid-column: 1 / span 2;
+  display: grid;
+  grid-template-columns: minmax(300px, 360px) minmax(280px, 340px);
+  gap: 16px;
+  overflow: visible;
+}
+
+.app-shell.spotlight-session-layout .app-preview-pane {
+  grid-column: 3;
 }
 
 /* ── Controls ── */
@@ -67,9 +125,7 @@ body {
 .controls select { padding-right: 28px; }
 .controls button.active { background: var(--maroon); color: #fff; }
 .control-divider { color: #999; font-weight: 700; }
-.btn-print { background: var(--maroon)  !important; color: #fff !important; border-color: var(--maroon)  !important; }
 .btn-png   { background: #005EB8 !important; color: #fff !important; border-color: #005EB8 !important; }
-.btn-pdf   { background: #2E7D32 !important; color: #fff !important; border-color: #2E7D32 !important; }
 
 .card-label {
   font-size: 11px; font-weight: 700; color: #999;
@@ -100,6 +156,19 @@ body {
   min-height: 0;
 }
 .session-back-side { display: none; }
+.print-surface.show-partner-back > .front-side,
+.print-surface.show-partner-back > .card-back,
+.print-surface.show-partner-back > .coming-soon-front-side,
+.print-surface.show-partner-back > .coming-soon-back-side,
+.print-surface.show-partner-back > .calendar-card-front-side {
+  display: none !important;
+}
+.print-surface.show-partner-back > .session-back-side {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
 .print-surface.layout-partner-back > .front-side,
 .print-surface.layout-partner-back > .card-back {
   display: none !important;
@@ -143,7 +212,7 @@ body {
   min-height: 0;
 }
 
-/* City of Hope API calendar card */
+/* Partner API calendar card */
 .calendar-card-front-side {
   background: #fff;
   color: #111;
@@ -175,12 +244,12 @@ body {
 .calendar-logo-bar .logo-divider {
   width: 1px;
   height: 36px;
-  background: #B9DEE6;
+  background: var(--calendar-border);
   margin: 0;
   order: 0;
 }
 .calendar-spotlight-band {
-  background: #006E8E;
+  background: var(--calendar-primary);
   padding: 7px 20px;
   flex-shrink: 0;
   overflow: hidden;
@@ -192,14 +261,14 @@ body {
   margin-bottom: 6px;
 }
 .calendar-band-eyebrow-text {
-  font-size: 10px;
+  font-size: var(--calendar-series-size);
   font-weight: 800;
   font-style: italic;
-  color: #FFE8A3;
+  color: var(--calendar-accent);
   letter-spacing: 0.02em;
 }
 .calendar-band-title {
-  font-size: 15px;
+  font-size: var(--calendar-band-title-size);
   font-weight: 800;
   color: #fff;
   line-height: 1.1;
@@ -219,15 +288,46 @@ body {
   gap: 11px;
   align-items: center;
   padding: 8px 0;
-  border-bottom: 0.5px solid #B9DEE6;
+  border-bottom: 0.5px solid var(--calendar-border);
 }
 .calendar-session-row:last-child { border-bottom: none; }
 .calendar-sessions.calendar-sessions-filtered .calendar-session-row {
   flex: 0;
 }
+.calendar-sessions.calendar-sessions-dense {
+  padding: 2px 14px;
+}
+.calendar-sessions.calendar-sessions-dense .calendar-session-row {
+  grid-template-columns: 32px 1fr;
+  gap: 8px;
+  padding: 3px 0;
+}
+.calendar-sessions.calendar-sessions-dense .calendar-date-chip {
+  border-radius: 4px;
+  padding: 2px 2px 1px;
+}
+.calendar-sessions.calendar-sessions-dense .calendar-chip-month {
+  font-size: 5.8px;
+  line-height: 1;
+}
+.calendar-sessions.calendar-sessions-dense .calendar-chip-day {
+  font-size: 13px;
+}
+.calendar-sessions.calendar-sessions-dense .calendar-chip-weekday {
+  font-size: 5px;
+}
+.calendar-sessions.calendar-sessions-dense .calendar-session-title {
+  font-size: var(--calendar-dense-session-title-size);
+  line-height: 1.08;
+  margin-bottom: 0;
+}
+.calendar-sessions.calendar-sessions-dense .calendar-session-presenter {
+  font-size: var(--calendar-dense-session-presenter-size);
+  line-height: 1.08;
+}
 .calendar-date-chip {
   text-align: center;
-  background: #006E8E;
+  background: var(--calendar-primary);
   border-radius: 5px;
   padding: 3px 2px 2px;
   align-self: start;
@@ -236,7 +336,7 @@ body {
 .calendar-chip-month {
   font-size: 6.5px;
   font-weight: 800;
-  color: #FFE8A3;
+  color: var(--calendar-accent);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   line-height: 1.1;
@@ -253,15 +353,15 @@ body {
   line-height: 1.2;
 }
 .calendar-session-title {
-  font-size: 10.35px;
+  font-size: var(--calendar-session-title-size);
   font-weight: 700;
   color: #111;
   margin: 0 0 1px;
   line-height: 1.12;
 }
 .calendar-session-presenter {
-  font-size: 9.4px;
-  color: #006E8E;
+  font-size: var(--calendar-session-presenter-size);
+  color: var(--calendar-primary);
   font-weight: 700;
   margin: 0 0 1px;
   line-height: 1.12;
@@ -290,7 +390,7 @@ body {
 .calendar-footer-cta-label {
   font-size: 11px;
   font-weight: 900;
-  color: #006E8E;
+  color: var(--calendar-primary);
   letter-spacing: 0.02em;
   text-transform: uppercase;
 }
@@ -333,7 +433,7 @@ body {
 }
 .calendar-footer-qr-scan {
   font-size: 6px;
-  color: #006E8E;
+  color: var(--calendar-primary);
   white-space: nowrap;
   text-transform: uppercase;
   font-weight: 800;
@@ -1429,11 +1529,11 @@ body {
   color: #171717;
 }
 .session-back-top {
-  height: 48px;
+  min-height: 48px;
   padding: 6px 18px;
   border-bottom: 1px solid var(--border);
   display: grid;
-  grid-template-columns: 110px 1fr 96px;
+  grid-template-columns: 110px minmax(0, 1fr) 96px;
   align-items: center;
   column-gap: 10px;
   flex-shrink: 0;
@@ -1462,9 +1562,11 @@ body {
   font-weight: 900;
   letter-spacing: -0.02em;
   line-height: 1.15;
+  min-width: 0;
   padding: 0 10px;
   text-align: center;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 .session-back-top-title strong {
   color: #0d0d0d;
@@ -1694,11 +1796,18 @@ body {
    SEARCH PANEL
    ══════════════════════════════════════════════════ */
 .search-panel {
-  width: 100%; max-width: 860px;
+  width: 100%; max-width: none;
   background: #fff; border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   padding: 16px 20px;
   display: flex; flex-direction: column; gap: 10px;
+}
+.filter-panel,
+.session-list-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
 }
 .search-panel h3 {
   font-size: 13px; font-weight: 700; color: var(--maroon);
@@ -1707,7 +1816,7 @@ body {
 .search-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .search-config-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+  grid-template-columns: 1fr;
   align-items: stretch;
 }
 .search-action-row { width: 100%; }
@@ -1777,20 +1886,83 @@ body {
   line-height: 1.4; background: #fafafa; transition: background 0.12s;
 }
 .search-result-item:hover { background: var(--bg-rose); border-color: var(--border-rose); }
+.search-result-item.active { background: var(--bg-rose); border-color: var(--maroon); }
 .search-result-item strong { display: block; color: #111; font-size: 12.5px; }
 .search-result-item span   { color: #777; font-size: 11px; }
 .search-status { font-size: 11.5px; color: #888; font-style: italic; min-height: 18px; }
 .search-status.error { color: #c0392b; font-style: normal; font-weight: 600; }
 
+.app-shell.spotlight-session-layout .search-panel {
+  display: contents;
+}
+.app-shell.spotlight-session-layout .filter-panel,
+.app-shell.spotlight-session-layout .session-list-panel {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 16px 20px;
+}
+.app-shell.spotlight-session-layout .session-list-panel {
+  max-height: calc(100vh - 48px);
+  overflow: hidden;
+}
+.app-shell.spotlight-session-layout .search-results.visible {
+  overflow: auto;
+  padding-right: 2px;
+}
+
 @media print {
-  .controls, .card-label, .search-panel { display: none !important; }
+  .controls, .card-label, .app-sidebar { display: none !important; }
+}
+
+@media (max-width: 1250px) {
+  body {
+    padding: 24px 16px;
+  }
+  .app-shell,
+  .app-shell.spotlight-session-layout {
+    grid-template-columns: 1fr;
+  }
+  .app-sidebar,
+  .app-shell.spotlight-session-layout .app-sidebar {
+    display: block;
+    grid-column: auto;
+    position: static;
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
+  }
+  .app-shell.spotlight-session-layout .app-preview-pane {
+    grid-column: auto;
+  }
+  .app-shell.spotlight-session-layout .search-panel {
+    display: flex;
+  }
+  .app-shell.spotlight-session-layout .filter-panel,
+  .app-shell.spotlight-session-layout .session-list-panel {
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+  }
+  .app-shell.spotlight-session-layout .session-list-panel {
+    max-height: none;
+    overflow: visible;
+  }
+  .search-config-row {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
 }
 </style>
 </head>
 <body>
 
+<main class="app-shell">
+<aside class="app-sidebar">
+
 <!-- SEARCH PANEL -->
 <div class="search-panel" id="search-panel">
+  <div class="filter-panel">
   <h3>Generate Promo Cards</h3>
   <div class="search-row search-config-row">
     <label class="field-control" for="partner-select">
@@ -1809,8 +1981,7 @@ body {
         <option value="facebook-promo">Facebook Promo</option>
         <option value="foundation">Medical Amyloidosis Session - Spotlight</option>
         <option value="classic">Medical Amyloidosis Session - Non Spotlight</option>
-        <option value="calendar-card">Calendar Card</option>
-        <option value="partner-back">Partner Back Card</option>
+        <option value="calendar-card">Monthly Calendar Card</option>
         <option value="coming-soon">Coming Soon Card</option>
       </select>
     </label>
@@ -1988,15 +2159,22 @@ body {
     <button class="btn-search" id="btn-search">Search</button>
     <button class="btn-clear" id="btn-clear" type="button">Clear</button>
   </div>
+  </div>
+  <div class="session-list-panel">
   <div class="search-status" id="search-status"></div>
-  <div class="search-results search-control" id="search-results"></div>
+  <div class="search-results" id="search-results"></div>
+  </div>
 </div>
+
+</aside>
+<section class="app-preview-pane">
 
 <!-- CONTROLS BAR -->
 <div class="controls" id="controls-bar" style="display:none">
   <label class="side-control">Card side:</label>
   <button id="btn-front" class="active side-control" onclick="setSide('front')">Front</button>
   <button id="btn-back" class="side-control" onclick="setSide('back')">Back</button>
+  <button id="btn-partner-back" class="side-control partner-back-side-control" onclick="setSide('partner-back')">Partner Back Card</button>
   <span class="control-divider side-control">|</span>
   <label>Size:</label>
   <button id="btn-4x6" class="active" onclick="setSize('4x6')">4&times;6</button>
@@ -2006,9 +2184,8 @@ body {
   <button class="calendar-filter-control calendar-filter-btn active" data-calendar-filter="all" type="button">All</button>
   <button class="calendar-filter-control calendar-filter-btn" data-calendar-filter="Mon" type="button">Monday</button>
   <button class="calendar-filter-control calendar-filter-btn" data-calendar-filter="Wed" type="button">Wednesday</button>
-  <button class="btn-print" onclick="handlePrint()">&#128438; Print</button>
+  <button class="calendar-filter-control calendar-filter-btn" data-calendar-filter="Thu" type="button">Thursday</button>
   <button class="btn-png" id="btn-download-png" onclick="downloadPNG()">&#8595; PNG</button>
-  <button class="btn-pdf" id="btn-download-pdf" onclick="downloadPDF()">&#8595; PDF</button>
 </div>
 
 <!-- PREVIEW WRAPPER -->
@@ -2230,10 +2407,10 @@ body {
       <div id="coming-fine-print" class="coming-soon-fine-print"></div>
     </section>
 
-    <section class="calendar-card-front-side" aria-label="City of Hope July 2026 calendar card front">
+    <section class="calendar-card-front-side" aria-label="Partner monthly calendar card front">
       <div class="calendar-logo-bar">
         <div class="calendar-logo-slot">
-          <img id="calendar-logo-coh" src="coh_logo.svg" alt="City of Hope">
+          <img id="calendar-logo-partner" src="coh_logo.svg" alt="Partner logo">
         </div>
         <div class="logo-divider"></div>
         <div class="calendar-logo-slot">
@@ -2257,9 +2434,9 @@ body {
             <path d="M7 17l1.5-4h7L17 17"></path>
             <line x1="5" y1="21" x2="19" y2="21"></line>
           </svg>
-          <span class="calendar-band-eyebrow-text">Amyloidosis Program Spotlight Series</span>
+          <span id="calendar-series-label" class="calendar-band-eyebrow-text">Amyloidosis Program Spotlight Series</span>
         </div>
-        <p class="calendar-band-title">City of Hope Amyloidosis Program</p>
+        <p id="calendar-program-title" class="calendar-band-title">City of Hope Amyloidosis Program</p>
       </div>
 
       <div class="calendar-sessions" id="calendar-sessions-list">
@@ -2281,14 +2458,14 @@ body {
           <div class="calendar-footer-left">
             <p class="calendar-footer-cta-label">Subscribe &amp; Register</p>
             <div class="calendar-footer-links">
-              <p class="calendar-footer-url">cityofhope.oneamyloidosisvoice.com</p>
+              <p id="calendar-microsite-url" class="calendar-footer-url">cityofhope.oneamyloidosisvoice.com</p>
               <p class="calendar-footer-url">somebodytotalkto.com/subscribe</p>
             </div>
             <p id="calendar-footer-timezone" class="calendar-footer-disclaimer">Mondays &amp; Wednesdays in July &middot; 3:00 PM PT</p>
           </div>
           <div class="calendar-footer-qr-group">
             <div class="calendar-footer-qr-wrap">
-              <img id="calendar-subscribe-qr-code" src="sttt_subscribe_qr.png" alt="QR code for SomebodyToTalkTo subscribe page">
+              <img id="calendar-subscribe-qr-code" src="coh_microsite_qr.png" alt="QR code for partner microsite">
               <p class="calendar-footer-qr-scan">Subscribe &amp; Register</p>
             </div>
           </div>
@@ -2385,10 +2562,14 @@ body {
   </div><!-- /print-surface -->
 </div>
 
+</section>
+</main>
+
 <script>
 /* ── Size toggle ── */
 const surface = document.getElementById('print-surface');
 const lbl     = document.getElementById('size-label');
+const appShell = document.querySelector('.app-shell');
 const logoBar = document.querySelector('.logo-bar');
 const sessionBand = document.querySelector('.session-band');
 const bandLeft = document.querySelector('.band-left');
@@ -2446,6 +2627,20 @@ const PARTNER_CONFIG_FALLBACK = {
       partnerLogo: 'vamp-logo.png',
       partnerLogoAlt: 'Vanderbilt Amyloidosis Multidisciplinary Program',
       defaultTimezone: 'CT',
+      sessionsApiUrl: 'https://somebodytotalkto.com/api/spotlight/microsite/sessions?partner=12351&status=all',
+      calendar: {
+        programTitle: 'Vanderbilt Amyloidosis Multidisciplinary Program',
+        monthLabel: 'August',
+        seriesLabel: 'Amyloidosis Program Spotlight Series',
+        micrositeUrl: 'vanderbilt.oneamyloidosisvoice.com',
+        qrSrc: 'vamp_microsite_qr.png',
+        qrAlt: 'Scan to visit vanderbilt.oneamyloidosisvoice.com',
+        sourceTimezone: 'ET',
+        sourceHour: 18,
+        sourceMinute: 0,
+        sessionsApiUrl: 'https://somebodytotalkto.com/api/spotlight/microsite/sessions?partner=12351&status=all',
+        profilesApiUrl: 'https://somebodytotalkto.com/api/spotlight/microsite/profiles?partner=12351'
+      },
       sessionBack: {
         seriesDate: 'August 2026',
         featureTitle: 'Vanderbilt Amyloidosis Multidisciplinary Program',
@@ -2474,6 +2669,7 @@ const PARTNER_CONFIG_FALLBACK = {
       partnerLogo: '__embedded_uoc_logo__',
       partnerLogoAlt: 'UChicago Medicine and Endeavor Health',
       defaultTimezone: 'CT',
+      sessionsApiUrl: 'https://somebodytotalkto.com/api/spotlight/microsite/sessions?indication=4&partner=12758&status=completed',
       sessionBack: {
         seriesDate: 'June 2026',
         featureTitle: 'University of Chicago & Endeavor Health',
@@ -2501,6 +2697,20 @@ const PARTNER_CONFIG_FALLBACK = {
       partnerLogo: 'coh_logo.svg',
       partnerLogoAlt: 'City of Hope',
       defaultTimezone: 'PT',
+      sessionsApiUrl: 'https://somebodytotalkto.com/api/spotlight/microsite/sessions?indication=4,12362&partner=12759',
+      calendar: {
+        programTitle: 'City of Hope Amyloidosis Program',
+        monthLabel: 'July',
+        seriesLabel: 'Amyloidosis Program Spotlight Series',
+        micrositeUrl: 'cityofhope.oneamyloidosisvoice.com',
+        qrSrc: 'coh_microsite_qr.png',
+        qrAlt: 'Scan to visit cityofhope.oneamyloidosisvoice.com',
+        sourceTimezone: 'PT',
+        sourceHour: 15,
+        sourceMinute: 0,
+        sessionsApiUrl: 'https://somebodytotalkto.com/api/spotlight/microsite/sessions?indication=4,12362&partner=12759',
+        profilesApiUrl: 'https://somebodytotalkto.com/api/spotlight/microsite/profiles?indication=4,5&partner=12759'
+      },
       sessionBack: {
         seriesDate: 'July 2026',
         featureTitle: 'City of Hope Amyloidosis Program',
@@ -2638,8 +2848,19 @@ let selectedTitleSuffixFontSize = loadFontSize(TITLE_SUFFIX_FONT_STORAGE_KEY, DE
 let selectedDescFontSize = loadFontSize(DESC_FONT_STORAGE_KEY, DEFAULT_DESC_FONT_SIZE);
 let selectedSeriesFontSize = loadFontSize(SERIES_FONT_STORAGE_KEY, DEFAULT_SERIES_FONT_SIZE);
 let selectedHeadshotSize = loadFontSize(HEADSHOT_SIZE_STORAGE_KEY, DEFAULT_HEADSHOT_SIZE);
-const CALENDAR_SESSIONS_API_URL = 'https://somebodytotalkto.com/api/spotlight/microsite/sessions?indication=4,12362&partner=12759';
-const CALENDAR_PROFILES_API_URL = 'https://somebodytotalkto.com/api/spotlight/microsite/profiles?indication=4,5&partner=12759';
+const CALENDAR_DEFAULT_CONFIG = {
+  programTitle: 'Monthly Calendar Card',
+  monthLabel: 'Upcoming',
+  seriesLabel: 'Amyloidosis Program Spotlight Series',
+  micrositeUrl: '',
+  qrSrc: 'sttt_subscribe_qr.png',
+  qrAlt: 'Scan to subscribe at somebodytotalkto.com/subscribe',
+  sourceTimezone: 'ET',
+  sourceHour: 18,
+  sourceMinute: 0,
+  sessionsApiUrl: '',
+  profilesApiUrl: ''
+};
 const CALENDAR_DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const CALENDAR_MONTH_INDEX = {
   Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
@@ -2648,7 +2869,8 @@ const CALENDAR_MONTH_INDEX = {
 let calendarSessionsLoaded = false;
 let calendarSessionsPromise = null;
 let calendarSessionsData = { sessions: [], profiles: [] };
-let selectedCalendarFilter = 'all';
+let calendarSessionsSourceKey = '';
+let selectedCalendarFilters = new Set();
 
 function normalizePartnerConfig(config) {
   const merged = config && config.partners ? config : PARTNER_CONFIG_FALLBACK;
@@ -2733,6 +2955,25 @@ function setImageFromLogoOption(img, option) {
   img.style.display = '';
   img.src = option.src;
   img.alt = option.alt || option.label || 'Header logo';
+}
+
+function getEffectiveLogoOption(slot, fallback) {
+  const selected = getHeaderLogoOption(selectedHeaderLogos[slot]);
+  return selected && selected.src ? selected : fallback;
+}
+
+function applyLogoOptionToImage(img, option) {
+  if (!img || !option || !option.src) return;
+  img.style.display = '';
+  img.src = option.src;
+  img.alt = option.alt || option.label || 'Header logo';
+}
+
+function getDefaultLogoOption(key, fallbackAlt) {
+  return {
+    src: key === 'af' ? defaultLeftLogoSrc : (key === 'oav' ? oavLogoSrc : stttLogoSrc),
+    alt: fallbackAlt
+  };
 }
 
 function setHeaderSlotPlaceholder(slot, show) {
@@ -2918,17 +3159,55 @@ function calendarBuildProfileMap(profiles) {
   return map;
 }
 
+function getCalendarConfig() {
+  return {
+    ...CALENDAR_DEFAULT_CONFIG,
+    ...(activePartnerConfig.calendar || {})
+  };
+}
+
+function getCalendarSourceKey(cfg = getCalendarConfig()) {
+  return [activePartnerKey, cfg.sessionsApiUrl, cfg.profilesApiUrl].join('|');
+}
+
+function resetCalendarSessionState() {
+  calendarSessionsLoaded = false;
+  calendarSessionsPromise = null;
+  calendarSessionsData = { sessions: [], profiles: [] };
+}
+
 function syncCalendarCard() {
+  const cfg = getCalendarConfig();
+  const colors = activePartnerConfig.colors || {};
+  const root = document.documentElement;
+  root.style.setProperty('--calendar-primary', colors.primary || '#006E8E');
+  root.style.setProperty('--calendar-border', colors.borderAccent || '#B9DEE6');
+  root.style.setProperty('--calendar-accent', colors.accent || '#FFE8A3');
+  applyCalendarFontSizes();
   const setImg = (id, src, alt) => {
     const img = document.getElementById(id);
     if (!img) return;
     img.src = src || '';
     img.alt = alt || '';
   };
+  const setText = (id, text) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = text || '';
+  };
 
-  setImg('calendar-logo-coh', 'coh_logo.svg', 'City of Hope');
+  const sourceKey = getCalendarSourceKey(cfg);
+  if (calendarSessionsSourceKey !== sourceKey) {
+    calendarSessionsSourceKey = sourceKey;
+    resetCalendarSessionState();
+  }
+
+  setImg('calendar-logo-partner', activePartnerConfig.partnerLogo, activePartnerConfig.partnerLogoAlt || activePartnerConfig.label || 'Partner logo');
   setImg('calendar-logo-af', defaultLeftLogoSrc, 'Amyloidosis Foundation');
   setImg('calendar-logo-oav', oavLogoSrc, 'oneAMYLOIDOSISvoice');
+  setImg('calendar-subscribe-qr-code', cfg.qrSrc, cfg.qrAlt);
+  setText('calendar-series-label', cfg.seriesLabel);
+  setText('calendar-program-title', cfg.programTitle);
+  setText('calendar-microsite-url', cfg.micrositeUrl);
   updateCalendarTimezoneDisplay();
 
   if (isCalendarCardLayout() && !calendarSessionsLoaded) {
@@ -2937,14 +3216,16 @@ function syncCalendarCard() {
 }
 
 function getCalendarProgramTime(zone = selectedTimezone) {
+  const cfg = getCalendarConfig();
   const option = TIMEZONE_OPTIONS[zone] || TIMEZONE_OPTIONS.PT;
+  const sourceOption = TIMEZONE_OPTIONS[cfg.sourceTimezone] || TIMEZONE_OPTIONS.ET;
   const utcMs = zonedTimeToUtcMs({
     year: 2026,
-    month: 7,
+    month: CALENDAR_MONTH_INDEX[String(cfg.monthLabel || '').slice(0, 3)] + 1 || 1,
     day: 1,
-    hour: 15,
-    minute: 0
-  }, TIMEZONE_OPTIONS.PT.iana);
+    hour: Number.isFinite(Number(cfg.sourceHour)) ? Number(cfg.sourceHour) : 18,
+    minute: Number.isFinite(Number(cfg.sourceMinute)) ? Number(cfg.sourceMinute) : 0
+  }, sourceOption.iana);
 
   const raw = new Intl.DateTimeFormat('en-US', {
     timeZone: option.iana,
@@ -2959,7 +3240,8 @@ function getCalendarProgramTime(zone = selectedTimezone) {
 function updateCalendarTimezoneDisplay() {
   const el = document.getElementById('calendar-footer-timezone');
   if (!el) return;
-  el.textContent = 'Mondays & Wednesdays in July · ' + getCalendarProgramTime();
+  const cfg = getCalendarConfig();
+  el.textContent = 'Mondays & Wednesdays in ' + (cfg.monthLabel || 'Upcoming') + ' · ' + getCalendarProgramTime();
 }
 
 function renderCalendarSessionsFromApi(sessions, profiles) {
@@ -2974,14 +3256,28 @@ function renderCalendarSessionsFromApi(sessions, profiles) {
   const sorted = (Array.isArray(sessions) ? sessions : [])
     .slice()
     .sort((a, b) => Number(a.timestamp || 0) - Number(b.timestamp || 0));
-  const filtered = selectedCalendarFilter === 'all'
+  const filtered = selectedCalendarFilters.size === 0
     ? sorted
-    : sorted.filter(session => calendarParseApiDate(session.date).weekday === selectedCalendarFilter);
-
-  if (!filtered.length) return;
+    : sorted.filter(session => selectedCalendarFilters.has(calendarParseApiDate(session.date).weekday));
 
   list.replaceChildren();
-  list.classList.toggle('calendar-sessions-filtered', selectedCalendarFilter !== 'all');
+  list.classList.toggle('calendar-sessions-filtered', selectedCalendarFilters.size > 0);
+  list.classList.toggle('calendar-sessions-dense', filtered.length > 7);
+
+  if (!filtered.length) {
+    const empty = document.createElement('div');
+    empty.className = 'calendar-session-row';
+    const content = document.createElement('div');
+    content.style.gridColumn = '1 / -1';
+    const title = document.createElement('p');
+    title.className = 'calendar-session-title';
+    title.textContent = 'No calendar sessions found for this selection.';
+    content.append(title);
+    empty.append(content);
+    list.appendChild(empty);
+    calendarSessionsLoaded = true;
+    return;
+  }
 
   filtered.forEach(session => {
     const presenter = (session.presenters && session.presenters[0]) || {};
@@ -2992,7 +3288,7 @@ function renderCalendarSessionsFromApi(sessions, profiles) {
       profile.last_name || presenter.last_name,
       profile.name_suffix || presenter.name_suffix,
       profile.title || presenter.title
-    );
+    ) || 'Presenter TBD';
     const row = document.createElement('div');
     row.className = 'calendar-session-row';
 
@@ -3032,9 +3328,20 @@ function renderCalendarSessionsFromApi(sessions, profiles) {
 }
 
 function setCalendarFilter(filter) {
-  selectedCalendarFilter = ['all', 'Mon', 'Wed'].includes(filter) ? filter : 'all';
+  if (filter === 'all') {
+    selectedCalendarFilters.clear();
+  } else if (['Mon', 'Wed', 'Thu'].includes(filter)) {
+    if (selectedCalendarFilters.has(filter)) {
+      selectedCalendarFilters.delete(filter);
+    } else {
+      selectedCalendarFilters.add(filter);
+    }
+  }
   document.querySelectorAll('.calendar-filter-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.calendarFilter === selectedCalendarFilter);
+    const btnFilter = btn.dataset.calendarFilter;
+    btn.classList.toggle('active', btnFilter === 'all'
+      ? selectedCalendarFilters.size === 0
+      : selectedCalendarFilters.has(btnFilter));
   });
   if (calendarSessionsLoaded) {
     renderCalendarSessionsFromApi(calendarSessionsData.sessions, calendarSessionsData.profiles);
@@ -3043,19 +3350,26 @@ function setCalendarFilter(filter) {
 
 async function loadCalendarSessions() {
   if (calendarSessionsPromise) return calendarSessionsPromise;
+  const cfg = getCalendarConfig();
+  if (!cfg.sessionsApiUrl || !cfg.profilesApiUrl) {
+    renderCalendarSessionsFromApi([], []);
+    return Promise.resolve();
+  }
+  const sourceKey = getCalendarSourceKey(cfg);
 
   calendarSessionsPromise = Promise.all([
-    fetch(CALENDAR_SESSIONS_API_URL, { mode: 'cors', headers: { Accept: 'application/json' } }),
-    fetch(CALENDAR_PROFILES_API_URL, { mode: 'cors', headers: { Accept: 'application/json' } })
+    fetch(cfg.sessionsApiUrl, { mode: 'cors', headers: { Accept: 'application/json' } }),
+    fetch(cfg.profilesApiUrl, { mode: 'cors', headers: { Accept: 'application/json' } })
   ])
     .then(async ([sessionsRes, profilesRes]) => {
       if (!sessionsRes.ok || !profilesRes.ok) throw new Error('API request failed');
       const sessionsJson = await sessionsRes.json();
       const profilesJson = await profilesRes.json();
+      if (calendarSessionsSourceKey !== sourceKey) return;
       renderCalendarSessionsFromApi(sessionsJson.data || [], profilesJson.data || []);
     })
     .catch(e => {
-      console.warn('[COH calendar card] API unavailable; using static fallback.', e);
+      console.warn('[calendar card] API unavailable; using current card content.', e);
     })
     .finally(() => {
       calendarSessionsPromise = null;
@@ -3102,6 +3416,21 @@ function isCalendarCardLayout() {
   return surface.classList.contains('layout-calendar-card');
 }
 
+function isSpotlightSessionListLayout() {
+  return Boolean(cardTypeSelect && cardTypeSelect.value === 'foundation');
+}
+
+function canShowPartnerBackSide() {
+  return Boolean(cardTypeSelect && cardTypeSelect.value === 'foundation');
+}
+
+function updateAppLayoutMode() {
+  if (!appShell) return;
+  const resultsEl = document.getElementById('search-results');
+  const hasVisibleResults = Boolean(resultsEl && resultsEl.classList.contains('visible') && resultsEl.children.length);
+  appShell.classList.toggle('spotlight-session-layout', hasReadySelection() && (isSpotlightSessionListLayout() || hasVisibleResults));
+}
+
 function loadSelectedTimezone() {
   try {
     const stored = window.localStorage.getItem(getPartnerTimezoneStorageKey());
@@ -3143,11 +3472,42 @@ function saveFontSize(storageKey, value, defaultSize) {
 function applyDescriptionFontSize() {
   const descEl = document.getElementById('session-desc');
   if (descEl) descEl.style.fontSize = selectedDescFontSize + 'px';
+  applyBackCardFontSizes();
+}
+
+function applyBackCardFontSizes() {
+  const titleSize = Number(selectedTitleFontSize) || Number(DEFAULT_TITLE_FONT_SIZE);
+  const titlePrefixSize = Number(selectedTitlePrefixFontSize) || Number(DEFAULT_TITLE_PREFIX_FONT_SIZE);
+  const descSize = Number(selectedDescFontSize) || Number(DEFAULT_DESC_FONT_SIZE);
+  document.querySelectorAll('.session-back-top-title').forEach(el => {
+    el.style.fontSize = titlePrefixSize + 'px';
+  });
+  document.querySelectorAll('.program-back-title, .session-back-feature-title, .session-back-title').forEach(el => {
+    el.style.fontSize = titleSize + 'px';
+  });
+  document.querySelectorAll('.program-back-text p, .session-back-text').forEach(el => {
+    el.style.fontSize = descSize + 'px';
+  });
 }
 
 function applySeriesFontSize() {
   const seriesLabel = document.getElementById('band-series-label');
   if (seriesLabel) seriesLabel.style.fontSize = selectedSeriesFontSize + 'px';
+  applyCalendarFontSizes();
+}
+
+function applyCalendarFontSizes() {
+  const root = document.documentElement;
+  const titleSize = Number(selectedTitleFontSize) || Number(DEFAULT_TITLE_FONT_SIZE);
+  const seriesSize = Number(selectedSeriesFontSize) || Number(DEFAULT_SERIES_FONT_SIZE);
+  const prefixSize = Number(selectedTitlePrefixFontSize) || Number(DEFAULT_TITLE_PREFIX_FONT_SIZE);
+  const suffixSize = Number(selectedTitleSuffixFontSize) || Number(DEFAULT_TITLE_SUFFIX_FONT_SIZE);
+  root.style.setProperty('--calendar-band-title-size', (titleSize * 15 / 17).toFixed(2) + 'px');
+  root.style.setProperty('--calendar-series-size', (seriesSize * 10 / 18).toFixed(2) + 'px');
+  root.style.setProperty('--calendar-session-title-size', (prefixSize * 10.35 / 14).toFixed(2) + 'px');
+  root.style.setProperty('--calendar-dense-session-title-size', (prefixSize * 8.2 / 14).toFixed(2) + 'px');
+  root.style.setProperty('--calendar-session-presenter-size', (suffixSize * 9.4 / 17).toFixed(2) + 'px');
+  root.style.setProperty('--calendar-dense-session-presenter-size', (suffixSize * 7.6 / 17).toFixed(2) + 'px');
 }
 
 function applyHeadshotSize() {
@@ -3156,6 +3516,10 @@ function applyHeadshotSize() {
   document.querySelectorAll('.headshot-wrap, .session-promo-headshot').forEach(el => {
     el.style.width = size + 'px';
     el.style.height = size + 'px';
+  });
+  const topLogoHeight = Math.max(18, Math.min(42, Math.round(baseSize * 0.32)));
+  document.querySelectorAll('.session-back-top-logo').forEach(el => {
+    el.style.height = topLogoHeight + 'px';
   });
 }
 
@@ -3268,12 +3632,9 @@ function syncBackLogos() {
   const backLeft = document.getElementById('back-logo-left');
   const backMid = document.getElementById('back-logo-mid');
   const backRight = document.getElementById('back-logo-right');
-  if (backLeft) {
-    backLeft.src = defaultLeftLogoSrc;
-    backLeft.alt = 'Amyloidosis Foundation';
-  }
-  if (backMid) backMid.src = oavLogoSrc;
-  if (backRight) backRight.src = stttLogoSrc;
+  applyLogoOptionToImage(backLeft, getEffectiveLogoOption(1, getDefaultLogoOption('af', 'Amyloidosis Foundation')));
+  applyLogoOptionToImage(backMid, getEffectiveLogoOption(2, getDefaultLogoOption('oav', 'oneAMYLOIDOSISvoice')));
+  applyLogoOptionToImage(backRight, getEffectiveLogoOption(3, getDefaultLogoOption('sttt', 'Somebody To Talk To')));
 }
 
 function syncSessionPromoLogos() {
@@ -3284,26 +3645,14 @@ function syncSessionPromoLogos() {
   const backSttt = document.getElementById('session-back-sttt-logo');
   const partnerSrc = activePartnerConfig.partnerLogo || (uocLogoImg ? uocLogoImg.src : defaultLeftLogoSrc);
   const partnerAlt = activePartnerConfig.partnerLogoAlt || activePartnerConfig.label || 'Partner logo';
-  if (promoUoc) {
-    promoUoc.src = partnerSrc;
-    promoUoc.alt = partnerAlt;
-  }
-  if (promoOav) {
-    promoOav.src = oavLogoSrc;
-    promoOav.alt = 'oneAMYLOIDOSISvoice';
-  }
-  if (promoSttt) {
-    promoSttt.src = stttLogoSrc;
-    promoSttt.alt = 'Somebody To Talk To';
-  }
-  if (backOav) {
-    backOav.src = oavLogoSrc;
-    backOav.alt = 'oneAMYLOIDOSISvoice';
-  }
-  if (backSttt) {
-    backSttt.src = stttLogoSrc;
-    backSttt.alt = 'Somebody To Talk To';
-  }
+  const promoLogo1 = getEffectiveLogoOption(1, { src: partnerSrc, alt: partnerAlt });
+  const promoLogo2 = getEffectiveLogoOption(2, getDefaultLogoOption('oav', 'oneAMYLOIDOSISvoice'));
+  const promoLogo3 = getEffectiveLogoOption(3, getDefaultLogoOption('sttt', 'Somebody To Talk To'));
+  applyLogoOptionToImage(promoUoc, promoLogo1);
+  applyLogoOptionToImage(promoOav, promoLogo2);
+  applyLogoOptionToImage(promoSttt, promoLogo3);
+  applyLogoOptionToImage(backSttt, getEffectiveLogoOption(1, getDefaultLogoOption('sttt', 'Somebody To Talk To')));
+  applyLogoOptionToImage(backOav, getEffectiveLogoOption(2, getDefaultLogoOption('oav', 'oneAMYLOIDOSISvoice')));
 }
 
 function syncSessionBackContent() {
@@ -3348,6 +3697,20 @@ function syncSessionBackContent() {
       };
     });
   }
+  const selectedFeatureLogo = getHeaderLogoOption(selectedHeaderLogos[3]);
+  if (selectedFeatureLogo && selectedFeatureLogo.src) {
+    logoCards.forEach((card, index) => {
+      const img = card.querySelector('img');
+      if (index > 0) {
+        card.style.display = 'none';
+        return;
+      }
+      card.style.display = '';
+      applyLogoOptionToImage(img, selectedFeatureLogo);
+    });
+    applyBackCardFontSizes();
+    return;
+  }
   const logos = Array.isArray(cfg.logos) ? cfg.logos : [];
   logoCards.forEach((card, index) => {
     const img = card.querySelector('img');
@@ -3372,6 +3735,7 @@ function syncSessionBackContent() {
       : logo.src;
     img.alt = logo.alt || activePartnerConfig.partnerLogoAlt || activePartnerConfig.label || 'Partner logo';
   });
+  applyBackCardFontSizes();
 }
 
 function updateSizeLabel() {
@@ -3383,9 +3747,11 @@ function updateSizeLabel() {
     : (isPartnerBackLayout()
       ? 'Partner Back Card'
       : (isCalendarCardLayout()
-        ? 'Calendar Card'
+        ? 'Monthly Calendar Card'
         : (surface.classList.contains('layout-classic') ? 'Classic card' : '3-logo card'))));
-  const sideLabel = currentSide === 'back' ? 'Back side' : 'Front side';
+  const sideLabel = currentSide === 'partner-back'
+    ? 'Partner Back Card'
+    : (currentSide === 'back' ? 'Back side' : 'Front side');
   if (isCalendarCardLayout()) {
     lbl.textContent = '4 × 6 inch · 1200 × 1800 px @ 300 DPI · ' + layoutLabel + ' · ' + sideLabel;
     return;
@@ -3397,7 +3763,7 @@ function updateSizeLabel() {
 
 function getLayoutTag() {
   if (isPartnerOptionalCard()) return 'facebook-promo';
-  if (isCalendarCardLayout()) return 'calendar-card';
+  if (isCalendarCardLayout()) return 'monthly-calendar-card';
   if (isComingSoonLayout()) return 'coming-soon';
   if (isPartnerBackLayout()) return 'partner-back';
   return surface.classList.contains('layout-classic') ? 'classic' : '3-logo';
@@ -3407,11 +3773,24 @@ function getExportPartnerSlug() {
   return activePartnerConfig.exportSlug || activePartnerKey || 'partner';
 }
 
+function getCalendarReadyMessage(prefix = '') {
+  const label = activePartnerConfig.label || 'selected partner';
+  return prefix + 'Monthly Calendar Card loaded for ' + label + '. Use Front and Back to preview both sides.';
+}
+
 function setSide(side) {
-  currentSide = isPartnerBackLayout() || side === 'back' ? 'back' : 'front';
+  if (isPartnerBackLayout()) {
+    currentSide = 'partner-back';
+  } else if (side === 'partner-back' && canShowPartnerBackSide()) {
+    currentSide = 'partner-back';
+  } else {
+    currentSide = side === 'back' ? 'back' : 'front';
+  }
   surface.classList.toggle('show-back', currentSide === 'back');
+  surface.classList.toggle('show-partner-back', currentSide === 'partner-back');
   document.getElementById('btn-front').classList.toggle('active', currentSide === 'front');
   document.getElementById('btn-back').classList.toggle('active', currentSide === 'back');
+  document.getElementById('btn-partner-back').classList.toggle('active', currentSide === 'partner-back');
   updateSizeLabel();
 }
 
@@ -3420,10 +3799,14 @@ function updateControlAvailability() {
   const calendarCard = isCalendarCardLayout();
   const immediatePreview = isImmediatePreviewLayout();
   const ready = hasReadySelection();
-  const sessionFontControlsVisible = ready && (surface.classList.contains('layout-foundation') || surface.classList.contains('layout-classic'));
-  const sessionLookupVisible = ready && !immediatePreview;
+  const autoSessionList = ready && isSpotlightSessionListLayout();
+  updateAppLayoutMode();
+  const sessionFontControlsVisible = ready && (surface.classList.contains('layout-foundation') || surface.classList.contains('layout-classic') || calendarCard);
+  const imageSizeControlVisible = sessionFontControlsVisible || (ready && currentSide === 'partner-back');
+  const sessionLookupVisible = ready && !immediatePreview && !autoSessionList;
   const headerLogoControlsVisible = hasSelectedCard();
   const btnBack = document.getElementById('btn-back');
+  const btnPartnerBack = document.getElementById('btn-partner-back');
   const btn3x5 = document.getElementById('btn-3x5');
   document.querySelectorAll('.side-control').forEach(el => {
     el.style.display = partnerBack ? 'none' : '';
@@ -3432,7 +3815,7 @@ function updateControlAvailability() {
     el.style.display = sessionFontControlsVisible ? '' : 'none';
   });
   document.querySelectorAll('.image-size-control').forEach(el => {
-    el.style.display = sessionFontControlsVisible ? '' : 'none';
+    el.style.display = imageSizeControlVisible ? '' : 'none';
   });
   document.querySelectorAll('.header-logo-control').forEach(el => {
     el.style.display = headerLogoControlsVisible ? 'flex' : 'none';
@@ -3440,7 +3823,7 @@ function updateControlAvailability() {
   document.querySelectorAll('.timezone-control').forEach(el => {
     el.style.display = ready && (sessionLookupVisible || calendarCard) ? '' : 'none';
   });
-  document.querySelectorAll('.search-control').forEach(el => {
+  document.querySelectorAll('.search-input-row, .search-action-row').forEach(el => {
     el.style.display = sessionLookupVisible ? '' : 'none';
   });
   document.querySelectorAll('.calendar-filter-control').forEach(el => {
@@ -3450,6 +3833,12 @@ function updateControlAvailability() {
     btnBack.disabled = false;
     btnBack.style.opacity = '';
     btnBack.style.cursor = '';
+  }
+  if (btnPartnerBack) {
+    const showPartnerBackSide = ready && canShowPartnerBackSide();
+    btnPartnerBack.style.display = showPartnerBackSide ? '' : 'none';
+    btnPartnerBack.disabled = !showPartnerBackSide;
+    if (!showPartnerBackSide) btnPartnerBack.classList.remove('active');
   }
   if (btn3x5) {
     btn3x5.disabled = partnerBack || calendarCard;
@@ -3471,6 +3860,8 @@ if (titleFontSelect) {
   titleFontSelect.addEventListener('change', () => {
     selectedTitleFontSize = saveFontSize(TITLE_FONT_STORAGE_KEY, titleFontSelect.value, DEFAULT_TITLE_FONT_SIZE);
     fitBandTitle();
+    applyBackCardFontSizes();
+    applyCalendarFontSizes();
   });
 }
 
@@ -3479,6 +3870,9 @@ if (titlePrefixFontSelect) {
   titlePrefixFontSelect.addEventListener('change', () => {
     selectedTitlePrefixFontSize = saveFontSize(TITLE_PREFIX_FONT_STORAGE_KEY, titlePrefixFontSelect.value, DEFAULT_TITLE_PREFIX_FONT_SIZE);
     fitBandTitle();
+    applyBackCardFontSizes();
+    applyHeadshotSize();
+    applyCalendarFontSizes();
   });
 }
 
@@ -3487,6 +3881,7 @@ if (titleSuffixFontSelect) {
   titleSuffixFontSelect.addEventListener('change', () => {
     selectedTitleSuffixFontSize = saveFontSize(TITLE_SUFFIX_FONT_STORAGE_KEY, titleSuffixFontSelect.value, DEFAULT_TITLE_SUFFIX_FONT_SIZE);
     fitBandTitle();
+    applyCalendarFontSizes();
   });
 }
 
@@ -3549,8 +3944,10 @@ if (partnerSelect) {
         : (isPartnerBackLayout()
           ? 'Partner changed. Partner Back Card is ready.'
           : (isCalendarCardLayout()
-            ? 'Partner changed. Calendar Card loaded from City of Hope API.'
-            : 'Partner changed. Enter text in the search box to load a session.')))
+            ? getCalendarReadyMessage('Partner changed. ')
+            : (isSpotlightSessionListLayout()
+              ? 'Partner changed. Loading Spotlight sessions...'
+              : 'Partner changed. Enter text in the search box to load a session.'))))
       : 'Select Card.');
   });
 }
@@ -3680,7 +4077,9 @@ function updateHeaderLogos() {
 
   if (isPartnerOptionalCard()) {
     applyHeaderLogoOverrides();
+    syncBackLogos();
     syncSessionPromoLogos();
+    syncSessionBackContent();
     return;
   }
 
@@ -3708,7 +4107,9 @@ function updateHeaderLogos() {
   }
 
   applyHeaderLogoOverrides();
+  syncBackLogos();
   syncSessionPromoLogos();
+  syncSessionBackContent();
 }
 
 function setLayout(layout) {
@@ -3741,6 +4142,9 @@ function setLayout(layout) {
     syncComingSoonCard();
     syncCalendarCard();
   }
+  if (!isPartnerBack && !canShowPartnerBackSide() && currentSide === 'partner-back') {
+    setSide('front');
+  }
 
   if (headerPartnerLogo) {
     if (isClassic && sessionBand && bandLeft) {
@@ -3758,6 +4162,7 @@ function setLayout(layout) {
   updateControlAvailability();
   updateSizeLabel();
   fitBandTitle();
+  applyBackCardFontSizes();
 }
 setLayout('');
 syncBackLogos();
@@ -3790,17 +4195,6 @@ function getExportDimensions() {
     return { pxW: 1500, pxH: 900, wIn: 5, hIn: 3, tag: '3x5', orientation: 'landscape' };
   }
   return { pxW: 1800, pxH: 1200, wIn: 6, hIn: 4, tag: '4x6', orientation: 'landscape' };
-}
-
-/* ── Print ── */
-function handlePrint() {
-  const cfg = getExportDimensions();
-  const style = document.createElement('style');
-  style.id = '__print-page-style';
-  style.textContent = '@page { size: ' + cfg.wIn + 'in ' + cfg.hIn + 'in ' + cfg.orientation + '; margin: 0; } * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }';
-  document.head.appendChild(style);
-  window.print();
-  setTimeout(() => { const s = document.getElementById('__print-page-style'); if (s) s.remove(); }, 1000);
 }
 
 /* ── PNG export ── */
@@ -3863,22 +4257,6 @@ async function downloadPNG() {
   finally { btn.textContent = '↓ PNG'; btn.disabled = false; }
 }
 
-/* ── PDF export ── */
-async function downloadPDF() {
-  const btn   = document.getElementById('btn-download-pdf');
-  const cfg   = getExportDimensions();
-  const scale = cfg.pxW / surface.offsetWidth;
-  btn.textContent = 'Exporting…'; btn.disabled = true;
-  try {
-    const dataUrl = await captureCard(scale, cfg.pxW, cfg.pxH);
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({ orientation: cfg.orientation, unit: 'in', format: [cfg.wIn, cfg.hIn] });
-    pdf.addImage(dataUrl, 'PNG', 0, 0, cfg.wIn, cfg.hIn);
-    pdf.save(`facebook-promo-${getExportPartnerSlug()}-${getLayoutTag()}-${currentSide}-${cfg.tag}.pdf`);
-  } catch(e) { alert('PDF export failed: ' + e.message); }
-  finally { btn.textContent = '↓ PDF'; btn.disabled = false; }
-}
-
 /* ══════════════════════════════════════════════════
    SEARCH
    ══════════════════════════════════════════════════ */
@@ -3901,8 +4279,10 @@ cardTypeSelect.addEventListener('change', () => {
       : (isPartnerBackLayout()
         ? 'Partner Back Card is ready.'
         : (isCalendarCardLayout()
-          ? 'Calendar Card loaded from City of Hope API. Use Front and Back to preview both sides.'
-          : 'Card type changed. Enter text in the search box to load a session.'))))
+          ? getCalendarReadyMessage()
+          : (isSpotlightSessionListLayout()
+            ? 'Loading Spotlight sessions...'
+            : 'Card type changed. Enter text in the search box to load a session.')))))
     : 'Select Partner.');
 });
 
@@ -3913,7 +4293,60 @@ function setStatus(msg, isError = false) {
 function clearResults() {
   searchResults.innerHTML = '';
   searchResults.classList.remove('visible');
+  updateAppLayoutMode();
 }
+
+function getPartnerSessionsApiUrl() {
+  return activePartnerConfig.sessionsApiUrl
+    || (activePartnerConfig.calendar && activePartnerConfig.calendar.sessionsApiUrl)
+    || '';
+}
+
+function getSessionSortValue(row) {
+  const timestamp = Number(row && row.timestamp);
+  if (Number.isFinite(timestamp) && timestamp > 0) return timestamp;
+  const parsed = new Date(String(row?.date || '').replace(',', '') + ' 12:00:00 UTC').getTime();
+  return Number.isFinite(parsed) ? parsed / 1000 : 0;
+}
+
+function getSessionResultMeta(row) {
+  const timeText = getZoneTime(row) || row.time || '';
+  const presenter = (row.presenters && row.presenters[0]) || {};
+  const presenterName = calendarFormatPerson(
+    presenter.first_name,
+    presenter.last_name,
+    presenter.name_suffix,
+    presenter.title
+  ) || presenter.display_name || '';
+  return [row.date, timeText, presenterName].filter(Boolean).join(' · ');
+}
+
+function renderSessionResultList(rows, { keepListVisible = false } = {}) {
+  searchResults.innerHTML = '';
+  searchResults.classList.add('visible');
+  rows.forEach(row => {
+    const item = document.createElement('div');
+    item.className = 'search-result-item';
+    item.innerHTML = '<strong>' + escapeHtml(row.title) + '</strong><span>' + escapeHtml(getSessionResultMeta(row)) + '</span>';
+    item.addEventListener('click', async () => {
+      Array.from(searchResults.children).forEach(child => child.classList.remove('active'));
+      item.classList.add('active');
+      setStatus('Loading session assets...');
+      try {
+        const enrichedRow = await getEnrichedSessionRow(row);
+        populateCard(enrichedRow);
+        setStatus('Session loaded.');
+        if (!keepListVisible) clearResults();
+      } catch (e) {
+        populateCard(row);
+        setStatus('Session loaded, but image/QR assets could not be refreshed: ' + e.message, true);
+      }
+    });
+    searchResults.appendChild(item);
+  });
+  updateAppLayoutMode();
+}
+
 function splitTitlePrefixSuffix(title) {
   const cleanTitle = String(title || '').trim();
   if (!cleanTitle) return { prefix: '', suffix: '' };
@@ -4016,7 +4449,42 @@ function resetSearchState(message = 'Enter text in the search box to load a sess
   applyHeadshotSize();
   updateControlAvailability();
   setStatus(message);
-  if (ready && !isImmediatePreviewLayout()) searchInput.focus();
+  if (ready && isSpotlightSessionListLayout()) {
+    loadPartnerSessionList();
+  } else if (ready && !isImmediatePreviewLayout()) {
+    searchInput.focus();
+  }
+}
+
+async function loadPartnerSessionList() {
+  const url = getPartnerSessionsApiUrl();
+  const token = ++searchToken;
+  if (!url) {
+    setStatus('No session list is configured for this partner.', true);
+    clearResults();
+    return;
+  }
+
+  setStatus('Loading sessions...');
+  clearResults();
+  try {
+    const res = await fetch(url, { mode: 'cors', headers: { Accept: 'application/json' } });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    if (token !== searchToken) return;
+    const rows = (json.data || [])
+      .slice()
+      .sort((a, b) => getSessionSortValue(a) - getSessionSortValue(b));
+    if (!rows.length) {
+      setStatus('No sessions found for ' + (activePartnerConfig.label || 'this partner') + '.');
+      return;
+    }
+    renderSessionResultList(rows, { keepListVisible: true });
+    setStatus(rows.length + ' sessions loaded - click one to generate the Spotlight promo card.');
+  } catch(e) {
+    if (token !== searchToken) return;
+    setStatus('Session list failed: ' + e.message, true);
+  }
 }
 
 async function runSearch() {
@@ -4033,15 +4501,8 @@ async function runSearch() {
     const rows = json.data || [];
     if (!rows.length) { setStatus('No upcoming sessions found.'); return; }
     if (rows.length === 1) { populateCard(rows[0]); setStatus('Session loaded.'); return; }
-    setStatus(rows.length + ' sessions found — click one to load.');
-    searchResults.classList.add('visible');
-    rows.forEach(row => {
-      const item = document.createElement('div');
-      item.className = 'search-result-item';
-      item.innerHTML = '<strong>' + escapeHtml(row.title) + '</strong><span>' + escapeHtml(row.date) + ' · ' + escapeHtml(row.time) + '</span>';
-      item.addEventListener('click', () => { populateCard(row); setStatus('Session loaded.'); clearResults(); });
-      searchResults.appendChild(item);
-    });
+    setStatus(rows.length + ' sessions found - click one to load.');
+    renderSessionResultList(rows);
   } catch(e) {
     if (token !== searchToken) return;   // stale error — swallow silently
     setStatus('Search failed: ' + e.message, true);
@@ -4068,6 +4529,64 @@ searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') runSearch(
 
 function escapeHtml(str) {
   return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function getEnrichedSessionRow(row) {
+  if (row.headshot_base64 && row.qr_base64) return row;
+
+  const query = (row.title || '').trim();
+  if (!query) return row;
+
+  const res = await fetch(`${SEARCH_API}?q=${encodeURIComponent(query)}`, { headers: { Accept: 'application/json' } });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+
+  const json = await res.json();
+  const rows = json.data || [];
+  const enriched = rows.find(item => item.uuid && item.uuid === row.uuid)
+    || rows.find(item => (item.title || '').trim() === query)
+    || rows[0];
+
+  if (!enriched) return row;
+  return {
+    ...row,
+    ...enriched,
+    presenters: enriched.presenters || row.presenters
+  };
+}
+
+function normalizeImageSrc(value) {
+  const src = String(value || '').trim();
+  if (!src) return '';
+  if (/^(data:|blob:|https?:\/\/)/i.test(src)) return src;
+  if (src.startsWith('//')) return window.location.protocol + src;
+  try {
+    return new URL(src, window.location.href).href;
+  } catch (e) {
+    return src;
+  }
+}
+
+function getPresenterHeadshotSrc(row = {}) {
+  const presenter = (row.presenters || [])[0] || {};
+  const candidates = [
+    row.headshot_base64,
+    row.headshot_url,
+    row.photo_url,
+    row.presenter_photo_url,
+    row.presenter_image_url,
+    presenter.headshot_base64,
+    presenter.headshot_url,
+    presenter.photo_url,
+    presenter.image_url,
+    presenter.picture_url,
+    presenter.profile_photo_url
+  ];
+
+  for (const candidate of candidates) {
+    const src = normalizeImageSrc(candidate);
+    if (src) return src;
+  }
+  return '';
 }
 
 function getPresenterEmployer(presenter) {
@@ -4123,8 +4642,10 @@ function syncSessionRegistrationPromo(row, displayUrl, displayText) {
 
   const promoHeadshotImg = document.getElementById('session-promo-headshot-img');
   const promoHeadshotFallback = document.getElementById('session-promo-headshot-fallback');
-  if (row.headshot_base64) {
-    promoHeadshotImg.src = row.headshot_base64;
+  const promoHeadshotSrc = getPresenterHeadshotSrc(row);
+  if (promoHeadshotSrc) {
+    promoHeadshotImg.removeAttribute('crossorigin');
+    promoHeadshotImg.src = promoHeadshotSrc;
     promoHeadshotImg.style.display = 'block';
     promoHeadshotFallback.style.display = 'none';
   } else {
@@ -4283,8 +4804,10 @@ function populateCard(row) {
   // Headshot
   const headshotImg = document.getElementById('headshot-img');
   const headshotFb  = document.getElementById('headshot-fallback');
-  if (row.headshot_base64) {
-    headshotImg.src          = row.headshot_base64;
+  const headshotSrc = getPresenterHeadshotSrc(row);
+  if (headshotSrc) {
+    headshotImg.removeAttribute('crossorigin');
+    headshotImg.src          = headshotSrc;
     headshotImg.style.display = 'block';
     headshotFb.style.display  = 'none';
   } else {
