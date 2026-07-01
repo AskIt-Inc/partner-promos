@@ -2011,6 +2011,25 @@ body[data-partner="vamp"] .session-back-title {
   accent-color: var(--maroon);
   width: 100%;
 }
+.font-delta-row {
+  align-items: center;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr 48px;
+  width: 100%;
+}
+.font-delta-slider,
+.logo-nudge-slider {
+  accent-color: var(--maroon);
+  width: 100%;
+}
+.font-delta-output,
+.logo-nudge-axis output {
+  color: #555;
+  font-size: 10px;
+  font-weight: 800;
+  text-align: right;
+}
 .logo-nudge-control {
   align-items: center;
   display: grid;
@@ -2018,11 +2037,17 @@ body[data-partner="vamp"] .session-back-title {
   grid-template-columns: 52px 1fr 42px;
 }
 .logo-nudge-pad {
+  display: none;
+}
+.logo-nudge-axis {
   align-items: center;
   display: grid;
-  gap: 4px;
-  grid-template-columns: repeat(5, 28px);
-  justify-content: start;
+  gap: 8px;
+  grid-template-columns: 14px 1fr 36px;
+  grid-column: 2 / 4;
+}
+.logo-nudge-axis span {
+  text-align: left;
 }
 .logo-nudge-btn {
   align-items: center;
@@ -2093,10 +2118,32 @@ body[data-partner="vamp"] .session-back-title {
 }
 .search-result-item:hover { background: var(--bg-rose); border-color: var(--border-rose); }
 .search-result-item.active { background: var(--bg-rose); border-color: var(--maroon); }
+.search-result-item.loading {
+  cursor: progress;
+  opacity: 0.78;
+}
 .search-result-item strong { display: block; color: #111; font-size: 12.5px; }
 .search-result-item span   { color: #777; font-size: 11px; }
 .search-status { font-size: 11.5px; color: #888; font-style: italic; min-height: 18px; }
 .search-status.error { color: #c0392b; font-style: normal; font-weight: 600; }
+.load-progress {
+  background: #eee;
+  border-radius: 999px;
+  display: none;
+  height: 6px;
+  overflow: hidden;
+  width: 100%;
+}
+.load-progress.visible {
+  display: block;
+}
+.load-progress-bar {
+  background: var(--maroon);
+  border-radius: inherit;
+  height: 100%;
+  transition: width 0.22s ease;
+  width: 0%;
+}
 
 .app-shell.spotlight-session-layout .search-panel {
   display: contents;
@@ -2502,6 +2549,9 @@ body[data-partner="vamp"] .session-back-title {
   </div>
   <div class="session-list-panel">
   <div class="search-status" id="search-status"></div>
+  <div class="load-progress" id="session-load-progress" aria-hidden="true">
+    <div class="load-progress-bar" id="session-load-progress-bar"></div>
+  </div>
   <div class="search-results" id="search-results"></div>
   </div>
 </div>
@@ -2931,6 +2981,7 @@ const headshotSizeSelect = document.getElementById('headshot-image-size');
 const sideFontSelects = Array.from(document.querySelectorAll('.side-font-select'));
 const headerLogoSelects = Array.from(document.querySelectorAll('.header-logo-select'));
 const headerLogoSizeSliders = Array.from(document.querySelectorAll('.logo-size-slider'));
+const headerLogoNudgeControls = Array.from(document.querySelectorAll('.logo-nudge-control'));
 const headerLogoNudgeButtons = Array.from(document.querySelectorAll('.logo-nudge-btn'));
 const leftLogo = document.querySelector('.logo-left');
 const rightLogo = document.querySelector('.logo-right');
@@ -3643,6 +3694,51 @@ function saveSelectedHeaderLogoPositions() {
   }
 }
 
+function formatLogoOffset(value) {
+  const offset = normalizeLogoOffset(value);
+  if (offset === 0) return '0px';
+  return (offset > 0 ? '+' : '') + offset + 'px';
+}
+
+function initHeaderLogoNudgeSliders() {
+  headerLogoNudgeControls.forEach(control => {
+    if (control.dataset.sliderReady === 'true') return;
+    const slot = control.dataset.logoSlot;
+    ['x', 'y'].forEach(axis => {
+      const row = document.createElement('div');
+      row.className = 'logo-nudge-axis';
+      const label = document.createElement('span');
+      label.textContent = axis.toUpperCase();
+      const slider = document.createElement('input');
+      slider.type = 'range';
+      slider.min = '-30';
+      slider.max = '30';
+      slider.step = '1';
+      slider.className = 'logo-nudge-slider';
+      slider.dataset.logoSlot = slot;
+      slider.dataset.logoAxis = axis;
+      slider.setAttribute('aria-label', 'Move logo ' + slot + ' ' + (axis === 'x' ? 'horizontally' : 'vertically'));
+      const output = document.createElement('output');
+      output.id = 'header-logo-' + slot + '-' + axis + '-output';
+      row.append(label, slider, output);
+      control.appendChild(row);
+      slider.addEventListener('input', () => {
+        const current = normalizeLogoPosition(selectedHeaderLogoPositions[slot]);
+        selectedHeaderLogoPositions[slot] = {
+          x: axis === 'x' ? normalizeLogoOffset(slider.value) : current.x,
+          y: axis === 'y' ? normalizeLogoOffset(slider.value) : current.y
+        };
+        updateHeaderLogoSizeControls();
+        applyHeaderLogoSizes();
+      });
+      slider.addEventListener('change', () => {
+        saveSelectedHeaderLogoPositions();
+      });
+    });
+    control.dataset.sliderReady = 'true';
+  });
+}
+
 function updateHeaderLogoSizeControls() {
   headerLogoSizeSliders.forEach(slider => {
     const slot = slider.dataset.logoSlot;
@@ -3655,6 +3751,14 @@ function updateHeaderLogoSizeControls() {
     const pos = normalizeLogoPosition(selectedHeaderLogoPositions[slot]);
     const output = document.getElementById('header-logo-' + slot + '-position-output');
     if (output) output.textContent = pos.x + ',' + pos.y;
+    const xSlider = document.querySelector('.logo-nudge-slider[data-logo-slot="' + slot + '"][data-logo-axis="x"]');
+    const ySlider = document.querySelector('.logo-nudge-slider[data-logo-slot="' + slot + '"][data-logo-axis="y"]');
+    const xOutput = document.getElementById('header-logo-' + slot + '-x-output');
+    const yOutput = document.getElementById('header-logo-' + slot + '-y-output');
+    if (xSlider) xSlider.value = pos.x;
+    if (ySlider) ySlider.value = pos.y;
+    if (xOutput) xOutput.textContent = formatLogoOffset(pos.x);
+    if (yOutput) yOutput.textContent = formatLogoOffset(pos.y);
   });
 }
 
@@ -4274,9 +4378,71 @@ function saveFontSize(storageKey, value, defaultSize) {
   return normalized;
 }
 
+function normalizeDelta(value, min = -8, max = 8, step = 0.5) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return 0;
+  const stepped = Math.round(number / step) * step;
+  return Math.min(max, Math.max(min, stepped));
+}
+
+function formatSignedPx(value) {
+  const normalized = normalizeDelta(value, -100, 100, 0.5);
+  if (normalized === 0) return '0px';
+  return (normalized > 0 ? '+' : '') + formatFontSizeValue(normalized) + 'px';
+}
+
 function formatFontSizeValue(value) {
   const number = Number(value);
   return Number.isInteger(number) ? String(number) : String(number).replace(/\.0$/, '');
+}
+
+function addLooseSelectOption(select, value) {
+  if (!select) return;
+  const normalized = formatFontSizeValue(value);
+  if (!Array.from(select.options).some(option => option.value === normalized)) {
+    select.add(new Option(normalized + 'px', normalized));
+  }
+  select.value = normalized;
+}
+
+function setupFontDeltaSlider(select, defaultSize, currentSize, onInput, options = {}) {
+  if (!select || select.dataset.sliderReady === 'true') return;
+  const base = Number(defaultSize) || 0;
+  const min = options.min ?? -8;
+  const max = options.max ?? 8;
+  const step = options.step ?? 0.5;
+  const row = document.createElement('div');
+  row.className = 'font-delta-row';
+  const slider = document.createElement('input');
+  slider.type = 'range';
+  slider.min = String(min);
+  slider.max = String(max);
+  slider.step = String(step);
+  slider.className = 'font-delta-slider';
+  slider.setAttribute('aria-label', select.getAttribute('aria-label') || 'Font size adjustment');
+  const output = document.createElement('output');
+  output.className = 'font-delta-output';
+  row.append(slider, output);
+  select.style.display = 'none';
+  select.insertAdjacentElement('afterend', row);
+  select.dataset.sliderReady = 'true';
+
+  const setSliderFromSize = value => {
+    const absolute = Number(value);
+    slider.value = String(normalizeDelta(Number.isFinite(absolute) ? absolute - base : 0, min, max, step));
+  };
+  const apply = persist => {
+    const delta = normalizeDelta(slider.value, min, max, step);
+    const absolute = formatFontSizeValue(base + delta);
+    output.textContent = formatSignedPx(delta);
+    output.title = absolute + 'px';
+    addLooseSelectOption(select, absolute);
+    onInput(absolute, persist);
+  };
+  setSliderFromSize(currentSize);
+  apply(false);
+  slider.addEventListener('input', () => apply(false));
+  slider.addEventListener('change', () => apply(true));
 }
 
 function populateSideFontSelect(select, defaultSize) {
@@ -4300,8 +4466,8 @@ function initSideFontControls() {
     if (!cfg) return;
     populateSideFontSelect(select, cfg.defaultSize);
     select.value = selectedSideFontSizes[key] || cfg.defaultSize;
-    select.addEventListener('change', () => {
-      selectedSideFontSizes[key] = saveFontSize(SIDE_FONT_STORAGE_PREFIX + key, select.value, cfg.defaultSize);
+    setupFontDeltaSlider(select, cfg.defaultSize, selectedSideFontSizes[key] || cfg.defaultSize, value => {
+      selectedSideFontSizes[key] = saveFontSize(SIDE_FONT_STORAGE_PREFIX + key, value, cfg.defaultSize);
       applySideFontSizes();
     });
   });
@@ -4359,6 +4525,39 @@ function applyHeadshotSize() {
   document.querySelectorAll('.session-back-top-logo').forEach(el => {
     el.style.height = topLogoHeight + 'px';
   });
+}
+
+function initPrimaryAdjustmentSliders() {
+  setupFontDeltaSlider(seriesFontSelect, DEFAULT_SERIES_FONT_SIZE, selectedSeriesFontSize, value => {
+    selectedSeriesFontSize = saveFontSize(SERIES_FONT_STORAGE_KEY, value, DEFAULT_SERIES_FONT_SIZE);
+    applySeriesFontSize();
+  }, { min: -8, max: 8, step: 0.5 });
+  setupFontDeltaSlider(titlePrefixFontSelect, DEFAULT_TITLE_PREFIX_FONT_SIZE, selectedTitlePrefixFontSize, value => {
+    selectedTitlePrefixFontSize = saveFontSize(TITLE_PREFIX_FONT_STORAGE_KEY, value, DEFAULT_TITLE_PREFIX_FONT_SIZE);
+    fitBandTitle();
+    applyBackCardFontSizes();
+    applyHeadshotSize();
+    applyCalendarFontSizes();
+  }, { min: -8, max: 8, step: 0.5 });
+  setupFontDeltaSlider(titleFontSelect, DEFAULT_TITLE_FONT_SIZE, selectedTitleFontSize, value => {
+    selectedTitleFontSize = saveFontSize(TITLE_FONT_STORAGE_KEY, value, DEFAULT_TITLE_FONT_SIZE);
+    fitBandTitle();
+    applyBackCardFontSizes();
+    applyCalendarFontSizes();
+  }, { min: -8, max: 8, step: 0.5 });
+  setupFontDeltaSlider(titleSuffixFontSelect, DEFAULT_TITLE_SUFFIX_FONT_SIZE, selectedTitleSuffixFontSize, value => {
+    selectedTitleSuffixFontSize = saveFontSize(TITLE_SUFFIX_FONT_STORAGE_KEY, value, DEFAULT_TITLE_SUFFIX_FONT_SIZE);
+    fitBandTitle();
+    applyCalendarFontSizes();
+  }, { min: -8, max: 8, step: 0.5 });
+  setupFontDeltaSlider(descFontSelect, DEFAULT_DESC_FONT_SIZE, selectedDescFontSize, value => {
+    selectedDescFontSize = saveFontSize(DESC_FONT_STORAGE_KEY, value, DEFAULT_DESC_FONT_SIZE);
+    applyDescriptionFontSize();
+  }, { min: -8, max: 8, step: 0.5 });
+  setupFontDeltaSlider(headshotSizeSelect, DEFAULT_HEADSHOT_SIZE, selectedHeadshotSize, value => {
+    selectedHeadshotSize = saveFontSize(HEADSHOT_SIZE_STORAGE_KEY, value, DEFAULT_HEADSHOT_SIZE);
+    applyHeadshotSize();
+  }, { min: -24, max: 30, step: 2 });
 }
 
 function cleanTimeValue(value) {
@@ -4688,6 +4887,10 @@ function updateControlAvailability() {
     const slot = el.dataset.logoSlot;
     el.style.display = headerLogoControlsVisible && !(currentSide === 'partner-back' && slot === '3') ? '' : 'none';
   });
+  document.querySelectorAll('.logo-nudge-control').forEach(el => {
+    const slot = el.dataset.logoSlot;
+    el.style.display = headerLogoControlsVisible && !(currentSide === 'partner-back' && slot === '3') ? '' : 'none';
+  });
   document.querySelectorAll('.logo-size-group').forEach(el => {
     el.style.display = headerLogoControlsVisible ? 'grid' : 'none';
   });
@@ -4719,6 +4922,7 @@ function updateControlAvailability() {
 }
 
 initSideFontControls();
+initPrimaryAdjustmentSliders();
 applySideFontSizes();
 
 if (timezoneSelect) {
@@ -4783,6 +4987,7 @@ if (headshotSizeSelect) {
   });
 }
 
+initHeaderLogoNudgeSliders();
 updateHeaderLogoSizeControls();
 headerLogoSizeSliders.forEach(slider => {
   slider.addEventListener('input', () => {
@@ -5240,6 +5445,8 @@ const searchInput   = document.getElementById('session-search-input');
 const btnSearch     = document.getElementById('btn-search');
 const btnClear      = document.getElementById('btn-clear');
 const searchStatus  = document.getElementById('search-status');
+const sessionLoadProgress = document.getElementById('session-load-progress');
+const sessionLoadProgressBar = document.getElementById('session-load-progress-bar');
 const searchResults = document.getElementById('search-results');
 let debounce = null;
 let searchToken = 0;   // incremented on every new search; stale responses check before rendering
@@ -5265,9 +5472,26 @@ function setStatus(msg, isError = false) {
   searchStatus.textContent = msg;
   searchStatus.className = 'search-status' + (isError ? ' error' : '');
 }
+function setSessionLoadProgress(percent, label = '') {
+  const value = Math.max(0, Math.min(100, Number(percent) || 0));
+  if (!sessionLoadProgress || !sessionLoadProgressBar) return;
+  sessionLoadProgress.classList.toggle('visible', value > 0 && value < 100);
+  sessionLoadProgress.setAttribute('aria-hidden', value > 0 && value < 100 ? 'false' : 'true');
+  sessionLoadProgressBar.style.width = value + '%';
+  if (label) sessionLoadProgress.setAttribute('aria-label', label + ' ' + value + '%');
+}
+function clearSessionLoadProgress() {
+  setSessionLoadProgress(100);
+  window.setTimeout(() => {
+    if (sessionLoadProgress && sessionLoadProgressBar && sessionLoadProgress.getAttribute('aria-hidden') === 'true') {
+      sessionLoadProgressBar.style.width = '0%';
+    }
+  }, 250);
+}
 function clearResults() {
   searchResults.innerHTML = '';
   searchResults.classList.remove('visible');
+  clearSessionLoadProgress();
   updateAppLayoutMode();
 }
 
@@ -5331,16 +5555,27 @@ function renderSessionResultList(rows, { keepListVisible = false } = {}) {
     item.innerHTML = '<strong>' + escapeHtml(row.title) + '</strong><span>' + escapeHtml(getSessionResultMeta(row)) + '</span>';
     item.addEventListener('click', async () => {
       Array.from(searchResults.children).forEach(child => child.classList.remove('active'));
-      item.classList.add('active');
+      Array.from(searchResults.children).forEach(child => child.classList.remove('loading'));
+      item.classList.add('active', 'loading');
       setStatus('Loading session assets...');
+      setSessionLoadProgress(12, 'Loading session assets');
       try {
+        setSessionLoadProgress(34, 'Refreshing session details');
         const enrichedRow = await getEnrichedSessionRow(row);
+        setSessionLoadProgress(62, 'Building promo card');
         populateCard(enrichedRow);
+        setSessionLoadProgress(86, 'Loading card images');
+        await waitForCardImages();
+        setSessionLoadProgress(100, 'Session loaded');
         setStatus('Session loaded.');
         if (!keepListVisible) clearResults();
       } catch (e) {
         populateCard(row);
+        await waitForCardImages();
         setStatus('Session loaded, but image/QR assets could not be refreshed: ' + e.message, true);
+      } finally {
+        item.classList.remove('loading');
+        clearSessionLoadProgress();
       }
     });
     searchResults.appendChild(item);
@@ -5553,6 +5788,27 @@ async function getEnrichedSessionRow(row) {
     ...enriched,
     presenters: enriched.presenters || row.presenters
   };
+}
+
+function waitForImageReady(img) {
+  if (!img || img.style.display === 'none' || !img.src) return Promise.resolve();
+  if (img.decode) {
+    return img.decode().catch(() => {});
+  }
+  if (img.complete) return Promise.resolve();
+  return new Promise(resolve => {
+    img.addEventListener('load', resolve, { once: true });
+    img.addEventListener('error', resolve, { once: true });
+  });
+}
+
+async function waitForCardImages() {
+  await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  const images = Array.from(surface.querySelectorAll('img'));
+  await Promise.race([
+    Promise.all(images.map(waitForImageReady)),
+    new Promise(resolve => setTimeout(resolve, 1800))
+  ]);
 }
 
 function normalizeImageSrc(value) {
