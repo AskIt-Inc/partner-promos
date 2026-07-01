@@ -1904,6 +1904,24 @@ body[data-partner="vamp"] .coming-soon-program-name {
   line-height: 1;
   text-transform: uppercase;
 }
+.font-size-group {
+  border: 1px solid var(--border-rose);
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1fr;
+  margin: 0;
+  padding: 12px;
+  width: 100%;
+}
+.font-size-group legend {
+  color: var(--maroon);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 0 6px;
+  text-transform: uppercase;
+}
 .search-row input[type="text"] {
   flex: 1 1 100%; padding: 7px 12px; font-size: 13px;
   border: 1px solid #ccc; border-radius: 4px;
@@ -2075,130 +2093,133 @@ body[data-partner="vamp"] .coming-soon-program-name {
       <span>Logo 3</span>
       <select id="header-logo-3-select" class="header-logo-select" data-logo-slot="3" aria-label="Third header logo"></select>
     </label>
-    <label class="field-control font-size-control" for="session-title-font-size">
-      <span>Title Font Size</span>
-      <select id="session-title-font-size" aria-label="Session title font size">
-        <option value="10">10px</option>
-        <option value="10.5">10.5px</option>
-        <option value="11">11px</option>
-        <option value="11.5">11.5px</option>
-        <option value="12">12px</option>
-        <option value="12.5">12.5px</option>
-        <option value="13">13px</option>
-        <option value="13.5">13.5px</option>
-        <option value="14">14px</option>
-        <option value="14.5">14.5px</option>
-        <option value="15">15px</option>
-        <option value="15.5">15.5px</option>
-        <option value="16">16px</option>
-        <option value="16.5">16.5px</option>
-        <option value="17" selected>17px (Default)</option>
-        <option value="17.5">17.5px</option>
-        <option value="18">18px</option>
-        <option value="18.5">18.5px</option>
-        <option value="19">19px</option>
-        <option value="19.5">19.5px</option>
-        <option value="20">20px</option>
-      </select>
-    </label>
-    <label class="field-control font-size-control" for="band-series-font-size">
-      <span>Series Font Size</span>
-      <select id="band-series-font-size" aria-label="Series label font size">
-        <option value="10">10px</option>
-        <option value="10.5">10.5px</option>
-        <option value="11">11px</option>
-        <option value="11.5">11.5px</option>
-        <option value="12">12px</option>
-        <option value="12.5">12.5px</option>
-        <option value="13">13px</option>
-        <option value="13.5">13.5px</option>
-        <option value="14">14px</option>
-        <option value="14.5">14.5px</option>
-        <option value="15">15px</option>
-        <option value="15.5">15.5px</option>
-        <option value="16">16px</option>
-        <option value="16.5">16.5px</option>
-        <option value="17">17px</option>
-        <option value="17.5">17.5px</option>
-        <option value="18" selected>18px (Default)</option>
-        <option value="18.5">18.5px</option>
-        <option value="19">19px</option>
-        <option value="19.5">19.5px</option>
-        <option value="20">20px</option>
-      </select>
-    </label>
-    <label class="field-control font-size-control" for="session-title-prefix-font-size">
-      <span>Title Prefix Font Size</span>
-      <select id="session-title-prefix-font-size" aria-label="Session title prefix font size">
-        <option value="10">10px</option>
-        <option value="10.5">10.5px</option>
-        <option value="11">11px</option>
-        <option value="11.5">11.5px</option>
-        <option value="12">12px</option>
-        <option value="12.5">12.5px</option>
-        <option value="13">13px</option>
-        <option value="13.5">13.5px</option>
-        <option value="14">14px (Default)</option>
-        <option value="14.5">14.5px</option>
-        <option value="15">15px</option>
-        <option value="15.5">15.5px</option>
-        <option value="16">16px</option>
-        <option value="16.5">16.5px</option>
-        <option value="17">17px</option>
-        <option value="17.5">17.5px</option>
-        <option value="18">18px</option>
-        <option value="18.5">18.5px</option>
-        <option value="19">19px</option>
-        <option value="19.5">19.5px</option>
-        <option value="20">20px</option>
-      </select>
-    </label>
-    <label class="field-control font-size-control" for="session-title-suffix-font-size">
-      <span>Title Suffix Font Size</span>
-      <select id="session-title-suffix-font-size" aria-label="Session title suffix font size">
-        <option value="10">10px</option>
-        <option value="10.5">10.5px</option>
-        <option value="11">11px</option>
-        <option value="11.5">11.5px</option>
-        <option value="12">12px</option>
-        <option value="12.5">12.5px</option>
-        <option value="13">13px</option>
-        <option value="13.5">13.5px</option>
-        <option value="14">14px</option>
-        <option value="14.5">14.5px</option>
-        <option value="15">15px</option>
-        <option value="15.5">15.5px</option>
-        <option value="16">16px</option>
-        <option value="16.5">16.5px</option>
-        <option value="17">17px (Default)</option>
-        <option value="17.5">17.5px</option>
-        <option value="18">18px</option>
-        <option value="18.5">18.5px</option>
-        <option value="19">19px</option>
-        <option value="19.5">19.5px</option>
-        <option value="20">20px</option>
-      </select>
-    </label>
-    <label class="field-control font-size-control" for="session-desc-font-size">
-      <span>Description Font Size</span>
-      <select id="session-desc-font-size" aria-label="Session description font size">
-        <option value="10">10px</option>
-        <option value="10.5">10.5px</option>
-        <option value="11">11px</option>
-        <option value="11.5">11.5px</option>
-        <option value="12">12px</option>
-        <option value="12.5">12.5px</option>
-        <option value="13">13px</option>
-        <option value="13.5">13.5px</option>
-        <option value="13.7" selected>13.7px (Default)</option>
-        <option value="14">14px</option>
-        <option value="14.5">14.5px</option>
-        <option value="15">15px</option>
-        <option value="15.5">15.5px</option>
-        <option value="16">16px</option>
-        <option value="16.5">16.5px</option>
-      </select>
-    </label>
+    <fieldset class="font-size-group">
+      <legend>Font Size</legend>
+      <label class="field-control font-size-control" for="band-series-font-size">
+        <span>Series Title</span>
+        <select id="band-series-font-size" aria-label="Series title font size">
+          <option value="10">10px</option>
+          <option value="10.5">10.5px</option>
+          <option value="11">11px</option>
+          <option value="11.5">11.5px</option>
+          <option value="12">12px</option>
+          <option value="12.5">12.5px</option>
+          <option value="13">13px</option>
+          <option value="13.5">13.5px</option>
+          <option value="14">14px</option>
+          <option value="14.5">14.5px</option>
+          <option value="15">15px</option>
+          <option value="15.5">15.5px</option>
+          <option value="16">16px</option>
+          <option value="16.5">16.5px</option>
+          <option value="17">17px</option>
+          <option value="17.5">17.5px</option>
+          <option value="18" selected>18px (Default)</option>
+          <option value="18.5">18.5px</option>
+          <option value="19">19px</option>
+          <option value="19.5">19.5px</option>
+          <option value="20">20px</option>
+        </select>
+      </label>
+      <label class="field-control font-size-control" for="session-title-prefix-font-size">
+        <span>Title Prefix</span>
+        <select id="session-title-prefix-font-size" aria-label="Session title prefix font size">
+          <option value="10">10px</option>
+          <option value="10.5">10.5px</option>
+          <option value="11">11px</option>
+          <option value="11.5">11.5px</option>
+          <option value="12">12px</option>
+          <option value="12.5">12.5px</option>
+          <option value="13">13px</option>
+          <option value="13.5">13.5px</option>
+          <option value="14">14px (Default)</option>
+          <option value="14.5">14.5px</option>
+          <option value="15">15px</option>
+          <option value="15.5">15.5px</option>
+          <option value="16">16px</option>
+          <option value="16.5">16.5px</option>
+          <option value="17">17px</option>
+          <option value="17.5">17.5px</option>
+          <option value="18">18px</option>
+          <option value="18.5">18.5px</option>
+          <option value="19">19px</option>
+          <option value="19.5">19.5px</option>
+          <option value="20">20px</option>
+        </select>
+      </label>
+      <label class="field-control font-size-control" for="session-title-font-size">
+        <span>Title</span>
+        <select id="session-title-font-size" aria-label="Session title font size">
+          <option value="10">10px</option>
+          <option value="10.5">10.5px</option>
+          <option value="11">11px</option>
+          <option value="11.5">11.5px</option>
+          <option value="12">12px</option>
+          <option value="12.5">12.5px</option>
+          <option value="13">13px</option>
+          <option value="13.5">13.5px</option>
+          <option value="14">14px</option>
+          <option value="14.5">14.5px</option>
+          <option value="15">15px</option>
+          <option value="15.5">15.5px</option>
+          <option value="16">16px</option>
+          <option value="16.5">16.5px</option>
+          <option value="17" selected>17px (Default)</option>
+          <option value="17.5">17.5px</option>
+          <option value="18">18px</option>
+          <option value="18.5">18.5px</option>
+          <option value="19">19px</option>
+          <option value="19.5">19.5px</option>
+          <option value="20">20px</option>
+        </select>
+      </label>
+      <label class="field-control font-size-control" for="session-title-suffix-font-size">
+        <span>Title Suffix</span>
+        <select id="session-title-suffix-font-size" aria-label="Session title suffix font size">
+          <option value="10">10px</option>
+          <option value="10.5">10.5px</option>
+          <option value="11">11px</option>
+          <option value="11.5">11.5px</option>
+          <option value="12">12px</option>
+          <option value="12.5">12.5px</option>
+          <option value="13">13px</option>
+          <option value="13.5">13.5px</option>
+          <option value="14">14px</option>
+          <option value="14.5">14.5px</option>
+          <option value="15">15px</option>
+          <option value="15.5">15.5px</option>
+          <option value="16">16px</option>
+          <option value="16.5">16.5px</option>
+          <option value="17">17px (Default)</option>
+          <option value="17.5">17.5px</option>
+          <option value="18">18px</option>
+          <option value="18.5">18.5px</option>
+          <option value="19">19px</option>
+          <option value="19.5">19.5px</option>
+          <option value="20">20px</option>
+        </select>
+      </label>
+      <label class="field-control font-size-control" for="session-desc-font-size">
+        <span>Description</span>
+        <select id="session-desc-font-size" aria-label="Session description font size">
+          <option value="10">10px</option>
+          <option value="10.5">10.5px</option>
+          <option value="11">11px</option>
+          <option value="11.5">11.5px</option>
+          <option value="12">12px</option>
+          <option value="12.5">12.5px</option>
+          <option value="13">13px</option>
+          <option value="13.5">13.5px</option>
+          <option value="13.7" selected>13.7px (Default)</option>
+          <option value="14">14px</option>
+          <option value="14.5">14.5px</option>
+          <option value="15">15px</option>
+          <option value="15.5">15.5px</option>
+          <option value="16">16px</option>
+          <option value="16.5">16.5px</option>
+        </select>
+      </label>
+    </fieldset>
     <label class="field-control image-size-control" for="headshot-image-size">
       <span>Image Size</span>
       <select id="headshot-image-size" aria-label="Presenter image size">
@@ -4028,6 +4049,9 @@ function updateControlAvailability() {
   document.querySelectorAll('.font-size-control').forEach(el => {
     el.style.display = sessionFontControlsVisible ? '' : 'none';
   });
+  document.querySelectorAll('.font-size-group').forEach(el => {
+    el.style.display = sessionFontControlsVisible ? '' : 'none';
+  });
   document.querySelectorAll('.image-size-control').forEach(el => {
     el.style.display = imageSizeControlVisible ? '' : 'none';
   });
@@ -4435,17 +4459,20 @@ async function getExportSafeImageSrc(img) {
   const src = img.currentSrc || img.src || '';
   if (!/^https?:\/\//i.test(src)) return src;
 
-  const logoKey = img.dataset.logoKey || getLogoKeyForSrcAlt(src, img.alt);
-  const staticOption = logoKey ? HEADER_LOGO_STATIC_OPTIONS.find(option => option.key === logoKey && option.src) : null;
-  if (staticOption && !/^https?:\/\//i.test(staticOption.src)) return staticOption.src;
-
   if (EXPORT_IMAGE_DATA_URL_CACHE.has(src)) return EXPORT_IMAGE_DATA_URL_CACHE.get(src);
 
-  const response = await fetch(src, { mode: 'cors', cache: 'force-cache' });
-  if (!response.ok) throw new Error('HTTP ' + response.status);
-  const dataUrl = await readBlobAsDataUrl(await response.blob());
-  EXPORT_IMAGE_DATA_URL_CACHE.set(src, dataUrl);
-  return dataUrl;
+  try {
+    const response = await fetch(src, { mode: 'cors', cache: 'force-cache' });
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    const dataUrl = await readBlobAsDataUrl(await response.blob());
+    EXPORT_IMAGE_DATA_URL_CACHE.set(src, dataUrl);
+    return dataUrl;
+  } catch (e) {
+    const logoKey = img.dataset.logoKey || getLogoKeyForSrcAlt(src, img.alt);
+    const staticOption = logoKey ? HEADER_LOGO_STATIC_OPTIONS.find(option => option.key === logoKey && option.src) : null;
+    if (staticOption && !/^https?:\/\//i.test(staticOption.src)) return staticOption.src;
+    throw e;
+  }
 }
 
 async function prepareImagesForExport(root) {
