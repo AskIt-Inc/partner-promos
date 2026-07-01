@@ -542,17 +542,20 @@ body {
   flex-shrink: 0;
 }
 .coming-soon-logo-bar img {
-  height: 46px;
-  max-width: 154px;
-  width: auto;
+  flex: 0 1 31%;
+  height: 56px;
+  max-width: none;
+  min-width: 0;
+  width: 31%;
   object-fit: contain;
+  display: block;
 }
 .coming-soon-logo-bar img[data-logo-key="oav"] {
-  height: 52px;
-  max-width: 184px;
+  height: 56px;
+  max-width: none;
 }
-.coming-soon-logo-bar img.coming-logo-af { height: 40px; }
-.coming-soon-logo-bar img.coming-logo-vamp { height: 34px; max-width: 172px; }
+.coming-soon-logo-bar img.coming-logo-af,
+.coming-soon-logo-bar img.coming-logo-vamp { height: 56px; max-width: none; }
 .coming-soon-logo-bar .logo-divider {
   height: 40px;
   background: var(--coming-accent, var(--gold));
@@ -746,10 +749,10 @@ body[data-partner="vamp"] .coming-soon-program-name {
   border-color: var(--coming-primary, var(--maroon));
 }
 .print-surface.size-3x5 .coming-soon-logo-bar { padding: 6px 10px; gap: 8px; }
-.print-surface.size-3x5 .coming-soon-logo-bar img { height: 28px; max-width: 112px; }
-.print-surface.size-3x5 .coming-soon-logo-bar img[data-logo-key="oav"] { height: 32px; max-width: 132px; }
-.print-surface.size-3x5 .coming-soon-logo-bar img.coming-logo-af { height: 24px; }
-.print-surface.size-3x5 .coming-soon-logo-bar img.coming-logo-vamp { height: 19px; max-width: 98px; }
+.print-surface.size-3x5 .coming-soon-logo-bar img { height: 34px; max-width: none; width: 31%; }
+.print-surface.size-3x5 .coming-soon-logo-bar img[data-logo-key="oav"],
+.print-surface.size-3x5 .coming-soon-logo-bar img.coming-logo-af,
+.print-surface.size-3x5 .coming-soon-logo-bar img.coming-logo-vamp { height: 34px; max-width: none; }
 .print-surface.size-3x5 .coming-soon-logo-bar .logo-divider { height: 22px; }
 .print-surface.size-3x5 .coming-soon-title-strip { padding: 6px 14px; gap: 8px; }
 .print-surface.size-3x5 .coming-soon-badge { font-size: 7px; padding: 2px 7px; }
@@ -813,6 +816,7 @@ body[data-partner="vamp"] .coming-soon-program-name {
 }
 .print-surface.layout-foundation .uoc-pill {
   height: 56px;
+  overflow: hidden;
   padding: 0 10px;
 }
 .print-surface.layout-foundation .uoc-pill img {
@@ -828,12 +832,6 @@ body[data-partner="vamp"] .coming-soon-program-name {
   height: 56px;
   max-height: 56px;
   object-fit: contain;
-}
-.print-surface.layout-foundation .logo-left[data-logo-key="amyloidosis-foundation"],
-.print-surface.layout-foundation .logo-right[data-logo-key="amyloidosis-foundation"],
-.print-surface.layout-foundation .logo-left[data-logo-key="oav"],
-.print-surface.layout-foundation .logo-right[data-logo-key="oav"] {
-  object-fit: cover;
 }
 .logo-placeholder {
   min-width: 120px;
@@ -943,6 +941,7 @@ body[data-partner="vamp"] .coming-soon-program-name {
   display: none;
   background: #fff;
   border-radius: 0;
+  overflow: hidden;
   padding: 0;
   align-items: center;
   flex-shrink: 0;
@@ -1183,18 +1182,18 @@ body[data-partner="vamp"] .coming-soon-program-name {
   flex-shrink: 0;
 }
 .program-back-header img {
-  height: 48px;
-  width: auto;
+  flex: 0 1 31%;
+  height: 56px;
+  max-width: none;
+  min-width: 0;
+  width: 31%;
   object-fit: contain;
-  flex-shrink: 1;
+  display: block;
   order: 0;
 }
-.program-back-header .back-logo-left { max-width: 180px; }
-.program-back-header .back-logo-mid { max-width: 180px; }
-.program-back-header .back-logo-right { max-width: 180px; }
 .program-back-header img[data-logo-key="oav"] {
-  height: 58px;
-  max-width: 230px;
+  height: 56px;
+  max-width: none;
 }
 .program-back-header .logo-divider {
   height: 46px;
@@ -1671,6 +1670,7 @@ body[data-partner="vamp"] .coming-soon-program-name {
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.08;
+  white-space: nowrap;
 }
 .session-back-feature-rule {
   width: 22px;
@@ -1739,6 +1739,48 @@ body[data-partner="vamp"] .coming-soon-program-name {
   line-height: 1.08;
   font-weight: 800;
   letter-spacing: 0;
+}
+
+body[data-partner="vamp"] .session-back-feature-title {
+  font-size: 15px;
+  letter-spacing: -0.03em;
+  color: #fff;
+}
+
+body[data-partner="vamp"] .session-back-feature-band {
+  grid-template-columns: minmax(0, 1fr) 170px;
+  column-gap: 16px;
+}
+
+body[data-partner="vamp"] .session-back-top {
+  grid-template-columns: 118px minmax(0, 1fr) 118px;
+}
+
+body[data-partner="vamp"] .session-back-top-title {
+  color: #8A6400;
+  overflow-wrap: normal;
+  white-space: nowrap;
+}
+
+body[data-partner="vamp"] .session-back-feature-eyebrow {
+  color: #FFE8A3;
+}
+
+body[data-partner="vamp"] .session-back-eyebrow,
+body[data-partner="vamp"] .session-back-title,
+body[data-partner="vamp"] .session-back-text strong,
+body[data-partner="vamp"] .session-back-link,
+body[data-partner="vamp"] .session-back-qr-label {
+  color: #8A6400;
+}
+
+body[data-partner="vamp"] .session-back-feature-rule {
+  background: #FFE8A3;
+}
+
+body[data-partner="vamp"] .session-back-title {
+  font-size: 18px;
+  white-space: nowrap;
 }
 .session-back-text {
   color: #222;
@@ -1832,8 +1874,8 @@ body[data-partner="vamp"] .coming-soon-program-name {
 .print-surface.size-3x5 .fine-print         { font-size: 9px; padding: 4px 14px 5px; }
 .print-surface.size-3x5.layout-classic .uoc-pill { min-width: auto; max-width: none; }
 .print-surface.size-3x5 .program-back-header { height: 50px; padding: 5px 14px; gap: 10px; }
-.print-surface.size-3x5 .program-back-header img { height: 34px; max-width: 120px; }
-.print-surface.size-3x5 .program-back-header img[data-logo-key="oav"] { height: 40px; max-width: 150px; }
+.print-surface.size-3x5 .program-back-header img { height: 34px; max-width: none; width: 31%; }
+.print-surface.size-3x5 .program-back-header img[data-logo-key="oav"] { height: 34px; max-width: none; }
 .print-surface.size-3x5 .program-back-header .logo-divider { height: 32px; }
 .print-surface.size-3x5 .title-strip { padding: 5px 18px; gap: 8px; }
 .print-surface.size-3x5 .program-name,
@@ -1921,6 +1963,47 @@ body[data-partner="vamp"] .coming-soon-program-name {
   letter-spacing: 0.08em;
   padding: 0 6px;
   text-transform: uppercase;
+}
+.logo-size-group {
+  border: 1px solid var(--border-rose);
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1fr;
+  margin: 0;
+  padding: 12px;
+  width: 100%;
+}
+.logo-size-group legend {
+  color: var(--maroon);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 0 6px;
+  text-transform: uppercase;
+}
+.logo-size-control-row {
+  align-items: center;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 52px 1fr 42px;
+}
+.logo-size-control-row span {
+  color: #555;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.logo-size-control-row output {
+  color: #555;
+  font-size: 10px;
+  font-weight: 800;
+  text-align: right;
+}
+.logo-size-slider {
+  accent-color: var(--maroon);
+  width: 100%;
 }
 .search-row input[type="text"] {
   flex: 1 1 100%; padding: 7px 12px; font-size: 13px;
@@ -2093,6 +2176,24 @@ body[data-partner="vamp"] .coming-soon-program-name {
       <span>Logo 3</span>
       <select id="header-logo-3-select" class="header-logo-select" data-logo-slot="3" aria-label="Third header logo"></select>
     </label>
+    <fieldset class="logo-size-group">
+      <legend>Logo Size</legend>
+      <label class="logo-size-control-row" for="header-logo-1-size">
+        <span>Logo 1</span>
+        <input id="header-logo-1-size" class="logo-size-slider" type="range" min="50" max="220" step="5" data-logo-slot="1" aria-label="Logo 1 size">
+        <output id="header-logo-1-size-output" for="header-logo-1-size">100%</output>
+      </label>
+      <label class="logo-size-control-row" for="header-logo-2-size">
+        <span>Logo 2</span>
+        <input id="header-logo-2-size" class="logo-size-slider" type="range" min="50" max="220" step="5" data-logo-slot="2" aria-label="Logo 2 size">
+        <output id="header-logo-2-size-output" for="header-logo-2-size">100%</output>
+      </label>
+      <label class="logo-size-control-row" for="header-logo-3-size">
+        <span>Logo 3</span>
+        <input id="header-logo-3-size" class="logo-size-slider" type="range" min="50" max="220" step="5" data-logo-slot="3" aria-label="Logo 3 size">
+        <output id="header-logo-3-size-output" for="header-logo-3-size">100%</output>
+      </label>
+    </fieldset>
     <fieldset class="font-size-group">
       <legend>Font Size</legend>
       <label class="field-control font-size-control" for="band-series-font-size">
@@ -2676,6 +2777,7 @@ const descFontSelect = document.getElementById('session-desc-font-size');
 const seriesFontSelect = document.getElementById('band-series-font-size');
 const headshotSizeSelect = document.getElementById('headshot-image-size');
 const headerLogoSelects = Array.from(document.querySelectorAll('.header-logo-select'));
+const headerLogoSizeSliders = Array.from(document.querySelectorAll('.logo-size-slider'));
 const leftLogo = document.querySelector('.logo-left');
 const rightLogo = document.querySelector('.logo-right');
 const headerLogoPlaceholders = {
@@ -2691,7 +2793,8 @@ let currentSide = 'front';
 let currentSessionRow = null;
 const PARTNER_STORAGE_KEY = 'facebook_promo_partner';
 const HEADER_LOGO_STORAGE_KEY = 'facebook_promo_header_logos';
-const PARTNER_LOGOS_API = 'https://somebodytotalkto.com/api/session-editor/partners/logos?limit=1000';
+const HEADER_LOGO_SIZE_STORAGE_KEY = 'facebook_promo_header_logo_sizes';
+const PARTNER_LOGOS_API = 'https://somebodytotalkto.com/api/session-editor/partners/logos?limit=1000&include_base64=true';
 const HEADER_LOGO_STATIC_OPTIONS = [
   { key: '', label: 'Select logo', src: '', alt: '' },
   { key: 'sttt', label: 'Somebody To Talk To', src: 'header-logos/sttt-logo.png', alt: 'Somebody To Talk To' },
@@ -2711,6 +2814,7 @@ const HEADER_LOGO_STATIC_OPTIONS = [
 ];
 let headerLogoOptions = HEADER_LOGO_STATIC_OPTIONS.slice();
 let selectedHeaderLogos = loadSelectedHeaderLogos();
+let selectedHeaderLogoSizes = loadSelectedHeaderLogoSizes();
 const PARTNER_CONFIG_FALLBACK = {
   defaultPartner: 'uoc',
   partners: {
@@ -2751,7 +2855,7 @@ const PARTNER_CONFIG_FALLBACK = {
       colors: {
         primary: '#1C1C1C',
         primaryDark: '#111111',
-        accent: '#FFD84D',
+        accent: '#FFE8A3',
         borderAccent: '#E2D0A5',
         softBg: '#F8EFCF',
         sessionBandBg: '#000000'
@@ -3012,6 +3116,101 @@ function getHeaderLogoOption(key) {
   return headerLogoOptions.find(option => option.key === key) || headerLogoOptions[0];
 }
 
+const LOGO_DISPLAY_SRC_CACHE = new Map();
+
+function isRemoteSrc(src) {
+  return /^https?:\/\//i.test(String(src || ''));
+}
+
+function loadImageFromSrc(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('Unable to load logo image'));
+    img.src = src;
+  });
+}
+
+async function getDisplayLogoSrc(src) {
+  if (!src || (!isRemoteSrc(src) && !String(src).startsWith('data:image/'))) return src;
+  if (LOGO_DISPLAY_SRC_CACHE.has(src)) return LOGO_DISPLAY_SRC_CACHE.get(src);
+
+  let sourceDataUrl = src;
+  if (isRemoteSrc(src)) {
+    const response = await fetch(src, { mode: 'cors', cache: 'force-cache' });
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    sourceDataUrl = await readBlobAsDataUrl(await response.blob());
+  }
+  const sourceImg = await loadImageFromSrc(sourceDataUrl);
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  canvas.width = sourceImg.naturalWidth || sourceImg.width;
+  canvas.height = sourceImg.naturalHeight || sourceImg.height;
+  ctx.drawImage(sourceImg, 0, 0);
+
+  const { data, width, height } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  let minX = width, minY = height, maxX = -1, maxY = -1;
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const i = (y * width + x) * 4;
+      const alpha = data[i + 3];
+      const r = data[i], g = data[i + 1], b = data[i + 2];
+      const isVisible = alpha > 8 && !(r > 248 && g > 248 && b > 248);
+      if (isVisible) {
+        minX = Math.min(minX, x);
+        minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x);
+        maxY = Math.max(maxY, y);
+      }
+    }
+  }
+
+  if (maxX < minX || maxY < minY) {
+    LOGO_DISPLAY_SRC_CACHE.set(src, sourceDataUrl);
+    return sourceDataUrl;
+  }
+
+  const contentW = maxX - minX + 1;
+  const contentH = maxY - minY + 1;
+  const hasLargeMargin = contentW / width < 0.86 || contentH / height < 0.86;
+  if (!hasLargeMargin) {
+    LOGO_DISPLAY_SRC_CACHE.set(src, sourceDataUrl);
+    return sourceDataUrl;
+  }
+
+  const pad = Math.round(Math.max(contentW, contentH) * 0.04);
+  const cropX = Math.max(0, minX - pad);
+  const cropY = Math.max(0, minY - pad);
+  const cropW = Math.min(width - cropX, contentW + pad * 2);
+  const cropH = Math.min(height - cropY, contentH + pad * 2);
+  const croppedCanvas = document.createElement('canvas');
+  croppedCanvas.width = cropW;
+  croppedCanvas.height = cropH;
+  croppedCanvas.getContext('2d').drawImage(canvas, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+  const croppedDataUrl = croppedCanvas.toDataURL('image/png');
+  LOGO_DISPLAY_SRC_CACHE.set(src, croppedDataUrl);
+  return croppedDataUrl;
+}
+
+function setLogoImageSrc(img, option) {
+  if (!img || !option || !option.src) return;
+  const logoKey = option.key || '';
+  img.style.display = '';
+  img.removeAttribute('crossorigin');
+  img.src = option.src;
+  img.alt = option.alt || option.label || 'Header logo';
+  img.dataset.logoKey = logoKey;
+
+  getDisplayLogoSrc(option.src)
+    .then(displaySrc => {
+      if (img.dataset.logoKey === logoKey && displaySrc && displaySrc !== img.src) {
+        img.removeAttribute('crossorigin');
+        img.src = displaySrc;
+      }
+    })
+    .catch(() => {});
+}
+
 function normalizeLogoLookupKey(value) {
   return String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
 }
@@ -3040,12 +3239,14 @@ function normalizePartnerLogoOption(row) {
   const logo = row && row.logo ? row.logo : {};
   if (!row || !logo.url) return null;
   const key = getStaticHeaderLogoKeyForPartner(row.name) || ('partner-' + (row.uuid || row.tid || normalizeLogoLookupKey(row.name)));
+  const logoSrc = logoDataToSrc(logo) || logo.url;
   return {
     key,
     label: row.name || logo.alt || 'Partner logo',
-    src: logo.url,
+    src: logoSrc,
     alt: logo.alt || row.name || 'Partner logo',
     source: 'api',
+    url: logo.url,
     mime: logo.mime || '',
     width: logo.width || null,
     height: logo.height || null
@@ -3107,6 +3308,84 @@ function saveSelectedHeaderLogos() {
   }
 }
 
+function normalizeLogoSize(value) {
+  const size = Number(value);
+  if (!Number.isFinite(size)) return 100;
+  return Math.min(220, Math.max(50, Math.round(size / 5) * 5));
+}
+
+function loadSelectedHeaderLogoSizes() {
+  try {
+    const stored = JSON.parse(window.localStorage.getItem(HEADER_LOGO_SIZE_STORAGE_KEY) || 'null');
+    if (stored && typeof stored === 'object') {
+      return {
+        1: normalizeLogoSize(stored[1]),
+        2: normalizeLogoSize(stored[2]),
+        3: normalizeLogoSize(stored[3])
+      };
+    }
+  } catch(e) {
+    // Ignore invalid saved choices and use defaults.
+  }
+  return { 1: 100, 2: 100, 3: 100 };
+}
+
+function saveSelectedHeaderLogoSizes() {
+  try {
+    window.localStorage.setItem(HEADER_LOGO_SIZE_STORAGE_KEY, JSON.stringify(selectedHeaderLogoSizes));
+  } catch(e) {
+    // Keep the in-memory sizes even if browser storage is unavailable.
+  }
+}
+
+function updateHeaderLogoSizeControls() {
+  headerLogoSizeSliders.forEach(slider => {
+    const slot = slider.dataset.logoSlot;
+    const size = normalizeLogoSize(selectedHeaderLogoSizes[slot]);
+    slider.value = size;
+    const output = document.getElementById(slider.id + '-output');
+    if (output) output.textContent = size + '%';
+  });
+}
+
+function applyHeaderLogoSizes() {
+  const slotSelectors = {
+    1: [
+      '.uoc-pill img',
+      '#back-logo-left',
+      '#session-promo-uoc-logo',
+      '#session-back-sttt-logo',
+      '#coming-logo-af',
+      '#coming-back-logo-af',
+      '#calendar-logo-partner'
+    ],
+    2: [
+      '.logo-left',
+      '#back-logo-mid',
+      '#session-promo-oav-logo',
+      '#session-back-oav-logo',
+      '#coming-logo-oav',
+      '#coming-back-logo-oav',
+      '#calendar-logo-af'
+    ],
+    3: [
+      '.logo-right',
+      '#back-logo-right',
+      '#session-promo-sttt-logo',
+      '#coming-logo-sttt',
+      '#coming-back-logo-sttt',
+      '#calendar-logo-oav'
+    ]
+  };
+  Object.keys(slotSelectors).forEach(slot => {
+    const scale = normalizeLogoSize(selectedHeaderLogoSizes[slot]) / 100;
+    document.querySelectorAll(slotSelectors[slot].join(',')).forEach(img => {
+      img.style.transform = 'scale(' + scale + ')';
+      img.style.transformOrigin = 'center center';
+    });
+  });
+}
+
 function populateHeaderLogoSelects() {
   headerLogoSelects.forEach(select => {
     select.innerHTML = headerLogoOptions.map(option =>
@@ -3120,11 +3399,7 @@ function populateHeaderLogoSelects() {
 }
 
 function setImageFromLogoOption(img, option) {
-  if (!img || !option || !option.src) return;
-  img.style.display = '';
-  img.src = option.src;
-  img.alt = option.alt || option.label || 'Header logo';
-  img.dataset.logoKey = option.key || '';
+  setLogoImageSrc(img, option);
 }
 
 function getEffectiveLogoOption(slot, fallback) {
@@ -3133,11 +3408,7 @@ function getEffectiveLogoOption(slot, fallback) {
 }
 
 function applyLogoOptionToImage(img, option) {
-  if (!img || !option || !option.src) return;
-  img.style.display = '';
-  img.src = option.src;
-  img.alt = option.alt || option.label || 'Header logo';
-  img.dataset.logoKey = option.key || '';
+  setLogoImageSrc(img, option);
 }
 
 function getDefaultLogoOption(key, fallbackAlt) {
@@ -3292,6 +3563,7 @@ function syncComingSoonCard() {
   setText('coming-back-secondary', cfg.backSecondaryText || 'Subscribing is free and helps you stay connected to upcoming online sessions.');
   setText('coming-back-fine-print', cfg.backFinePrint || '* Subscribing is free and your information is never shared with third parties.');
   setHtml('coming-fine-print', '* Microsite link: <strong>' + (cfg.fullLink || '') + '</strong>');
+  applyHeaderLogoSizes();
 }
 
 function calendarNormalizeSpaces(value) {
@@ -3421,6 +3693,7 @@ function syncCalendarCard() {
   if (isCalendarCardLayout() && !calendarSessionsLoaded) {
     loadCalendarSessions();
   }
+  applyHeaderLogoSizes();
 }
 
 function getCalendarProgramTime(zone = selectedTimezone) {
@@ -3703,8 +3976,15 @@ function applyBackCardFontSizes() {
   document.querySelectorAll('.session-back-top-title').forEach(el => {
     el.style.fontSize = titlePrefixSize + 'px';
   });
-  document.querySelectorAll('.program-back-title, .session-back-feature-title, .session-back-title').forEach(el => {
+  document.querySelectorAll('.program-back-title, .session-back-title').forEach(el => {
     el.style.fontSize = titleSize + 'px';
+  });
+  document.querySelectorAll('.session-back-feature-title').forEach(el => {
+    const featureTitleSize = activePartnerKey === 'vamp' ? Math.min(titleSize, 15) : titleSize;
+    el.style.fontSize = featureTitleSize + 'px';
+  });
+  document.querySelectorAll('.session-back-title').forEach(el => {
+    if (activePartnerKey === 'vamp') el.style.fontSize = Math.min(titleSize, 18) + 'px';
   });
   document.querySelectorAll('.program-back-text p, .session-back-text').forEach(el => {
     el.style.fontSize = descSize + 'px';
@@ -3872,8 +4152,14 @@ function syncSessionPromoLogos() {
   applyLogoOptionToImage(promoUoc, promoLogo1);
   applyLogoOptionToImage(promoOav, promoLogo2);
   applyLogoOptionToImage(promoSttt, promoLogo3);
-  applyLogoOptionToImage(backSttt, getEffectiveLogoOption(1, getDefaultLogoOption('sttt', 'Somebody To Talk To')));
-  applyLogoOptionToImage(backOav, getEffectiveLogoOption(2, getDefaultLogoOption('oav', 'oneAMYLOIDOSISvoice')));
+  const partnerBackLogo1 = activePartnerKey === 'vamp'
+    ? getDefaultLogoOption('sttt', 'Somebody To Talk To')
+    : getEffectiveLogoOption(1, getDefaultLogoOption('sttt', 'Somebody To Talk To'));
+  const partnerBackLogo2 = activePartnerKey === 'vamp'
+    ? getDefaultLogoOption('oav', 'oneAMYLOIDOSISvoice')
+    : getEffectiveLogoOption(2, getDefaultLogoOption('oav', 'oneAMYLOIDOSISvoice'));
+  applyLogoOptionToImage(backSttt, partnerBackLogo1);
+  applyLogoOptionToImage(backOav, partnerBackLogo2);
 }
 
 function syncSessionBackContent() {
@@ -3918,7 +4204,8 @@ function syncSessionBackContent() {
       };
     });
   }
-  const selectedFeatureLogo = getHeaderLogoOption(selectedHeaderLogos[3]);
+  const logos = Array.isArray(cfg.logos) ? cfg.logos : [];
+  const selectedFeatureLogo = logos.length ? null : getHeaderLogoOption(selectedHeaderLogos[3]);
   if (selectedFeatureLogo && selectedFeatureLogo.src) {
     logoCards.forEach((card, index) => {
       const img = card.querySelector('img');
@@ -3932,7 +4219,6 @@ function syncSessionBackContent() {
     applyBackCardFontSizes();
     return;
   }
-  const logos = Array.isArray(cfg.logos) ? cfg.logos : [];
   logoCards.forEach((card, index) => {
     const img = card.querySelector('img');
     const logo = logos[index];
@@ -4058,6 +4344,9 @@ function updateControlAvailability() {
   document.querySelectorAll('.header-logo-control').forEach(el => {
     el.style.display = headerLogoControlsVisible ? 'flex' : 'none';
   });
+  document.querySelectorAll('.logo-size-group').forEach(el => {
+    el.style.display = headerLogoControlsVisible ? 'grid' : 'none';
+  });
   document.querySelectorAll('.timezone-control').forEach(el => {
     el.style.display = ready && (sessionLookupVisible || calendarCard) ? '' : 'none';
   });
@@ -4146,6 +4435,21 @@ if (headshotSizeSelect) {
     applyHeadshotSize();
   });
 }
+
+updateHeaderLogoSizeControls();
+headerLogoSizeSliders.forEach(slider => {
+  slider.addEventListener('input', () => {
+    selectedHeaderLogoSizes[slider.dataset.logoSlot] = normalizeLogoSize(slider.value);
+    updateHeaderLogoSizeControls();
+    applyHeaderLogoSizes();
+  });
+  slider.addEventListener('change', () => {
+    selectedHeaderLogoSizes[slider.dataset.logoSlot] = normalizeLogoSize(slider.value);
+    saveSelectedHeaderLogoSizes();
+    updateHeaderLogoSizeControls();
+    applyHeaderLogoSizes();
+  });
+});
 
 populateHeaderLogoSelects();
 loadPartnerLogoOptions();
@@ -4325,6 +4629,7 @@ function updateHeaderLogos() {
     syncBackLogos();
     syncSessionPromoLogos();
     syncSessionBackContent();
+    applyHeaderLogoSizes();
     return;
   }
 
@@ -4355,6 +4660,7 @@ function updateHeaderLogos() {
   syncBackLogos();
   syncSessionPromoLogos();
   syncSessionBackContent();
+  applyHeaderLogoSizes();
 }
 
 function setLayout(layout) {
@@ -4461,18 +4767,11 @@ async function getExportSafeImageSrc(img) {
 
   if (EXPORT_IMAGE_DATA_URL_CACHE.has(src)) return EXPORT_IMAGE_DATA_URL_CACHE.get(src);
 
-  try {
-    const response = await fetch(src, { mode: 'cors', cache: 'force-cache' });
-    if (!response.ok) throw new Error('HTTP ' + response.status);
-    const dataUrl = await readBlobAsDataUrl(await response.blob());
-    EXPORT_IMAGE_DATA_URL_CACHE.set(src, dataUrl);
-    return dataUrl;
-  } catch (e) {
-    const logoKey = img.dataset.logoKey || getLogoKeyForSrcAlt(src, img.alt);
-    const staticOption = logoKey ? HEADER_LOGO_STATIC_OPTIONS.find(option => option.key === logoKey && option.src) : null;
-    if (staticOption && !/^https?:\/\//i.test(staticOption.src)) return staticOption.src;
-    throw e;
-  }
+  const response = await fetch(src, { mode: 'cors', cache: 'force-cache' });
+  if (!response.ok) throw new Error('HTTP ' + response.status);
+  const dataUrl = await readBlobAsDataUrl(await response.blob());
+  EXPORT_IMAGE_DATA_URL_CACHE.set(src, dataUrl);
+  return dataUrl;
 }
 
 async function prepareImagesForExport(root) {
