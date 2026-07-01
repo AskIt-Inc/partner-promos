@@ -2536,6 +2536,8 @@ body[data-partner="vamp"] .session-back-title {
       </select>
     </label>
   </div>
+  </div>
+  <div class="session-list-panel">
   <div class="search-row search-input-row search-control">
     <label class="field-control" for="session-search-input">
       <span>Session Search</span>
@@ -2546,8 +2548,6 @@ body[data-partner="vamp"] .session-back-title {
     <button class="btn-search" id="btn-search">Search</button>
     <button class="btn-clear" id="btn-clear" type="button">Clear</button>
   </div>
-  </div>
-  <div class="session-list-panel">
   <div class="search-status" id="search-status"></div>
   <div class="load-progress" id="session-load-progress" aria-hidden="true">
     <div class="load-progress-bar" id="session-load-progress-bar"></div>
@@ -4337,7 +4337,8 @@ function updateAppLayoutMode() {
   if (!appShell) return;
   const resultsEl = document.getElementById('search-results');
   const hasVisibleResults = Boolean(resultsEl && resultsEl.classList.contains('visible') && resultsEl.children.length);
-  appShell.classList.toggle('spotlight-session-layout', hasReadySelection() && (isSpotlightSessionListLayout() || hasVisibleResults));
+  const hasSessionLookup = hasReadySelection() && !isImmediatePreviewLayout();
+  appShell.classList.toggle('spotlight-session-layout', hasSessionLookup || hasVisibleResults);
 }
 
 function loadSelectedTimezone() {
