@@ -1337,6 +1337,40 @@ body[data-partner="vamp"] .coming-soon-program-name {
   padding: 4px 22px;
 }
 
+body[data-partner="vamp"] .card-back .title-strip {
+  border-bottom-color: #E2D0A5;
+}
+
+body[data-partner="vamp"] .card-back .program-name,
+body[data-partner="vamp"] .card-back .title-dot,
+body[data-partner="vamp"] .card-back .program-date,
+body[data-partner="vamp"] .card-back .program-back-text strong,
+body[data-partner="vamp"] .card-back .program-back-cta,
+body[data-partner="vamp"] .card-back .program-back-link,
+body[data-partner="vamp"] .card-back .qr-label,
+body[data-partner="vamp"] .card-back .program-back-fine-print strong {
+  color: #8A6400;
+}
+
+body[data-partner="vamp"] .card-back .coming-soon-badge {
+  background: #8A6400;
+  color: #fff;
+}
+
+body[data-partner="vamp"] .card-back .program-back-band {
+  background: #000;
+}
+
+body[data-partner="vamp"] .card-back .program-back-link {
+  background: #FFFBF0;
+  border-color: #E2D0A5;
+}
+
+body[data-partner="vamp"] .card-back .program-back-qr .qr-box {
+  background: #fff;
+  border-color: #E2D0A5;
+}
+
 /* ══════════════════════════════════════════════════
    SEPARATE FRONT PROMO CARD
    4 × 6 inch · 1800 × 1200 px at 300 DPI
@@ -2312,6 +2346,21 @@ body[data-partner="vamp"] .session-back-title {
         </div>
         <output id="header-logo-3-position-output">0,0</output>
       </div>
+      <label class="field-control image-size-control" for="headshot-image-size">
+        <span>Profile Image Size</span>
+        <select id="headshot-image-size" aria-label="Profile image size">
+          <option value="70">70px</option>
+          <option value="76">76px</option>
+          <option value="82">82px</option>
+          <option value="88">88px</option>
+          <option value="94" selected>94px (Default)</option>
+          <option value="100">100px</option>
+          <option value="106">106px</option>
+          <option value="112">112px</option>
+          <option value="118">118px</option>
+          <option value="124">124px</option>
+        </select>
+      </label>
     </fieldset>
     <fieldset class="font-size-group">
       <legend>Font Size</legend>
@@ -2520,21 +2569,6 @@ body[data-partner="vamp"] .session-back-title {
         <select id="back-footer-font-size" class="side-font-select" data-side-font-key="backFooter" aria-label="Back card footer note font size"></select>
       </label>
     </fieldset>
-    <label class="field-control image-size-control" for="headshot-image-size">
-      <span>Profile Image Size</span>
-      <select id="headshot-image-size" aria-label="Profile image size">
-        <option value="70">70px</option>
-        <option value="76">76px</option>
-        <option value="82">82px</option>
-        <option value="88">88px</option>
-        <option value="94" selected>94px (Default)</option>
-        <option value="100">100px</option>
-        <option value="106">106px</option>
-        <option value="112">112px</option>
-        <option value="118">118px</option>
-        <option value="124">124px</option>
-      </select>
-    </label>
   </div>
   </div>
   <div class="session-list-panel">
