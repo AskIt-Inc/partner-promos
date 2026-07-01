@@ -241,6 +241,9 @@ body {
   object-fit: contain;
   display: block;
 }
+.calendar-logo-slot img[data-logo-key="oav"] {
+  max-height: 46px;
+}
 .calendar-logo-bar .logo-divider {
   width: 1px;
   height: 36px;
@@ -330,7 +333,7 @@ body {
   background: var(--calendar-primary);
   border-radius: 5px;
   padding: 3px 2px 2px;
-  align-self: start;
+  align-self: center;
   flex-shrink: 0;
 }
 .calendar-chip-month {
@@ -456,6 +459,10 @@ body {
   height: 32px;
   max-width: 102px;
 }
+.print-surface.layout-calendar-card .coming-soon-logo-bar img[data-logo-key="oav"] {
+  height: 38px;
+  max-width: 148px;
+}
 .print-surface.layout-calendar-card .coming-soon-logo-bar img.coming-logo-af {
   height: 32px;
 }
@@ -540,6 +547,10 @@ body {
   width: auto;
   object-fit: contain;
 }
+.coming-soon-logo-bar img[data-logo-key="oav"] {
+  height: 52px;
+  max-width: 184px;
+}
 .coming-soon-logo-bar img.coming-logo-af { height: 40px; }
 .coming-soon-logo-bar img.coming-logo-vamp { height: 34px; max-width: 172px; }
 .coming-soon-logo-bar .logo-divider {
@@ -572,6 +583,9 @@ body {
   font-size: 13px;
   font-weight: 800;
   white-space: nowrap;
+}
+body[data-partner="vamp"] .coming-soon-program-name {
+  color: var(--coming-accent, var(--gold));
 }
 .coming-soon-date {
   color: #000;
@@ -733,6 +747,7 @@ body {
 }
 .print-surface.size-3x5 .coming-soon-logo-bar { padding: 6px 10px; gap: 8px; }
 .print-surface.size-3x5 .coming-soon-logo-bar img { height: 28px; max-width: 112px; }
+.print-surface.size-3x5 .coming-soon-logo-bar img[data-logo-key="oav"] { height: 32px; max-width: 132px; }
 .print-surface.size-3x5 .coming-soon-logo-bar img.coming-logo-af { height: 24px; }
 .print-surface.size-3x5 .coming-soon-logo-bar img.coming-logo-vamp { height: 19px; max-width: 98px; }
 .print-surface.size-3x5 .coming-soon-logo-bar .logo-divider { height: 22px; }
@@ -765,7 +780,8 @@ body {
   padding: 8px 20px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 18px;
   flex-shrink: 0;
   height: 72px;
 }
@@ -778,6 +794,46 @@ body {
   height: 48px; width: auto;
   object-fit: contain; max-width: 180px; flex-shrink: 1;
   order: 5;
+}
+.logo-bar .logo-left[data-logo-key="oav"],
+.logo-bar .logo-right[data-logo-key="oav"] {
+  height: 56px;
+  max-width: 190px;
+}
+.print-surface.layout-foundation .logo-bar {
+  justify-content: center;
+  gap: 14px;
+}
+.print-surface.layout-foundation .uoc-pill,
+.print-surface.layout-foundation .logo-left,
+.print-surface.layout-foundation .logo-right {
+  flex: 0 1 210px;
+  min-width: 0;
+  max-width: none;
+}
+.print-surface.layout-foundation .uoc-pill {
+  height: 56px;
+  padding: 0 10px;
+}
+.print-surface.layout-foundation .uoc-pill img {
+  width: 100%;
+  height: 56px;
+  max-height: 56px;
+  max-width: 100%;
+  object-fit: contain;
+}
+.print-surface.layout-foundation .logo-left,
+.print-surface.layout-foundation .logo-right {
+  width: 100%;
+  height: 56px;
+  max-height: 56px;
+  object-fit: contain;
+}
+.print-surface.layout-foundation .logo-left[data-logo-key="amyloidosis-foundation"],
+.print-surface.layout-foundation .logo-right[data-logo-key="amyloidosis-foundation"],
+.print-surface.layout-foundation .logo-left[data-logo-key="oav"],
+.print-surface.layout-foundation .logo-right[data-logo-key="oav"] {
+  object-fit: cover;
 }
 .logo-placeholder {
   min-width: 120px;
@@ -801,7 +857,7 @@ body {
 .logo-divider {
   width: 1px; height: 46px;
   background: var(--border-rose); flex-shrink: 0;
-  margin: 0 16px;
+  margin: 0;
   display: block;
   order: 2;
 }
@@ -1121,7 +1177,8 @@ body {
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 18px;
   background: #fff;
   flex-shrink: 0;
 }
@@ -1135,9 +1192,13 @@ body {
 .program-back-header .back-logo-left { max-width: 180px; }
 .program-back-header .back-logo-mid { max-width: 180px; }
 .program-back-header .back-logo-right { max-width: 180px; }
+.program-back-header img[data-logo-key="oav"] {
+  height: 58px;
+  max-width: 230px;
+}
 .program-back-header .logo-divider {
   height: 46px;
-  margin: 0 16px;
+  margin: 0;
   order: 0;
 }
 .title-strip {
@@ -1310,7 +1371,8 @@ body {
   max-width: 168px;
 }
 .session-promo-logo--oav {
-  max-width: 122px;
+  height: 58px;
+  max-width: 182px;
 }
 .session-promo-logo--sttt {
   max-width: 178px;
@@ -1552,7 +1614,7 @@ body {
 }
 .session-back-top-logo--oav {
   justify-self: end;
-  max-width: 96px;
+  max-width: 128px;
 }
 .session-back-top-title {
   border-left: 1px solid var(--border-rose);
@@ -1736,8 +1798,11 @@ body {
    3×5 OVERRIDES
    ══════════════════════════════════════════════════ */
 .print-surface.size-3x5 .logo-bar           { height: 50px; padding: 5px 14px; }
+.print-surface.size-3x5.layout-foundation .logo-bar { gap: 9px; }
 .print-surface.size-3x5 .logo-left          { height: 34px; max-width: 110px; }
 .print-surface.size-3x5 .logo-right         { height: 34px; max-width: 120px; }
+.print-surface.size-3x5 .logo-left[data-logo-key="oav"],
+.print-surface.size-3x5 .logo-right[data-logo-key="oav"] { height: 40px; max-width: 145px; }
 .print-surface.size-3x5 .logo-divider       { height: 32px; }
 .print-surface.size-3x5 .uoc-pill           { min-width: 120px; max-width: 145px; }
 .print-surface.size-3x5 .header-date        { font-size: 12px; }
@@ -1766,8 +1831,9 @@ body {
 .print-surface.size-3x5 .qr-label           { font-size: 7px; }
 .print-surface.size-3x5 .fine-print         { font-size: 9px; padding: 4px 14px 5px; }
 .print-surface.size-3x5.layout-classic .uoc-pill { min-width: auto; max-width: none; }
-.print-surface.size-3x5 .program-back-header { height: 50px; padding: 5px 14px; }
+.print-surface.size-3x5 .program-back-header { height: 50px; padding: 5px 14px; gap: 10px; }
 .print-surface.size-3x5 .program-back-header img { height: 34px; max-width: 120px; }
+.print-surface.size-3x5 .program-back-header img[data-logo-key="oav"] { height: 40px; max-width: 150px; }
 .print-surface.size-3x5 .program-back-header .logo-divider { height: 32px; }
 .print-surface.size-3x5 .title-strip { padding: 5px 18px; gap: 8px; }
 .print-surface.size-3x5 .program-name,
@@ -2185,6 +2251,10 @@ body {
   <button class="calendar-filter-control calendar-filter-btn" data-calendar-filter="Mon" type="button">Monday</button>
   <button class="calendar-filter-control calendar-filter-btn" data-calendar-filter="Wed" type="button">Wednesday</button>
   <button class="calendar-filter-control calendar-filter-btn" data-calendar-filter="Thu" type="button">Thursday</button>
+  <span class="control-divider calendar-filter-control">|</span>
+  <button class="calendar-filter-control calendar-range-btn active" data-calendar-range="all" type="button">Full Month</button>
+  <button class="calendar-filter-control calendar-range-btn" data-calendar-range="early" type="button">Card 1</button>
+  <button class="calendar-filter-control calendar-range-btn" data-calendar-range="late" type="button">Card 2</button>
   <button class="btn-png" id="btn-download-png" onclick="downloadPNG()">&#8595; PNG</button>
 </div>
 
@@ -2600,7 +2670,8 @@ let currentSide = 'front';
 let currentSessionRow = null;
 const PARTNER_STORAGE_KEY = 'facebook_promo_partner';
 const HEADER_LOGO_STORAGE_KEY = 'facebook_promo_header_logos';
-const HEADER_LOGO_OPTIONS = [
+const PARTNER_LOGOS_API = 'https://somebodytotalkto.com/api/session-editor/partners/logos?limit=1000';
+const HEADER_LOGO_STATIC_OPTIONS = [
   { key: '', label: 'Select logo', src: '', alt: '' },
   { key: 'sttt', label: 'Somebody To Talk To', src: 'header-logos/sttt-logo.png', alt: 'Somebody To Talk To' },
   { key: 'oav', label: 'oneAMYLOIDOSISvoice', src: 'header-logos/oneamyloidosisvoice-logo-red.svg', alt: 'oneAMYLOIDOSISvoice' },
@@ -2617,6 +2688,7 @@ const HEADER_LOGO_OPTIONS = [
   { key: 'vamp', label: 'Vanderbilt University Medical Center', src: 'header-logos/vamp-logo.png', alt: 'Vanderbilt University Medical Center' },
   { key: 'boston-university', label: 'Boston University', src: 'header-logos/boston-university-logo.png', alt: 'Boston University' }
 ];
+let headerLogoOptions = HEADER_LOGO_STATIC_OPTIONS.slice();
 let selectedHeaderLogos = loadSelectedHeaderLogos();
 const PARTNER_CONFIG_FALLBACK = {
   defaultPartner: 'uoc',
@@ -2631,6 +2703,7 @@ const PARTNER_CONFIG_FALLBACK = {
       calendar: {
         programTitle: 'Vanderbilt Amyloidosis Multidisciplinary Program',
         monthLabel: 'August',
+        daysLabel: 'Mondays, Wednesdays & Thursdays',
         seriesLabel: 'Amyloidosis Program Spotlight Series',
         micrositeUrl: 'vanderbilt.oneamyloidosisvoice.com',
         qrSrc: 'vamp_microsite_qr.png',
@@ -2657,10 +2730,10 @@ const PARTNER_CONFIG_FALLBACK = {
       colors: {
         primary: '#1C1C1C',
         primaryDark: '#111111',
-        accent: '#CFAE70',
+        accent: '#FFD84D',
         borderAccent: '#E2D0A5',
         softBg: '#F8EFCF',
-        sessionBandBg: 'linear-gradient(135deg, #1C1C1C 0%, #2A2A2A 58%, #CFAE70 100%)'
+        sessionBandBg: '#000000'
       }
     },
     uoc: {
@@ -2753,12 +2826,12 @@ const COMING_SOON_CONFIGS = {
     backPrimaryHtml: '<strong>Subscribe to SomeBodyToTalkTo</strong> to receive session registration links, Vanderbilt Amyloidosis Multidisciplinary Program updates, and free weekly amyloidosis session reminders directly to your inbox.',
     colors: {
       primary: '#1C1C1C',
-      accent: '#CFAE70',
+      accent: '#FFD84D',
       label: '#FEEEB6',
       softBg: '#F8EFCF',
       badgeText: '#fff',
-      bandBg: 'linear-gradient(135deg, #1C1C1C 0%, #2A2A2A 58%, #CFAE70 100%)',
-      backBandBg: 'linear-gradient(135deg, #1C1C1C 0%, #2A2A2A 66%, #CFAE70 100%)'
+      bandBg: '#000000',
+      backBandBg: '#000000'
     }
   },
   uoc: {
@@ -2851,6 +2924,7 @@ let selectedHeadshotSize = loadFontSize(HEADSHOT_SIZE_STORAGE_KEY, DEFAULT_HEADS
 const CALENDAR_DEFAULT_CONFIG = {
   programTitle: 'Monthly Calendar Card',
   monthLabel: 'Upcoming',
+  daysLabel: 'Mondays & Wednesdays',
   seriesLabel: 'Amyloidosis Program Spotlight Series',
   micrositeUrl: '',
   qrSrc: 'sttt_subscribe_qr.png',
@@ -2871,6 +2945,7 @@ let calendarSessionsPromise = null;
 let calendarSessionsData = { sessions: [], profiles: [] };
 let calendarSessionsSourceKey = '';
 let selectedCalendarFilters = new Set();
+let selectedCalendarRange = 'all';
 
 function normalizePartnerConfig(config) {
   const merged = config && config.partners ? config : PARTNER_CONFIG_FALLBACK;
@@ -2913,7 +2988,77 @@ function hasReadySelection() {
 }
 
 function getHeaderLogoOption(key) {
-  return HEADER_LOGO_OPTIONS.find(option => option.key === key) || HEADER_LOGO_OPTIONS[0];
+  return headerLogoOptions.find(option => option.key === key) || headerLogoOptions[0];
+}
+
+function normalizeLogoLookupKey(value) {
+  return String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+}
+
+function getStaticHeaderLogoKeyForPartner(name) {
+  const aliases = {
+    oneamyloidosisvoice: 'oav',
+    somebodytotalkto: 'sttt',
+    amyloidosisfoundation: 'amyloidosis-foundation',
+    amyloidosissupportgroups: 'amyloidosis-support-groups',
+    universityofchicagomedicine: 'uchicago-medicine',
+    uchicagomedicine: 'uchicago-medicine',
+    vanderbiltuniversitymedicalcenter: 'vamp',
+    vanderbiltamyloidosismultidisciplinaryprogram: 'vamp',
+    cityofhope: 'city-of-hope',
+    endeavorhealth: 'endeavor-health',
+    bostonuniversity: 'boston-university'
+  };
+  const key = normalizeLogoLookupKey(name);
+  if (aliases[key]) return aliases[key];
+  const match = HEADER_LOGO_STATIC_OPTIONS.find(option => normalizeLogoLookupKey(option.label) === key);
+  return match ? match.key : '';
+}
+
+function normalizePartnerLogoOption(row) {
+  const logo = row && row.logo ? row.logo : {};
+  if (!row || !logo.url) return null;
+  const key = getStaticHeaderLogoKeyForPartner(row.name) || ('partner-' + (row.uuid || row.tid || normalizeLogoLookupKey(row.name)));
+  return {
+    key,
+    label: row.name || logo.alt || 'Partner logo',
+    src: logo.url,
+    alt: logo.alt || row.name || 'Partner logo',
+    source: 'api',
+    mime: logo.mime || '',
+    width: logo.width || null,
+    height: logo.height || null
+  };
+}
+
+function setHeaderLogoOptionsFromApi(rows) {
+  const apiOptions = (Array.isArray(rows) ? rows : [])
+    .map(normalizePartnerLogoOption)
+    .filter(Boolean);
+  const apiByKey = new Map(apiOptions.map(option => [option.key, option]));
+  const staticKeys = new Set(HEADER_LOGO_STATIC_OPTIONS.map(option => option.key));
+  const mergedStaticOptions = HEADER_LOGO_STATIC_OPTIONS.map(option => {
+    const apiOption = apiByKey.get(option.key);
+    return apiOption ? { ...option, ...apiOption } : option;
+  });
+  const extraApiOptions = apiOptions
+    .filter(option => !staticKeys.has(option.key))
+    .sort((a, b) => a.label.localeCompare(b.label));
+  headerLogoOptions = [...mergedStaticOptions, ...extraApiOptions];
+}
+
+async function loadPartnerLogoOptions() {
+  try {
+    const res = await fetch(PARTNER_LOGOS_API, { headers: { Accept: 'application/json' } });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    setHeaderLogoOptionsFromApi(json.data || []);
+    populateHeaderLogoSelects();
+    updateHeaderLogos();
+  } catch (e) {
+    headerLogoOptions = HEADER_LOGO_STATIC_OPTIONS.slice();
+    populateHeaderLogoSelects();
+  }
 }
 
 function loadSelectedHeaderLogos() {
@@ -2943,10 +3088,13 @@ function saveSelectedHeaderLogos() {
 
 function populateHeaderLogoSelects() {
   headerLogoSelects.forEach(select => {
-    select.innerHTML = HEADER_LOGO_OPTIONS.map(option =>
+    select.innerHTML = headerLogoOptions.map(option =>
       '<option value="' + escapeHtml(option.key) + '">' + escapeHtml(option.label) + '</option>'
     ).join('');
     select.value = selectedHeaderLogos[select.dataset.logoSlot] || '';
+    if (select.value !== (selectedHeaderLogos[select.dataset.logoSlot] || '')) {
+      select.value = '';
+    }
   });
 }
 
@@ -2955,6 +3103,7 @@ function setImageFromLogoOption(img, option) {
   img.style.display = '';
   img.src = option.src;
   img.alt = option.alt || option.label || 'Header logo';
+  img.dataset.logoKey = option.key || '';
 }
 
 function getEffectiveLogoOption(slot, fallback) {
@@ -2967,13 +3116,25 @@ function applyLogoOptionToImage(img, option) {
   img.style.display = '';
   img.src = option.src;
   img.alt = option.alt || option.label || 'Header logo';
+  img.dataset.logoKey = option.key || '';
 }
 
 function getDefaultLogoOption(key, fallbackAlt) {
   return {
+    key,
     src: key === 'af' ? defaultLeftLogoSrc : (key === 'oav' ? oavLogoSrc : stttLogoSrc),
     alt: fallbackAlt
   };
+}
+
+function getLogoKeyForSrcAlt(src, alt) {
+  const labelKey = getStaticHeaderLogoKeyForPartner(alt);
+  if (labelKey) return labelKey;
+  const srcText = String(src || '').toLowerCase();
+  if (srcText.includes('oneamyloidosisvoice')) return 'oav';
+  if (srcText.includes('somebody') || srcText.includes('sttt')) return 'sttt';
+  if (srcText.includes('amyloidosis-foundation') || srcText.includes('af%20logo')) return 'amyloidosis-foundation';
+  return '';
 }
 
 function setHeaderSlotPlaceholder(slot, show) {
@@ -3072,6 +3233,7 @@ function syncComingSoonCard() {
     if (!img) return;
     img.src = src || '';
     img.alt = alt || '';
+    img.dataset.logoKey = getLogoKeyForSrcAlt(src, alt);
   };
   const setHtml = (id, html) => {
     const el = document.getElementById(id);
@@ -3148,7 +3310,31 @@ function calendarParseApiDate(dateText) {
     ? CALENDAR_DAY_NAMES[new Date(Date.UTC(year, monthIndex, dayNumber)).getUTCDay()]
     : '';
 
-  return { month: monthToken, day, weekday };
+  return { month: monthToken, day, weekday, dayNumber };
+}
+
+function calendarMatchesSelectedRange(session) {
+  if (selectedCalendarRange === 'all') return true;
+  const dayNumber = calendarParseApiDate(session.date).dayNumber;
+  if (!Number.isFinite(dayNumber)) return true;
+  if (selectedCalendarRange === 'early') return dayNumber <= 15;
+  if (selectedCalendarRange === 'late') return dayNumber > 15;
+  return true;
+}
+
+function getSessionWeekday(row = {}) {
+  return calendarParseApiDate(row.date || '').weekday;
+}
+
+function getSessionSeriesLabel(row = {}) {
+  const seriesLabel = calendarNormalizeSpaces(row.series_label || '');
+  if (seriesLabel) return seriesLabel;
+
+  if (activePartnerKey === 'vamp' && ['Mon', 'Wed', 'Thu'].includes(getSessionWeekday(row))) {
+    return 'Amyloidosis Program Spotlight Series';
+  }
+
+  return '';
 }
 
 function calendarBuildProfileMap(profiles) {
@@ -3189,6 +3375,7 @@ function syncCalendarCard() {
     if (!img) return;
     img.src = src || '';
     img.alt = alt || '';
+    img.dataset.logoKey = getLogoKeyForSrcAlt(src, alt);
   };
   const setText = (id, text) => {
     const el = document.getElementById(id);
@@ -3241,7 +3428,7 @@ function updateCalendarTimezoneDisplay() {
   const el = document.getElementById('calendar-footer-timezone');
   if (!el) return;
   const cfg = getCalendarConfig();
-  el.textContent = 'Mondays & Wednesdays in ' + (cfg.monthLabel || 'Upcoming') + ' · ' + getCalendarProgramTime();
+  el.textContent = (cfg.daysLabel || 'Mondays & Wednesdays') + ' in ' + (cfg.monthLabel || 'Upcoming') + ' · ' + getCalendarProgramTime();
 }
 
 function renderCalendarSessionsFromApi(sessions, profiles) {
@@ -3257,8 +3444,11 @@ function renderCalendarSessionsFromApi(sessions, profiles) {
     .slice()
     .sort((a, b) => Number(a.timestamp || 0) - Number(b.timestamp || 0));
   const filtered = selectedCalendarFilters.size === 0
-    ? sorted
-    : sorted.filter(session => selectedCalendarFilters.has(calendarParseApiDate(session.date).weekday));
+    ? sorted.filter(calendarMatchesSelectedRange)
+    : sorted.filter(session =>
+      selectedCalendarFilters.has(calendarParseApiDate(session.date).weekday)
+      && calendarMatchesSelectedRange(session)
+    );
 
   list.replaceChildren();
   list.classList.toggle('calendar-sessions-filtered', selectedCalendarFilters.size > 0);
@@ -3342,6 +3532,16 @@ function setCalendarFilter(filter) {
     btn.classList.toggle('active', btnFilter === 'all'
       ? selectedCalendarFilters.size === 0
       : selectedCalendarFilters.has(btnFilter));
+  });
+  if (calendarSessionsLoaded) {
+    renderCalendarSessionsFromApi(calendarSessionsData.sessions, calendarSessionsData.profiles);
+  }
+}
+
+function setCalendarRange(range) {
+  selectedCalendarRange = ['all', 'early', 'late'].includes(range) ? range : 'all';
+  document.querySelectorAll('.calendar-range-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.calendarRange === selectedCalendarRange);
   });
   if (calendarSessionsLoaded) {
     renderCalendarSessionsFromApi(calendarSessionsData.sessions, calendarSessionsData.profiles);
@@ -3910,6 +4110,7 @@ if (headshotSizeSelect) {
 }
 
 populateHeaderLogoSelects();
+loadPartnerLogoOptions();
 headerLogoSelects.forEach(select => {
   select.addEventListener('change', () => {
     selectedHeaderLogos[select.dataset.logoSlot] = select.value;
@@ -3921,6 +4122,12 @@ headerLogoSelects.forEach(select => {
 document.querySelectorAll('.calendar-filter-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     setCalendarFilter(btn.dataset.calendarFilter);
+  });
+});
+
+document.querySelectorAll('.calendar-range-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    setCalendarRange(btn.dataset.calendarRange);
   });
 });
 
@@ -4631,7 +4838,7 @@ function syncSessionRegistrationPromo(row, displayUrl, displayText) {
   const promoTitle = document.getElementById('session-promo-title');
   if (!promoTitle) return;
 
-  document.getElementById('session-promo-kicker').textContent = (row.series_label || '').trim() || 'Session Registration';
+  document.getElementById('session-promo-kicker').textContent = getSessionSeriesLabel(row) || 'Session Registration';
   promoTitle.textContent = row.title || 'Session Registration';
   document.getElementById('session-promo-date').textContent = row.date || 'Date TBA';
   document.getElementById('session-promo-time').textContent = getZoneTime(row) || 'Time TBA';
@@ -4753,7 +4960,7 @@ function populateCard(row) {
   // ── Series label ───────────────────────────────────────────────────────
   const seriesRow   = document.getElementById('band-series-row');
   const seriesLabel = document.getElementById('band-series-label');
-  const sl = (row.series_label || '').trim();
+  const sl = getSessionSeriesLabel(row);
   if (sl) {
     seriesLabel.textContent = sl;
     seriesRow.classList.add('visible');

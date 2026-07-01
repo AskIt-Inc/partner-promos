@@ -11,6 +11,7 @@
       "calendar": {
         "programTitle": "Vanderbilt Amyloidosis Multidisciplinary Program",
         "monthLabel": "August",
+        "daysLabel": "Mondays, Wednesdays & Thursdays",
         "seriesLabel": "Amyloidosis Program Spotlight Series",
         "micrositeUrl": "vanderbilt.oneamyloidosisvoice.com",
         "qrSrc": "vamp_microsite_qr.png",
@@ -37,10 +38,10 @@
       "colors": {
         "primary": "#1C1C1C",
         "primaryDark": "#111111",
-        "accent": "#CFAE70",
+        "accent": "#FFD84D",
         "borderAccent": "#E2D0A5",
         "softBg": "#F8EFCF",
-        "sessionBandBg": "linear-gradient(135deg, #1C1C1C 0%, #2A2A2A 58%, #CFAE70 100%)"
+        "sessionBandBg": "#000000"
       }
     },
     "uoc": {
