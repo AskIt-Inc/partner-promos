@@ -3973,6 +3973,20 @@ function getExportPartnerSlug() {
   return activePartnerConfig.exportSlug || activePartnerKey || 'partner';
 }
 
+function getExportTimestamp() {
+  const now = new Date();
+  const pad = value => String(value).padStart(2, '0');
+  return [
+    now.getFullYear(),
+    pad(now.getMonth() + 1),
+    pad(now.getDate())
+  ].join('') + '-' + [
+    pad(now.getHours()),
+    pad(now.getMinutes()),
+    pad(now.getSeconds())
+  ].join('');
+}
+
 function getCalendarReadyMessage(prefix = '') {
   const label = activePartnerConfig.label || 'selected partner';
   return prefix + 'Monthly Calendar Card loaded for ' + label + '. Use Front and Back to preview both sides.';
@@ -4405,6 +4419,67 @@ function getExportDimensions() {
 }
 
 /* ── PNG export ── */
+const EXPORT_IMAGE_DATA_URL_CACHE = new Map();
+const EXPORT_TRANSPARENT_PIXEL = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+
+function readBlobAsDataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error || new Error('Unable to read image blob'));
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function getExportSafeImageSrc(img) {
+  const src = img.currentSrc || img.src || '';
+  if (!/^https?:\/\//i.test(src)) return src;
+
+  const logoKey = img.dataset.logoKey || getLogoKeyForSrcAlt(src, img.alt);
+  const staticOption = logoKey ? HEADER_LOGO_STATIC_OPTIONS.find(option => option.key === logoKey && option.src) : null;
+  if (staticOption && !/^https?:\/\//i.test(staticOption.src)) return staticOption.src;
+
+  if (EXPORT_IMAGE_DATA_URL_CACHE.has(src)) return EXPORT_IMAGE_DATA_URL_CACHE.get(src);
+
+  const response = await fetch(src, { mode: 'cors', cache: 'force-cache' });
+  if (!response.ok) throw new Error('HTTP ' + response.status);
+  const dataUrl = await readBlobAsDataUrl(await response.blob());
+  EXPORT_IMAGE_DATA_URL_CACHE.set(src, dataUrl);
+  return dataUrl;
+}
+
+async function prepareImagesForExport(root) {
+  const restorers = [];
+  const images = Array.from(root.querySelectorAll('img'));
+
+  await Promise.all(images.map(async img => {
+    const originalSrc = img.getAttribute('src');
+    const originalCrossorigin = img.getAttribute('crossorigin');
+    let safeSrc = '';
+    try {
+      safeSrc = await getExportSafeImageSrc(img);
+    } catch(e) {
+      safeSrc = EXPORT_TRANSPARENT_PIXEL;
+    }
+    if (safeSrc && safeSrc !== img.src && safeSrc !== originalSrc) {
+      restorers.push(() => {
+        if (originalSrc === null) img.removeAttribute('src');
+        else img.setAttribute('src', originalSrc);
+        if (originalCrossorigin === null) img.removeAttribute('crossorigin');
+        else img.setAttribute('crossorigin', originalCrossorigin);
+      });
+      img.removeAttribute('crossorigin');
+      img.src = safeSrc;
+    }
+
+    if (img.decode) {
+      try { await img.decode(); } catch(e) {}
+    }
+  }));
+
+  return () => restorers.reverse().forEach(restore => restore());
+}
+
 async function captureCard(scale, pxW, pxH) {
   // dom-to-image-more scans ALL document.styleSheets for @font-face rules and
   // tries to fetch each font URL. Chrome/Firefox extension stylesheets inject
@@ -4414,6 +4489,7 @@ async function captureCard(scale, pxW, pxH) {
   // Fix: temporarily DISABLE extension-owned stylesheets before capture,
   // re-enable them after. This stops dom-to-image from ever seeing those rules.
   const disabledSheets = [];
+  let restoreImages = () => {};
   for (const sheet of Array.from(document.styleSheets)) {
     try {
       // Accessing cssRules throws for cross-origin sheets — those are safe to skip
@@ -4432,6 +4508,7 @@ async function captureCard(scale, pxW, pxH) {
   }
 
   try {
+    restoreImages = await prepareImagesForExport(surface);
     return await domtoimage.toPng(surface, {
       width: pxW, height: pxH,
       disableEmbedFonts: true,
@@ -4443,6 +4520,7 @@ async function captureCard(scale, pxW, pxH) {
       }
     });
   } finally {
+    restoreImages();
     // Always re-enable disabled sheets
     for (const sheet of disabledSheets) {
       try { sheet.disabled = false; } catch(e) {}
@@ -4458,7 +4536,7 @@ async function downloadPNG() {
   try {
     const dataUrl = await captureCard(scale, cfg.pxW, cfg.pxH);
     const a = document.createElement('a');
-    a.download = `facebook-promo-${getExportPartnerSlug()}-${getLayoutTag()}-${currentSide}-${cfg.tag}.png`;
+    a.download = `facebook-promo-${getExportPartnerSlug()}-${getLayoutTag()}-${currentSide}-${cfg.tag}-${getExportTimestamp()}.png`;
     a.href = dataUrl; a.click();
   } catch(e) { alert('PNG export failed: ' + e.message); }
   finally { btn.textContent = '↓ PNG'; btn.disabled = false; }
@@ -4516,6 +4594,32 @@ function getSessionSortValue(row) {
   return Number.isFinite(parsed) ? parsed / 1000 : 0;
 }
 
+function getDaySuffix(dayNum) {
+  return (dayNum === 1 || dayNum === 21 || dayNum === 31) ? 'st'
+    : (dayNum === 2 || dayNum === 22) ? 'nd'
+    : (dayNum === 3 || dayNum === 23) ? 'rd'
+    : 'th';
+}
+
+function formatSessionDisplayDate(dateText, { includeYear = false } = {}) {
+  const dateStr = String(dateText || '').trim();
+  if (!dateStr) return '';
+
+  try {
+    const d = new Date(dateStr.replace(',', '') + ' 12:00:00 UTC');
+    if (Number.isNaN(d.getTime())) return dateStr;
+
+    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const months = ['January','February','March','April','May','June',
+                    'July','August','September','October','November','December'];
+    const dayNum = d.getUTCDate();
+    const display = days[d.getUTCDay()] + ', ' + months[d.getUTCMonth()] + ' ' + dayNum + getDaySuffix(dayNum);
+    return includeYear ? display + ', ' + d.getUTCFullYear() : display;
+  } catch(e) {
+    return dateStr;
+  }
+}
+
 function getSessionResultMeta(row) {
   const timeText = getZoneTime(row) || row.time || '';
   const presenter = (row.presenters && row.presenters[0]) || {};
@@ -4525,7 +4629,7 @@ function getSessionResultMeta(row) {
     presenter.name_suffix,
     presenter.title
   ) || presenter.display_name || '';
-  return [row.date, timeText, presenterName].filter(Boolean).join(' · ');
+  return [formatSessionDisplayDate(row.date), timeText, presenterName].filter(Boolean).join(' · ');
 }
 
 function renderSessionResultList(rows, { keepListVisible = false } = {}) {
@@ -4840,7 +4944,7 @@ function syncSessionRegistrationPromo(row, displayUrl, displayText) {
 
   document.getElementById('session-promo-kicker').textContent = getSessionSeriesLabel(row) || 'Session Registration';
   promoTitle.textContent = row.title || 'Session Registration';
-  document.getElementById('session-promo-date').textContent = row.date || 'Date TBA';
+  document.getElementById('session-promo-date').textContent = formatSessionDisplayDate(row.date) || 'Date TBA';
   document.getElementById('session-promo-time').textContent = getZoneTime(row) || 'Time TBA';
 
   const presenter = getPresenterDisplay(row);
@@ -4934,25 +5038,7 @@ function populateCard(row) {
   const headerDateEl = document.getElementById('header-date');
   const headerTimeEl = document.getElementById('header-time');
   if (headerDateEl && headerTimeEl) {
-    const dateStr = (row.date || '').trim();
-    if (dateStr) {
-      try {
-        // Parse "May 21, 2026" safely — append noon to avoid TZ boundary issues
-        const d = new Date(dateStr.replace(',', '') + ' 12:00:00 UTC');
-        const days   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-        const months = ['January','February','March','April','May','June',
-                        'July','August','September','October','November','December'];
-        const dayNum = d.getUTCDate();
-        const sfx    = (dayNum === 1 || dayNum === 21 || dayNum === 31) ? 'st'
-                     : (dayNum === 2 || dayNum === 22)                  ? 'nd'
-                     : (dayNum === 3 || dayNum === 23)                  ? 'rd' : 'th';
-        headerDateEl.textContent = days[d.getUTCDay()] + ', ' + months[d.getUTCMonth()] + ' ' + dayNum + sfx;
-      } catch(e) {
-        headerDateEl.textContent = dateStr;
-      }
-    } else {
-      headerDateEl.textContent = '';
-    }
+    headerDateEl.textContent = formatSessionDisplayDate(row.date);
 
     updateSelectedTimezoneDisplay();
   }
@@ -4995,7 +5081,7 @@ function populateCard(row) {
   document.getElementById('presenter-role').textContent = getPresenterEmployer(presenter);
 
   // Date
-  document.getElementById('date-pill-date').textContent = row.date || '';
+  document.getElementById('date-pill-date').textContent = formatSessionDisplayDate(row.date) || '';
 
   // Timezone — selected front-card zone only.
   updateSelectedTimezoneDisplay();
