@@ -1758,8 +1758,12 @@ body[data-partner="vamp"] .session-back-top {
 
 body[data-partner="vamp"] .session-back-top-title {
   color: #8A6400;
-  overflow-wrap: normal;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+body[data-partner="vamp"] .session-back-top-title strong {
+  color: #0d0d0d;
 }
 
 body[data-partner="vamp"] .session-back-feature-eyebrow {
@@ -2164,31 +2168,31 @@ body[data-partner="vamp"] .session-back-title {
         <option value="HT">Hawaii Time - Honolulu</option>
       </select>
     </label>
-    <label class="field-control header-logo-control" for="header-logo-1-select">
+    <label class="field-control header-logo-control" data-logo-slot="1" for="header-logo-1-select">
       <span>Logo 1</span>
       <select id="header-logo-1-select" class="header-logo-select" data-logo-slot="1" aria-label="First header logo"></select>
     </label>
-    <label class="field-control header-logo-control" for="header-logo-2-select">
+    <label class="field-control header-logo-control" data-logo-slot="2" for="header-logo-2-select">
       <span>Logo 2</span>
       <select id="header-logo-2-select" class="header-logo-select" data-logo-slot="2" aria-label="Second header logo"></select>
     </label>
-    <label class="field-control header-logo-control" for="header-logo-3-select">
+    <label class="field-control header-logo-control" data-logo-slot="3" for="header-logo-3-select">
       <span>Logo 3</span>
       <select id="header-logo-3-select" class="header-logo-select" data-logo-slot="3" aria-label="Third header logo"></select>
     </label>
     <fieldset class="logo-size-group">
       <legend>Logo Size</legend>
-      <label class="logo-size-control-row" for="header-logo-1-size">
+      <label class="logo-size-control-row" data-logo-slot="1" for="header-logo-1-size">
         <span>Logo 1</span>
         <input id="header-logo-1-size" class="logo-size-slider" type="range" min="50" max="220" step="5" data-logo-slot="1" aria-label="Logo 1 size">
         <output id="header-logo-1-size-output" for="header-logo-1-size">100%</output>
       </label>
-      <label class="logo-size-control-row" for="header-logo-2-size">
+      <label class="logo-size-control-row" data-logo-slot="2" for="header-logo-2-size">
         <span>Logo 2</span>
         <input id="header-logo-2-size" class="logo-size-slider" type="range" min="50" max="220" step="5" data-logo-slot="2" aria-label="Logo 2 size">
         <output id="header-logo-2-size-output" for="header-logo-2-size">100%</output>
       </label>
-      <label class="logo-size-control-row" for="header-logo-3-size">
+      <label class="logo-size-control-row" data-logo-slot="3" for="header-logo-3-size">
         <span>Logo 3</span>
         <input id="header-logo-3-size" class="logo-size-slider" type="range" min="50" max="220" step="5" data-logo-slot="3" aria-label="Logo 3 size">
         <output id="header-logo-3-size-output" for="header-logo-3-size">100%</output>
@@ -2319,6 +2323,86 @@ body[data-partner="vamp"] .session-back-title {
           <option value="16">16px</option>
           <option value="16.5">16.5px</option>
         </select>
+      </label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="partner-back" for="partner-back-top-title-font-size">
+        <span>Back Card Top Title</span>
+        <select id="partner-back-top-title-font-size" class="side-font-select" data-side-font-key="partnerBackTopTitle" aria-label="Partner back top title font size"></select>
+      </label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="partner-back" for="partner-back-top-date-font-size">
+        <span>Back Card Top Date</span>
+        <select id="partner-back-top-date-font-size" class="side-font-select" data-side-font-key="partnerBackTopDate" aria-label="Partner back top date font size"></select>
+      </label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="partner-back" for="partner-back-feature-eyebrow-font-size">
+        <span>Feature Eyebrow</span>
+        <select id="partner-back-feature-eyebrow-font-size" class="side-font-select" data-side-font-key="partnerBackFeatureEyebrow" aria-label="Partner back feature eyebrow font size"></select>
+      </label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="partner-back" for="partner-back-feature-title-font-size">
+        <span>Feature Title</span>
+        <select id="partner-back-feature-title-font-size" class="side-font-select" data-side-font-key="partnerBackFeatureTitle" aria-label="Partner back feature title font size"></select>
+      </label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="partner-back" for="partner-back-eyebrow-font-size">
+        <span>Eyebrow</span>
+        <select id="partner-back-eyebrow-font-size" class="side-font-select" data-side-font-key="partnerBackEyebrow" aria-label="Partner back eyebrow font size"></select>
+      </label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="partner-back" for="partner-back-main-title-font-size">
+        <span>Main Title</span>
+        <select id="partner-back-main-title-font-size" class="side-font-select" data-side-font-key="partnerBackMainTitle" aria-label="Partner back main title font size"></select>
+      </label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="partner-back" for="partner-back-body-font-size">
+        <span>Body Text</span>
+        <select id="partner-back-body-font-size" class="side-font-select" data-side-font-key="partnerBackBody" aria-label="Partner back body text font size"></select>
+      </label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="partner-back" for="partner-back-url-font-size">
+        <span>URL</span>
+        <select id="partner-back-url-font-size" class="side-font-select" data-side-font-key="partnerBackUrl" aria-label="Partner back URL font size"></select>
+      </label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="partner-back" for="partner-back-qr-label-font-size">
+        <span>QR Label</span>
+        <select id="partner-back-qr-label-font-size" class="side-font-select" data-side-font-key="partnerBackQrLabel" aria-label="Partner back QR label font size"></select>
+      </label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="partner-back" for="partner-back-footer-font-size">
+        <span>Footer Note</span>
+        <select id="partner-back-footer-font-size" class="side-font-select" data-side-font-key="partnerBackFooter" aria-label="Partner back footer note font size"></select>
+      </label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="back" for="back-header-program-font-size">
+        <span>Header Program</span>
+        <select id="back-header-program-font-size" class="side-font-select" data-side-font-key="backHeaderProgram" aria-label="Back card header program font size"></select>
+      </label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="back" for="back-header-session-font-size">
+        <span>Header Session Label</span>
+        <select id="back-header-session-font-size" class="side-font-select" data-side-font-key="backHeaderSession" aria-label="Back card header session label font size"></select>
+      </label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="back" for="back-subscribe-badge-font-size">
+        <span>Subscribe Badge</span>
+        <select id="back-subscribe-badge-font-size" class="side-font-select" data-side-font-key="backSubscribeBadge" aria-label="Back card subscribe badge font size"></select>
+      </label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="back" for="back-band-title-font-size">
+        <span>Black Band Title</span>
+        <select id="back-band-title-font-size" class="side-font-select" data-side-font-key="backBandTitle" aria-label="Back card black band title font size"></select>
+      </label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="back" for="back-body-font-size">
+        <span>Body Text</span>
+        <select id="back-body-font-size" class="side-font-select" data-side-font-key="backBody" aria-label="Back card body text font size"></select>
+      </label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="back" for="back-cta-font-size">
+        <span>CTA Text</span>
+        <select id="back-cta-font-size" class="side-font-select" data-side-font-key="backCta" aria-label="Back card CTA text font size"></select>
+      </label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="back" for="back-url-font-size">
+        <span>URL</span>
+        <select id="back-url-font-size" class="side-font-select" data-side-font-key="backUrl" aria-label="Back card URL font size"></select>
+      </label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="back" for="back-secondary-body-font-size">
+        <span>Secondary Body Text</span>
+        <select id="back-secondary-body-font-size" class="side-font-select" data-side-font-key="backSecondaryBody" aria-label="Back card secondary body text font size"></select>
+      </label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="back" for="back-qr-label-font-size">
+        <span>QR Label</span>
+        <select id="back-qr-label-font-size" class="side-font-select" data-side-font-key="backQrLabel" aria-label="Back card QR label font size"></select>
+      </label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="back" for="back-footer-font-size">
+        <span>Footer Note</span>
+        <select id="back-footer-font-size" class="side-font-select" data-side-font-key="backFooter" aria-label="Back card footer note font size"></select>
       </label>
     </fieldset>
     <label class="field-control image-size-control" for="headshot-image-size">
@@ -2776,6 +2860,7 @@ const titleSuffixFontSelect = document.getElementById('session-title-suffix-font
 const descFontSelect = document.getElementById('session-desc-font-size');
 const seriesFontSelect = document.getElementById('band-series-font-size');
 const headshotSizeSelect = document.getElementById('headshot-image-size');
+const sideFontSelects = Array.from(document.querySelectorAll('.side-font-select'));
 const headerLogoSelects = Array.from(document.querySelectorAll('.header-logo-select'));
 const headerLogoSizeSliders = Array.from(document.querySelectorAll('.logo-size-slider'));
 const leftLogo = document.querySelector('.logo-left');
@@ -3046,6 +3131,113 @@ let selectedTitleSuffixFontSize = loadFontSize(TITLE_SUFFIX_FONT_STORAGE_KEY, DE
 let selectedDescFontSize = loadFontSize(DESC_FONT_STORAGE_KEY, DEFAULT_DESC_FONT_SIZE);
 let selectedSeriesFontSize = loadFontSize(SERIES_FONT_STORAGE_KEY, DEFAULT_SERIES_FONT_SIZE);
 let selectedHeadshotSize = loadFontSize(HEADSHOT_SIZE_STORAGE_KEY, DEFAULT_HEADSHOT_SIZE);
+const SIDE_FONT_STORAGE_PREFIX = 'facebook_promo_side_font_size_';
+const SIDE_FONT_CONTROL_CONFIGS = {
+  partnerBackTopTitle: {
+    scope: 'partner-back',
+    defaultSize: '12.5',
+    selectors: ['.session-back-top-title']
+  },
+  partnerBackTopDate: {
+    scope: 'partner-back',
+    defaultSize: '12.5',
+    selectors: ['.session-back-top-title strong']
+  },
+  partnerBackFeatureEyebrow: {
+    scope: 'partner-back',
+    defaultSize: '11',
+    selectors: ['.session-back-feature-eyebrow']
+  },
+  partnerBackFeatureTitle: {
+    scope: 'partner-back',
+    defaultSize: '17',
+    selectors: ['.session-back-feature-title']
+  },
+  partnerBackEyebrow: {
+    scope: 'partner-back',
+    defaultSize: '10',
+    selectors: ['.session-back-eyebrow']
+  },
+  partnerBackMainTitle: {
+    scope: 'partner-back',
+    defaultSize: '19',
+    selectors: ['.session-back-title']
+  },
+  partnerBackBody: {
+    scope: 'partner-back',
+    defaultSize: '12',
+    selectors: ['.session-back-text']
+  },
+  partnerBackUrl: {
+    scope: 'partner-back',
+    defaultSize: '10',
+    selectors: ['.session-back-link']
+  },
+  partnerBackQrLabel: {
+    scope: 'partner-back',
+    defaultSize: '14',
+    selectors: ['.session-back-qr-label']
+  },
+  partnerBackFooter: {
+    scope: 'partner-back',
+    defaultSize: '9.4',
+    selectors: ['.session-back-card .session-promo-footer']
+  },
+  backHeaderProgram: {
+    scope: 'back',
+    defaultSize: '13',
+    selectors: ['.card-back .program-name']
+  },
+  backHeaderSession: {
+    scope: 'back',
+    defaultSize: '13',
+    selectors: ['.card-back .program-date']
+  },
+  backSubscribeBadge: {
+    scope: 'back',
+    defaultSize: '9',
+    selectors: ['.card-back .coming-soon-badge']
+  },
+  backBandTitle: {
+    scope: 'back',
+    defaultSize: '15',
+    selectors: ['.program-back-title']
+  },
+  backBody: {
+    scope: 'back',
+    defaultSize: '12',
+    selectors: ['.program-back-text p:first-child']
+  },
+  backCta: {
+    scope: 'back',
+    defaultSize: '14',
+    selectors: ['.program-back-cta']
+  },
+  backUrl: {
+    scope: 'back',
+    defaultSize: '12',
+    selectors: ['.program-back-link']
+  },
+  backSecondaryBody: {
+    scope: 'back',
+    defaultSize: '12',
+    selectors: ['.program-back-text p:nth-of-type(n+2)']
+  },
+  backQrLabel: {
+    scope: 'back',
+    defaultSize: '12',
+    selectors: ['.program-back-qr .qr-label']
+  },
+  backFooter: {
+    scope: 'back',
+    defaultSize: '9',
+    selectors: ['.program-back-fine-print']
+  }
+};
+let selectedSideFontSizes = Object.fromEntries(Object.entries(SIDE_FONT_CONTROL_CONFIGS).map(([key, cfg]) => [
+  key,
+  loadFontSize(SIDE_FONT_STORAGE_PREFIX + key, cfg.defaultSize)
+]));
 const CALENDAR_DEFAULT_CONFIG = {
   programTitle: 'Monthly Calendar Card',
   monthLabel: 'Upcoming',
@@ -3963,6 +4155,50 @@ function saveFontSize(storageKey, value, defaultSize) {
   return normalized;
 }
 
+function formatFontSizeValue(value) {
+  const number = Number(value);
+  return Number.isInteger(number) ? String(number) : String(number).replace(/\.0$/, '');
+}
+
+function populateSideFontSelect(select, defaultSize) {
+  const values = [];
+  for (let size = 7; size <= 30; size += 0.5) {
+    values.push(formatFontSizeValue(size));
+  }
+  const normalizedDefault = formatFontSizeValue(defaultSize);
+  if (!values.includes(normalizedDefault)) values.push(normalizedDefault);
+  values.sort((a, b) => Number(a) - Number(b));
+  select.innerHTML = values.map(value => {
+    const label = value === normalizedDefault ? `${value}px (Default)` : `${value}px`;
+    return `<option value="${value}">${label}</option>`;
+  }).join('');
+}
+
+function initSideFontControls() {
+  sideFontSelects.forEach(select => {
+    const key = select.dataset.sideFontKey;
+    const cfg = SIDE_FONT_CONTROL_CONFIGS[key];
+    if (!cfg) return;
+    populateSideFontSelect(select, cfg.defaultSize);
+    select.value = selectedSideFontSizes[key] || cfg.defaultSize;
+    select.addEventListener('change', () => {
+      selectedSideFontSizes[key] = saveFontSize(SIDE_FONT_STORAGE_PREFIX + key, select.value, cfg.defaultSize);
+      applySideFontSizes();
+    });
+  });
+}
+
+function applySideFontSizes() {
+  Object.entries(SIDE_FONT_CONTROL_CONFIGS).forEach(([key, cfg]) => {
+    const size = Number(selectedSideFontSizes[key]) || Number(cfg.defaultSize);
+    cfg.selectors.forEach(selector => {
+      document.querySelectorAll(selector).forEach(el => {
+        el.style.fontSize = size + 'px';
+      });
+    });
+  });
+}
+
 function applyDescriptionFontSize() {
   const descEl = document.getElementById('session-desc');
   if (descEl) descEl.style.fontSize = selectedDescFontSize + 'px';
@@ -3970,25 +4206,7 @@ function applyDescriptionFontSize() {
 }
 
 function applyBackCardFontSizes() {
-  const titleSize = Number(selectedTitleFontSize) || Number(DEFAULT_TITLE_FONT_SIZE);
-  const titlePrefixSize = Number(selectedTitlePrefixFontSize) || Number(DEFAULT_TITLE_PREFIX_FONT_SIZE);
-  const descSize = Number(selectedDescFontSize) || Number(DEFAULT_DESC_FONT_SIZE);
-  document.querySelectorAll('.session-back-top-title').forEach(el => {
-    el.style.fontSize = titlePrefixSize + 'px';
-  });
-  document.querySelectorAll('.program-back-title, .session-back-title').forEach(el => {
-    el.style.fontSize = titleSize + 'px';
-  });
-  document.querySelectorAll('.session-back-feature-title').forEach(el => {
-    const featureTitleSize = activePartnerKey === 'vamp' ? Math.min(titleSize, 15) : titleSize;
-    el.style.fontSize = featureTitleSize + 'px';
-  });
-  document.querySelectorAll('.session-back-title').forEach(el => {
-    if (activePartnerKey === 'vamp') el.style.fontSize = Math.min(titleSize, 18) + 'px';
-  });
-  document.querySelectorAll('.program-back-text p, .session-back-text').forEach(el => {
-    el.style.fontSize = descSize + 'px';
-  });
+  applySideFontSizes();
 }
 
 function applySeriesFontSize() {
@@ -4152,12 +4370,8 @@ function syncSessionPromoLogos() {
   applyLogoOptionToImage(promoUoc, promoLogo1);
   applyLogoOptionToImage(promoOav, promoLogo2);
   applyLogoOptionToImage(promoSttt, promoLogo3);
-  const partnerBackLogo1 = activePartnerKey === 'vamp'
-    ? getDefaultLogoOption('sttt', 'Somebody To Talk To')
-    : getEffectiveLogoOption(1, getDefaultLogoOption('sttt', 'Somebody To Talk To'));
-  const partnerBackLogo2 = activePartnerKey === 'vamp'
-    ? getDefaultLogoOption('oav', 'oneAMYLOIDOSISvoice')
-    : getEffectiveLogoOption(2, getDefaultLogoOption('oav', 'oneAMYLOIDOSISvoice'));
+  const partnerBackLogo1 = getEffectiveLogoOption(1, getDefaultLogoOption('sttt', 'Somebody To Talk To'));
+  const partnerBackLogo2 = getEffectiveLogoOption(2, getDefaultLogoOption('oav', 'oneAMYLOIDOSISvoice'));
   applyLogoOptionToImage(backSttt, partnerBackLogo1);
   applyLogoOptionToImage(backOav, partnerBackLogo2);
 }
@@ -4313,6 +4527,7 @@ function setSide(side) {
   document.getElementById('btn-back').classList.toggle('active', currentSide === 'back');
   document.getElementById('btn-partner-back').classList.toggle('active', currentSide === 'partner-back');
   updateSizeLabel();
+  updateControlAvailability();
 }
 
 function updateControlAvailability() {
@@ -4322,7 +4537,11 @@ function updateControlAvailability() {
   const ready = hasReadySelection();
   const autoSessionList = ready && isSpotlightSessionListLayout();
   updateAppLayoutMode();
-  const sessionFontControlsVisible = ready && (surface.classList.contains('layout-foundation') || surface.classList.contains('layout-classic') || calendarCard);
+  const sessionLayoutReady = ready && (surface.classList.contains('layout-foundation') || surface.classList.contains('layout-classic'));
+  const activeFontScope = currentSide === 'partner-back' ? 'partner-back' : (currentSide === 'back' ? 'back' : 'front');
+  const sessionFontControlsVisible = (activeFontScope === 'front' && (sessionLayoutReady || (ready && calendarCard)))
+    || (activeFontScope === 'back' && sessionLayoutReady)
+    || (activeFontScope === 'partner-back' && ready && canShowPartnerBackSide());
   const imageSizeControlVisible = sessionFontControlsVisible || (ready && currentSide === 'partner-back');
   const sessionLookupVisible = ready && !immediatePreview && !autoSessionList;
   const headerLogoControlsVisible = hasSelectedCard();
@@ -4333,7 +4552,8 @@ function updateControlAvailability() {
     el.style.display = partnerBack ? 'none' : '';
   });
   document.querySelectorAll('.font-size-control').forEach(el => {
-    el.style.display = sessionFontControlsVisible ? '' : 'none';
+    const scope = el.dataset.fontScope || 'front';
+    el.style.display = sessionFontControlsVisible && scope === activeFontScope ? '' : 'none';
   });
   document.querySelectorAll('.font-size-group').forEach(el => {
     el.style.display = sessionFontControlsVisible ? '' : 'none';
@@ -4342,7 +4562,12 @@ function updateControlAvailability() {
     el.style.display = imageSizeControlVisible ? '' : 'none';
   });
   document.querySelectorAll('.header-logo-control').forEach(el => {
-    el.style.display = headerLogoControlsVisible ? 'flex' : 'none';
+    const slot = el.dataset.logoSlot;
+    el.style.display = headerLogoControlsVisible && !(currentSide === 'partner-back' && slot === '3') ? 'flex' : 'none';
+  });
+  document.querySelectorAll('.logo-size-control-row').forEach(el => {
+    const slot = el.dataset.logoSlot;
+    el.style.display = headerLogoControlsVisible && !(currentSide === 'partner-back' && slot === '3') ? '' : 'none';
   });
   document.querySelectorAll('.logo-size-group').forEach(el => {
     el.style.display = headerLogoControlsVisible ? 'grid' : 'none';
@@ -4373,6 +4598,9 @@ function updateControlAvailability() {
     btn3x5.style.cursor = partnerBack || calendarCard ? 'default' : '';
   }
 }
+
+initSideFontControls();
+applySideFontSizes();
 
 if (timezoneSelect) {
   timezoneSelect.value = selectedTimezone;
