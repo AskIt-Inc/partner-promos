@@ -1992,14 +1992,16 @@ body[data-partner="vamp"] .session-back-title {
   gap: 8px;
   grid-template-columns: 52px 1fr 42px;
 }
-.logo-size-control-row span {
+.logo-size-control-row span,
+.logo-nudge-control span {
   color: #555;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
-.logo-size-control-row output {
+.logo-size-control-row output,
+.logo-nudge-control output {
   color: #555;
   font-size: 10px;
   font-weight: 800;
@@ -2008,6 +2010,39 @@ body[data-partner="vamp"] .session-back-title {
 .logo-size-slider {
   accent-color: var(--maroon);
   width: 100%;
+}
+.logo-nudge-control {
+  align-items: center;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 52px 1fr 42px;
+}
+.logo-nudge-pad {
+  align-items: center;
+  display: grid;
+  gap: 4px;
+  grid-template-columns: repeat(5, 28px);
+  justify-content: start;
+}
+.logo-nudge-btn {
+  align-items: center;
+  background: #fff;
+  border: 1px solid #bbb;
+  border-radius: 4px;
+  color: #222;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 800;
+  height: 24px;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+  width: 28px;
+}
+.logo-nudge-btn:hover {
+  border-color: var(--maroon);
+  color: var(--maroon);
 }
 .search-row input[type="text"] {
   flex: 1 1 100%; padding: 7px 12px; font-size: 13px;
@@ -2187,16 +2222,49 @@ body[data-partner="vamp"] .session-back-title {
         <input id="header-logo-1-size" class="logo-size-slider" type="range" min="50" max="220" step="5" data-logo-slot="1" aria-label="Logo 1 size">
         <output id="header-logo-1-size-output" for="header-logo-1-size">100%</output>
       </label>
+      <div class="logo-nudge-control" data-logo-slot="1">
+        <span>Move</span>
+        <div class="logo-nudge-pad">
+          <button type="button" class="logo-nudge-btn" data-logo-slot="1" data-logo-dx="-1" aria-label="Move logo 1 left">&larr;</button>
+          <button type="button" class="logo-nudge-btn" data-logo-slot="1" data-logo-dy="-1" aria-label="Move logo 1 up">&uarr;</button>
+          <button type="button" class="logo-nudge-btn" data-logo-slot="1" data-logo-reset="true" aria-label="Reset logo 1 position">&bull;</button>
+          <button type="button" class="logo-nudge-btn" data-logo-slot="1" data-logo-dy="1" aria-label="Move logo 1 down">&darr;</button>
+          <button type="button" class="logo-nudge-btn" data-logo-slot="1" data-logo-dx="1" aria-label="Move logo 1 right">&rarr;</button>
+        </div>
+        <output id="header-logo-1-position-output">0,0</output>
+      </div>
       <label class="logo-size-control-row" data-logo-slot="2" for="header-logo-2-size">
         <span>Logo 2</span>
         <input id="header-logo-2-size" class="logo-size-slider" type="range" min="50" max="220" step="5" data-logo-slot="2" aria-label="Logo 2 size">
         <output id="header-logo-2-size-output" for="header-logo-2-size">100%</output>
       </label>
+      <div class="logo-nudge-control" data-logo-slot="2">
+        <span>Move</span>
+        <div class="logo-nudge-pad">
+          <button type="button" class="logo-nudge-btn" data-logo-slot="2" data-logo-dx="-1" aria-label="Move logo 2 left">&larr;</button>
+          <button type="button" class="logo-nudge-btn" data-logo-slot="2" data-logo-dy="-1" aria-label="Move logo 2 up">&uarr;</button>
+          <button type="button" class="logo-nudge-btn" data-logo-slot="2" data-logo-reset="true" aria-label="Reset logo 2 position">&bull;</button>
+          <button type="button" class="logo-nudge-btn" data-logo-slot="2" data-logo-dy="1" aria-label="Move logo 2 down">&darr;</button>
+          <button type="button" class="logo-nudge-btn" data-logo-slot="2" data-logo-dx="1" aria-label="Move logo 2 right">&rarr;</button>
+        </div>
+        <output id="header-logo-2-position-output">0,0</output>
+      </div>
       <label class="logo-size-control-row" data-logo-slot="3" for="header-logo-3-size">
         <span>Logo 3</span>
         <input id="header-logo-3-size" class="logo-size-slider" type="range" min="50" max="220" step="5" data-logo-slot="3" aria-label="Logo 3 size">
         <output id="header-logo-3-size-output" for="header-logo-3-size">100%</output>
       </label>
+      <div class="logo-nudge-control" data-logo-slot="3">
+        <span>Move</span>
+        <div class="logo-nudge-pad">
+          <button type="button" class="logo-nudge-btn" data-logo-slot="3" data-logo-dx="-1" aria-label="Move logo 3 left">&larr;</button>
+          <button type="button" class="logo-nudge-btn" data-logo-slot="3" data-logo-dy="-1" aria-label="Move logo 3 up">&uarr;</button>
+          <button type="button" class="logo-nudge-btn" data-logo-slot="3" data-logo-reset="true" aria-label="Reset logo 3 position">&bull;</button>
+          <button type="button" class="logo-nudge-btn" data-logo-slot="3" data-logo-dy="1" aria-label="Move logo 3 down">&darr;</button>
+          <button type="button" class="logo-nudge-btn" data-logo-slot="3" data-logo-dx="1" aria-label="Move logo 3 right">&rarr;</button>
+        </div>
+        <output id="header-logo-3-position-output">0,0</output>
+      </div>
     </fieldset>
     <fieldset class="font-size-group">
       <legend>Font Size</legend>
@@ -2863,6 +2931,7 @@ const headshotSizeSelect = document.getElementById('headshot-image-size');
 const sideFontSelects = Array.from(document.querySelectorAll('.side-font-select'));
 const headerLogoSelects = Array.from(document.querySelectorAll('.header-logo-select'));
 const headerLogoSizeSliders = Array.from(document.querySelectorAll('.logo-size-slider'));
+const headerLogoNudgeButtons = Array.from(document.querySelectorAll('.logo-nudge-btn'));
 const leftLogo = document.querySelector('.logo-left');
 const rightLogo = document.querySelector('.logo-right');
 const headerLogoPlaceholders = {
@@ -2879,6 +2948,7 @@ let currentSessionRow = null;
 const PARTNER_STORAGE_KEY = 'facebook_promo_partner';
 const HEADER_LOGO_STORAGE_KEY = 'facebook_promo_header_logos';
 const HEADER_LOGO_SIZE_STORAGE_KEY = 'facebook_promo_header_logo_sizes';
+const HEADER_LOGO_POSITION_STORAGE_KEY = 'facebook_promo_header_logo_positions';
 const PARTNER_LOGOS_API = 'https://somebodytotalkto.com/api/session-editor/partners/logos?limit=1000&include_base64=true';
 const HEADER_LOGO_STATIC_OPTIONS = [
   { key: '', label: 'Select logo', src: '', alt: '' },
@@ -2900,6 +2970,7 @@ const HEADER_LOGO_STATIC_OPTIONS = [
 let headerLogoOptions = HEADER_LOGO_STATIC_OPTIONS.slice();
 let selectedHeaderLogos = loadSelectedHeaderLogos();
 let selectedHeaderLogoSizes = loadSelectedHeaderLogoSizes();
+let selectedHeaderLogoPositions = loadSelectedHeaderLogoPositions();
 const PARTNER_CONFIG_FALLBACK = {
   defaultPartner: 'uoc',
   partners: {
@@ -3530,6 +3601,48 @@ function saveSelectedHeaderLogoSizes() {
   }
 }
 
+function normalizeLogoOffset(value) {
+  const offset = Number(value);
+  if (!Number.isFinite(offset)) return 0;
+  return Math.min(40, Math.max(-40, Math.round(offset)));
+}
+
+function normalizeLogoPosition(value) {
+  const pos = value && typeof value === 'object' ? value : {};
+  return {
+    x: normalizeLogoOffset(pos.x),
+    y: normalizeLogoOffset(pos.y)
+  };
+}
+
+function loadSelectedHeaderLogoPositions() {
+  try {
+    const stored = JSON.parse(window.localStorage.getItem(HEADER_LOGO_POSITION_STORAGE_KEY) || 'null');
+    if (stored && typeof stored === 'object') {
+      return {
+        1: normalizeLogoPosition(stored[1]),
+        2: normalizeLogoPosition(stored[2]),
+        3: normalizeLogoPosition(stored[3])
+      };
+    }
+  } catch(e) {
+    // Ignore invalid saved choices and use defaults.
+  }
+  return {
+    1: { x: 0, y: 0 },
+    2: { x: 0, y: 0 },
+    3: { x: 0, y: 0 }
+  };
+}
+
+function saveSelectedHeaderLogoPositions() {
+  try {
+    window.localStorage.setItem(HEADER_LOGO_POSITION_STORAGE_KEY, JSON.stringify(selectedHeaderLogoPositions));
+  } catch(e) {
+    // Keep the in-memory positions even if browser storage is unavailable.
+  }
+}
+
 function updateHeaderLogoSizeControls() {
   headerLogoSizeSliders.forEach(slider => {
     const slot = slider.dataset.logoSlot;
@@ -3537,6 +3650,11 @@ function updateHeaderLogoSizeControls() {
     slider.value = size;
     const output = document.getElementById(slider.id + '-output');
     if (output) output.textContent = size + '%';
+  });
+  [1, 2, 3].forEach(slot => {
+    const pos = normalizeLogoPosition(selectedHeaderLogoPositions[slot]);
+    const output = document.getElementById('header-logo-' + slot + '-position-output');
+    if (output) output.textContent = pos.x + ',' + pos.y;
   });
 }
 
@@ -3571,8 +3689,9 @@ function applyHeaderLogoSizes() {
   };
   Object.keys(slotSelectors).forEach(slot => {
     const scale = normalizeLogoSize(selectedHeaderLogoSizes[slot]) / 100;
+    const pos = normalizeLogoPosition(selectedHeaderLogoPositions[slot]);
     document.querySelectorAll(slotSelectors[slot].join(',')).forEach(img => {
-      img.style.transform = 'scale(' + scale + ')';
+      img.style.transform = 'translate(' + pos.x + 'px, ' + pos.y + 'px) scale(' + scale + ')';
       img.style.transformOrigin = 'center center';
     });
   });
@@ -4674,6 +4793,23 @@ headerLogoSizeSliders.forEach(slider => {
   slider.addEventListener('change', () => {
     selectedHeaderLogoSizes[slider.dataset.logoSlot] = normalizeLogoSize(slider.value);
     saveSelectedHeaderLogoSizes();
+    updateHeaderLogoSizeControls();
+    applyHeaderLogoSizes();
+  });
+});
+headerLogoNudgeButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const slot = btn.dataset.logoSlot;
+    const current = normalizeLogoPosition(selectedHeaderLogoPositions[slot]);
+    if (btn.dataset.logoReset === 'true') {
+      selectedHeaderLogoPositions[slot] = { x: 0, y: 0 };
+    } else {
+      selectedHeaderLogoPositions[slot] = {
+        x: normalizeLogoOffset(current.x + Number(btn.dataset.logoDx || 0)),
+        y: normalizeLogoOffset(current.y + Number(btn.dataset.logoDy || 0))
+      };
+    }
+    saveSelectedHeaderLogoPositions();
     updateHeaderLogoSizeControls();
     applyHeaderLogoSizes();
   });
