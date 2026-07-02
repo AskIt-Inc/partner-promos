@@ -26,6 +26,7 @@
   --calendar-primary: #006E8E;
   --calendar-border: #B9DEE6;
   --calendar-accent: #FFE8A3;
+  --calendar-text-accent: #8A6400;
   --calendar-series-size: 10px;
   --calendar-band-title-size: 15px;
   --calendar-session-title-size: 10.35px;
@@ -364,7 +365,7 @@ body {
 }
 .calendar-session-presenter {
   font-size: var(--calendar-session-presenter-size);
-  color: #8A6400;
+  color: var(--calendar-text-accent);
   font-weight: 700;
   margin: 0 0 1px;
   line-height: 1.12;
@@ -1338,7 +1339,7 @@ body[data-partner="vamp"] .coming-soon-program-name {
 }
 
 body[data-partner="vamp"] .card-back .title-strip {
-  border-bottom-color: #E2D0A5;
+  border-bottom-color: var(--gold);
 }
 
 body[data-partner="vamp"] .card-back .program-name,
@@ -1349,11 +1350,11 @@ body[data-partner="vamp"] .card-back .program-back-cta,
 body[data-partner="vamp"] .card-back .program-back-link,
 body[data-partner="vamp"] .card-back .qr-label,
 body[data-partner="vamp"] .card-back .program-back-fine-print strong {
-  color: #8A6400;
+  color: var(--gold);
 }
 
 body[data-partner="vamp"] .card-back .coming-soon-badge {
-  background: #8A6400;
+  background: var(--gold);
   color: #fff;
 }
 
@@ -1363,12 +1364,12 @@ body[data-partner="vamp"] .card-back .program-back-band {
 
 body[data-partner="vamp"] .card-back .program-back-link {
   background: #FFFBF0;
-  border-color: #E2D0A5;
+  border-color: var(--gold);
 }
 
 body[data-partner="vamp"] .card-back .program-back-qr .qr-box {
   background: #fff;
-  border-color: #E2D0A5;
+  border-color: var(--gold);
 }
 
 /* ══════════════════════════════════════════════════
@@ -1791,7 +1792,7 @@ body[data-partner="vamp"] .session-back-top {
 }
 
 body[data-partner="vamp"] .session-back-top-title {
-  color: #8A6400;
+  color: var(--gold);
   overflow-wrap: anywhere;
   white-space: normal;
 }
@@ -1809,7 +1810,7 @@ body[data-partner="vamp"] .session-back-title,
 body[data-partner="vamp"] .session-back-text strong,
 body[data-partner="vamp"] .session-back-link,
 body[data-partner="vamp"] .session-back-qr-label {
-  color: #8A6400;
+  color: var(--gold);
 }
 
 body[data-partner="vamp"] .session-back-feature-rule {
@@ -3097,7 +3098,7 @@ const PARTNER_CONFIG_FALLBACK = {
         primary: '#1C1C1C',
         primaryDark: '#111111',
         accent: '#FFE8A3',
-        borderAccent: '#E2D0A5',
+        borderAccent: '#FFE8A3',
         softBg: '#F8EFCF',
         sessionBandBg: '#000000'
       }
@@ -3192,8 +3193,8 @@ const COMING_SOON_CONFIGS = {
     backPrimaryHtml: '<strong>Subscribe to SomeBodyToTalkTo</strong> to receive session registration links, Vanderbilt Amyloidosis Multidisciplinary Program updates, and free weekly amyloidosis session reminders directly to your inbox.',
     colors: {
       primary: '#1C1C1C',
-      accent: '#FFD84D',
-      label: '#FEEEB6',
+      accent: '#FFE8A3',
+      label: '#FFE8A3',
       softBg: '#F8EFCF',
       badgeText: '#fff',
       bandBg: '#000000',
@@ -4111,6 +4112,7 @@ function syncCalendarCard() {
   root.style.setProperty('--calendar-primary', colors.primary || '#006E8E');
   root.style.setProperty('--calendar-border', colors.borderAccent || '#B9DEE6');
   root.style.setProperty('--calendar-accent', colors.accent || '#FFE8A3');
+  root.style.setProperty('--calendar-text-accent', activePartnerKey === 'vamp' ? (colors.accent || '#FFE8A3') : '#8A6400');
   applyCalendarFontSizes();
   const setImg = (id, src, alt) => {
     const img = document.getElementById(id);

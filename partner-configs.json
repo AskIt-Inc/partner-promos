@@ -39,7 +39,7 @@
         "primary": "#1C1C1C",
         "primaryDark": "#111111",
         "accent": "#FFE8A3",
-        "borderAccent": "#E2D0A5",
+        "borderAccent": "#FFE8A3",
         "softBg": "#F8EFCF",
         "sessionBandBg": "#000000"
       }
