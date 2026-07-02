@@ -66,6 +66,11 @@ body {
 }
 
 .app-preview-pane {
+  position: sticky;
+  top: 24px;
+  align-self: start;
+  max-height: calc(100vh - 48px);
+  overflow: auto;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -865,6 +870,43 @@ body[data-partner="vamp"] .coming-soon-program-name {
 }
 .logo-placeholder.visible {
   display: flex;
+}
+.dynamic-logo-placeholder {
+  min-width: 84px;
+  height: 36px;
+  border-color: var(--border);
+  color: #8a7278;
+  flex-shrink: 0;
+  font-size: 12px;
+}
+.coming-soon-logo-bar .dynamic-logo-placeholder,
+.program-back-header .dynamic-logo-placeholder {
+  flex: 0 1 31%;
+  height: 44px;
+  min-width: 0;
+  width: 31%;
+}
+.session-promo-top .dynamic-logo-placeholder {
+  height: 42px;
+  min-width: 130px;
+}
+.session-back-top .dynamic-logo-placeholder {
+  height: 30px;
+  min-width: 84px;
+}
+.session-back-top-logo--sttt + .dynamic-logo-placeholder {
+  justify-self: start;
+}
+.session-back-top-logo--oav + .dynamic-logo-placeholder {
+  justify-self: end;
+}
+.session-back-feature-logo-card .dynamic-logo-placeholder {
+  height: 24px;
+  min-width: 120px;
+}
+.coming-soon-partner-pill .dynamic-logo-placeholder {
+  height: 34px;
+  min-width: 130px;
 }
 .logo-placeholder-1 { order: 1; }
 .logo-placeholder-2 { order: 3; }
@@ -2246,6 +2288,9 @@ body[data-partner="vamp"] .session-back-title {
   }
   .app-shell.spotlight-session-layout .app-preview-pane {
     grid-column: auto;
+    position: static;
+    max-height: none;
+    overflow: visible;
   }
   .app-shell.spotlight-session-layout .search-panel {
     display: flex;
@@ -2756,7 +2801,7 @@ body[data-partner="vamp"] .session-back-title {
     <section class="session-back-side session-back-card" aria-label="Spotlight microsite promo card back">
       <div class="session-back-top">
         <img id="session-back-sttt-logo" class="session-back-top-logo session-back-top-logo--sttt" src="" alt="Somebody To Talk To">
-        <div class="session-back-top-title">Amyloidosis Program Spotlight Series &middot; <strong id="session-back-series-date">June 2026</strong></div>
+        <div class="session-back-top-title">Amyloidosis Program Spotlight Series <strong id="session-back-series-date">June 2026</strong></div>
         <img id="session-back-oav-logo" class="session-back-top-logo session-back-top-logo--oav" src="" alt="oneAMYLOIDOSISvoice">
       </div>
 
@@ -3641,9 +3686,11 @@ function setHeaderLogoOptionsFromApi(rows) {
     return apiOption ? { ...option, ...apiOption } : option;
   });
   const extraApiOptions = apiOptions
-    .filter(option => !staticKeys.has(option.key))
-    .sort((a, b) => a.label.localeCompare(b.label));
-  headerLogoOptions = [...mergedStaticOptions, ...extraApiOptions];
+    .filter(option => !staticKeys.has(option.key));
+  const blankOption = mergedStaticOptions.find(option => !option.key) || HEADER_LOGO_STATIC_OPTIONS[0];
+  const sortedLogoOptions = [...mergedStaticOptions.filter(option => option.key), ...extraApiOptions]
+    .sort((a, b) => String(a.label || '').localeCompare(String(b.label || ''), undefined, { sensitivity: 'base' }));
+  headerLogoOptions = [blankOption, ...sortedLogoOptions];
 }
 
 async function loadPartnerLogoOptions() {
@@ -3655,7 +3702,11 @@ async function loadPartnerLogoOptions() {
     populateHeaderLogoSelects();
     updateHeaderLogos();
   } catch (e) {
-    headerLogoOptions = HEADER_LOGO_STATIC_OPTIONS.slice();
+    headerLogoOptions = [
+      HEADER_LOGO_STATIC_OPTIONS[0],
+      ...HEADER_LOGO_STATIC_OPTIONS.slice(1)
+        .sort((a, b) => String(a.label || '').localeCompare(String(b.label || ''), undefined, { sensitivity: 'base' }))
+    ];
     populateHeaderLogoSelects();
   }
 }
@@ -3890,7 +3941,8 @@ function applyHeaderLogoSizes() {
       '#session-promo-sttt-logo',
       '#coming-logo-sttt',
       '#coming-back-logo-sttt',
-      '#calendar-logo-oav'
+      '#calendar-logo-oav',
+      '.session-back-feature-logo-card img'
     ]
   };
   Object.keys(slotSelectors).forEach(slot => {
@@ -3919,21 +3971,8 @@ function setImageFromLogoOption(img, option) {
   setLogoImageSrc(img, option);
 }
 
-function getEffectiveLogoOption(slot, fallback) {
-  const selected = getHeaderLogoOption(selectedHeaderLogos[slot]);
-  return selected && selected.src ? selected : fallback;
-}
-
 function applyLogoOptionToImage(img, option) {
   setLogoImageSrc(img, option);
-}
-
-function getDefaultLogoOption(key, fallbackAlt) {
-  return {
-    key,
-    src: key === 'af' ? defaultLeftLogoSrc : (key === 'oav' ? oavLogoSrc : stttLogoSrc),
-    alt: fallbackAlt
-  };
 }
 
 function getLogoKeyForSrcAlt(src, alt) {
@@ -3953,6 +3992,41 @@ function setHeaderSlotPlaceholder(slot, show) {
 
 function setLogoImageVisibility(img, show) {
   if (img) img.style.display = show ? '' : 'none';
+}
+
+function getSelectedSlotLogoOption(slot) {
+  const option = getHeaderLogoOption(selectedHeaderLogos[slot]);
+  return option && option.src ? option : null;
+}
+
+function ensureDynamicLogoPlaceholder(img, slot) {
+  if (!img || !img.parentNode) return null;
+  if (img.dataset.placeholderId) {
+    return document.getElementById(img.dataset.placeholderId);
+  }
+  const placeholder = document.createElement('div');
+  placeholder.id = (img.id || ('logo-' + slot + '-' + document.querySelectorAll('.dynamic-logo-placeholder').length)) + '-placeholder';
+  placeholder.className = 'logo-placeholder dynamic-logo-placeholder';
+  placeholder.textContent = '[Logo ' + slot + ']';
+  img.dataset.placeholderId = placeholder.id;
+  img.insertAdjacentElement('afterend', placeholder);
+  return placeholder;
+}
+
+function applySelectedLogoToImage(slot, img) {
+  if (!img) return;
+  const option = getSelectedSlotLogoOption(slot);
+  const placeholder = ensureDynamicLogoPlaceholder(img, slot);
+  if (option) {
+    applyLogoOptionToImage(img, option);
+    if (placeholder) placeholder.classList.remove('visible');
+    return;
+  }
+  img.removeAttribute('src');
+  img.alt = '';
+  img.dataset.logoKey = '';
+  img.style.display = 'none';
+  if (placeholder) placeholder.classList.add('visible');
 }
 
 function applyHeaderLogoOverrides() {
@@ -4053,13 +4127,13 @@ function syncComingSoonCard() {
     if (el) el.textContent = text || '';
   };
 
-  setImg('coming-logo-af', defaultLeftLogoSrc, 'Amyloidosis Foundation');
-  setImg('coming-logo-oav', oavLogoSrc, 'oneAMYLOIDOSISvoice');
-  setImg('coming-logo-sttt', stttLogoSrc, 'Somebody To Talk To');
-  setImg('coming-back-logo-af', defaultLeftLogoSrc, 'Amyloidosis Foundation');
-  setImg('coming-back-logo-oav', oavLogoSrc, 'oneAMYLOIDOSISvoice');
-  setImg('coming-back-logo-sttt', stttLogoSrc, 'Somebody To Talk To');
-  setImg('coming-partner-logo', cfg.logo, cfg.logoAlt);
+  applySelectedLogoToImage(1, document.getElementById('coming-logo-af'));
+  applySelectedLogoToImage(2, document.getElementById('coming-logo-oav'));
+  applySelectedLogoToImage(3, document.getElementById('coming-logo-sttt'));
+  applySelectedLogoToImage(1, document.getElementById('coming-back-logo-af'));
+  applySelectedLogoToImage(2, document.getElementById('coming-back-logo-oav'));
+  applySelectedLogoToImage(3, document.getElementById('coming-back-logo-sttt'));
+  applySelectedLogoToImage(1, document.getElementById('coming-partner-logo'));
   setImg('coming-qr-img', cfg.qr, cfg.qrAlt);
   setImg('coming-back-qr-img', cfg.backQr || 'sttt_subscribe_qr.png', cfg.backQrAlt || 'Scan to subscribe at somebodytotalkto.com/subscribe');
 
@@ -4826,9 +4900,9 @@ function syncBackLogos() {
   const backLeft = document.getElementById('back-logo-left');
   const backMid = document.getElementById('back-logo-mid');
   const backRight = document.getElementById('back-logo-right');
-  applyLogoOptionToImage(backLeft, getEffectiveLogoOption(1, getDefaultLogoOption('af', 'Amyloidosis Foundation')));
-  applyLogoOptionToImage(backMid, getEffectiveLogoOption(2, getDefaultLogoOption('oav', 'oneAMYLOIDOSISvoice')));
-  applyLogoOptionToImage(backRight, getEffectiveLogoOption(3, getDefaultLogoOption('sttt', 'Somebody To Talk To')));
+  applySelectedLogoToImage(1, backLeft);
+  applySelectedLogoToImage(2, backMid);
+  applySelectedLogoToImage(3, backRight);
 }
 
 function syncSessionPromoLogos() {
@@ -4837,18 +4911,11 @@ function syncSessionPromoLogos() {
   const promoSttt = document.getElementById('session-promo-sttt-logo');
   const backOav = document.getElementById('session-back-oav-logo');
   const backSttt = document.getElementById('session-back-sttt-logo');
-  const partnerSrc = activePartnerConfig.partnerLogo || (uocLogoImg ? uocLogoImg.src : defaultLeftLogoSrc);
-  const partnerAlt = activePartnerConfig.partnerLogoAlt || activePartnerConfig.label || 'Partner logo';
-  const promoLogo1 = getEffectiveLogoOption(1, { src: partnerSrc, alt: partnerAlt });
-  const promoLogo2 = getEffectiveLogoOption(2, getDefaultLogoOption('oav', 'oneAMYLOIDOSISvoice'));
-  const promoLogo3 = getEffectiveLogoOption(3, getDefaultLogoOption('sttt', 'Somebody To Talk To'));
-  applyLogoOptionToImage(promoUoc, promoLogo1);
-  applyLogoOptionToImage(promoOav, promoLogo2);
-  applyLogoOptionToImage(promoSttt, promoLogo3);
-  const partnerBackLogo1 = getEffectiveLogoOption(1, getDefaultLogoOption('sttt', 'Somebody To Talk To'));
-  const partnerBackLogo2 = getEffectiveLogoOption(2, getDefaultLogoOption('oav', 'oneAMYLOIDOSISvoice'));
-  applyLogoOptionToImage(backSttt, partnerBackLogo1);
-  applyLogoOptionToImage(backOav, partnerBackLogo2);
+  applySelectedLogoToImage(1, promoUoc);
+  applySelectedLogoToImage(2, promoOav);
+  applySelectedLogoToImage(3, promoSttt);
+  applySelectedLogoToImage(1, backSttt);
+  applySelectedLogoToImage(2, backOav);
 }
 
 function syncSessionBackContent() {
@@ -4893,8 +4960,7 @@ function syncSessionBackContent() {
       };
     });
   }
-  const logos = Array.isArray(cfg.logos) ? cfg.logos : [];
-  const selectedFeatureLogo = logos.length ? null : getHeaderLogoOption(selectedHeaderLogos[3]);
+  const selectedFeatureLogo = getHeaderLogoOption(selectedHeaderLogos[3]);
   if (selectedFeatureLogo && selectedFeatureLogo.src) {
     logoCards.forEach((card, index) => {
       const img = card.querySelector('img');
@@ -4903,33 +4969,19 @@ function syncSessionBackContent() {
         return;
       }
       card.style.display = '';
-      applyLogoOptionToImage(img, selectedFeatureLogo);
+      applySelectedLogoToImage(3, img);
     });
     applyBackCardFontSizes();
     return;
   }
   logoCards.forEach((card, index) => {
     const img = card.querySelector('img');
-    const logo = logos[index];
-    if (!logos.length) {
-      card.style.display = '';
-      const defaultLogo = syncSessionBackContent.defaultLogos[index];
-      if (img && defaultLogo) {
-        img.src = defaultLogo.src;
-        img.alt = defaultLogo.alt;
-      }
-      return;
-    }
-    if (!logo) {
+    if (index > 0) {
       card.style.display = 'none';
       return;
     }
     card.style.display = '';
-    if (!img) return;
-    img.src = logo.src === '__partner_logo__'
-      ? (activePartnerConfig.partnerLogo || '')
-      : logo.src;
-    img.alt = logo.alt || activePartnerConfig.partnerLogoAlt || activePartnerConfig.label || 'Partner logo';
+    applySelectedLogoToImage(3, img);
   });
   applyBackCardFontSizes();
 }
@@ -5037,16 +5089,13 @@ function updateControlAvailability() {
     el.style.display = imageSizeControlVisible ? '' : 'none';
   });
   document.querySelectorAll('.header-logo-control').forEach(el => {
-    const slot = el.dataset.logoSlot;
-    el.style.display = headerLogoControlsVisible && !(currentSide === 'partner-back' && slot === '3') ? 'flex' : 'none';
+    el.style.display = headerLogoControlsVisible ? 'flex' : 'none';
   });
   document.querySelectorAll('.logo-size-control-row').forEach(el => {
-    const slot = el.dataset.logoSlot;
-    el.style.display = headerLogoControlsVisible && !(currentSide === 'partner-back' && slot === '3') ? '' : 'none';
+    el.style.display = headerLogoControlsVisible ? '' : 'none';
   });
   document.querySelectorAll('.logo-nudge-control').forEach(el => {
-    const slot = el.dataset.logoSlot;
-    el.style.display = headerLogoControlsVisible && !(currentSide === 'partner-back' && slot === '3') ? '' : 'none';
+    el.style.display = headerLogoControlsVisible ? '' : 'none';
   });
   document.querySelectorAll('.logo-size-group').forEach(el => {
     el.style.display = headerLogoControlsVisible ? 'grid' : 'none';
