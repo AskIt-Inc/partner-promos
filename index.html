@@ -245,6 +245,13 @@ body {
 .calendar-logo-slot img[data-logo-key="oav"] {
   max-height: 46px;
 }
+.calendar-logo-placeholder {
+  min-width: 92px;
+  height: 36px;
+  border-color: var(--calendar-border);
+  color: #6e8790;
+  font-size: 12px;
+}
 .calendar-logo-bar .logo-divider {
   width: 1px;
   height: 36px;
@@ -2856,15 +2863,18 @@ body[data-partner="vamp"] .session-back-title {
     <section class="calendar-card-front-side" aria-label="Partner monthly calendar card front">
       <div class="calendar-logo-bar">
         <div class="calendar-logo-slot">
-          <img id="calendar-logo-partner" src="coh_logo.svg" alt="Partner logo">
+          <img id="calendar-logo-partner" src="" alt="">
+          <div id="calendar-logo-1-placeholder" class="logo-placeholder calendar-logo-placeholder visible">[Logo 1]</div>
         </div>
         <div class="logo-divider"></div>
         <div class="calendar-logo-slot">
-          <img id="calendar-logo-af" src="" alt="Amyloidosis Foundation">
+          <img id="calendar-logo-af" src="" alt="">
+          <div id="calendar-logo-2-placeholder" class="logo-placeholder calendar-logo-placeholder visible">[Logo 2]</div>
         </div>
         <div class="logo-divider"></div>
         <div class="calendar-logo-slot">
-          <img id="calendar-logo-oav" src="" alt="oneAMYLOIDOSISvoice">
+          <img id="calendar-logo-oav" src="" alt="">
+          <div id="calendar-logo-3-placeholder" class="logo-placeholder calendar-logo-placeholder visible">[Logo 3]</div>
         </div>
       </div>
 
@@ -3052,6 +3062,7 @@ const PARTNER_STORAGE_KEY = 'facebook_promo_partner';
 const HEADER_LOGO_STORAGE_KEY = 'facebook_promo_header_logos';
 const HEADER_LOGO_SIZE_STORAGE_KEY = 'facebook_promo_header_logo_sizes';
 const HEADER_LOGO_POSITION_STORAGE_KEY = 'facebook_promo_header_logo_positions';
+const UNSELECTED_CARD_MEMORY_KEY = 'no_card_selected';
 const PARTNER_LOGOS_API = 'https://somebodytotalkto.com/api/session-editor/partners/logos?limit=1000&include_base64=true';
 const HEADER_LOGO_STATIC_OPTIONS = [
   { key: '', label: 'Select logo', src: '', alt: '' },
@@ -3071,9 +3082,9 @@ const HEADER_LOGO_STATIC_OPTIONS = [
   { key: 'boston-university', label: 'Boston University', src: 'header-logos/boston-university-logo.png', alt: 'Boston University' }
 ];
 let headerLogoOptions = HEADER_LOGO_STATIC_OPTIONS.slice();
-let selectedHeaderLogos = loadSelectedHeaderLogos();
-let selectedHeaderLogoSizes = loadSelectedHeaderLogoSizes();
-let selectedHeaderLogoPositions = loadSelectedHeaderLogoPositions();
+let selectedHeaderLogos = loadSelectedHeaderLogos(getCurrentCardMemoryKey());
+let selectedHeaderLogoSizes = loadSelectedHeaderLogoSizes(getCurrentCardMemoryKey());
+let selectedHeaderLogoPositions = loadSelectedHeaderLogoPositions(getCurrentCardMemoryKey());
 const PARTNER_CONFIG_FALLBACK = {
   defaultPartner: 'uoc',
   partners: {
@@ -3299,12 +3310,12 @@ const DEFAULT_TITLE_SUFFIX_FONT_SIZE = '17';
 const DEFAULT_DESC_FONT_SIZE = '13.7';
 const DEFAULT_SERIES_FONT_SIZE = '18';
 const DEFAULT_HEADSHOT_SIZE = '94';
-let selectedTitleFontSize = loadFontSize(TITLE_FONT_STORAGE_KEY, DEFAULT_TITLE_FONT_SIZE);
-let selectedTitlePrefixFontSize = loadFontSize(TITLE_PREFIX_FONT_STORAGE_KEY, DEFAULT_TITLE_PREFIX_FONT_SIZE);
-let selectedTitleSuffixFontSize = loadFontSize(TITLE_SUFFIX_FONT_STORAGE_KEY, DEFAULT_TITLE_SUFFIX_FONT_SIZE);
-let selectedDescFontSize = loadFontSize(DESC_FONT_STORAGE_KEY, DEFAULT_DESC_FONT_SIZE);
-let selectedSeriesFontSize = loadFontSize(SERIES_FONT_STORAGE_KEY, DEFAULT_SERIES_FONT_SIZE);
-let selectedHeadshotSize = loadFontSize(HEADSHOT_SIZE_STORAGE_KEY, DEFAULT_HEADSHOT_SIZE);
+let selectedTitleFontSize = loadFontSize(TITLE_FONT_STORAGE_KEY, DEFAULT_TITLE_FONT_SIZE, getCurrentCardMemoryKey());
+let selectedTitlePrefixFontSize = loadFontSize(TITLE_PREFIX_FONT_STORAGE_KEY, DEFAULT_TITLE_PREFIX_FONT_SIZE, getCurrentCardMemoryKey());
+let selectedTitleSuffixFontSize = loadFontSize(TITLE_SUFFIX_FONT_STORAGE_KEY, DEFAULT_TITLE_SUFFIX_FONT_SIZE, getCurrentCardMemoryKey());
+let selectedDescFontSize = loadFontSize(DESC_FONT_STORAGE_KEY, DEFAULT_DESC_FONT_SIZE, getCurrentCardMemoryKey());
+let selectedSeriesFontSize = loadFontSize(SERIES_FONT_STORAGE_KEY, DEFAULT_SERIES_FONT_SIZE, getCurrentCardMemoryKey());
+let selectedHeadshotSize = loadFontSize(HEADSHOT_SIZE_STORAGE_KEY, DEFAULT_HEADSHOT_SIZE, getCurrentCardMemoryKey());
 const SIDE_FONT_STORAGE_PREFIX = 'facebook_promo_side_font_size_';
 const SIDE_FONT_CONTROL_CONFIGS = {
   partnerBackTopTitle: {
@@ -3410,7 +3421,7 @@ const SIDE_FONT_CONTROL_CONFIGS = {
 };
 let selectedSideFontSizes = Object.fromEntries(Object.entries(SIDE_FONT_CONTROL_CONFIGS).map(([key, cfg]) => [
   key,
-  loadFontSize(SIDE_FONT_STORAGE_PREFIX + key, cfg.defaultSize)
+  loadFontSize(SIDE_FONT_STORAGE_PREFIX + key, cfg.defaultSize, getCurrentCardMemoryKey())
 ]));
 const CALENDAR_DEFAULT_CONFIG = {
   programTitle: 'Monthly Calendar Card',
@@ -3649,9 +3660,21 @@ async function loadPartnerLogoOptions() {
   }
 }
 
-function loadSelectedHeaderLogos() {
+function normalizeCardMemoryKey(value) {
+  return String(value || '').trim().replace(/[^a-z0-9_-]+/gi, '-').toLowerCase() || UNSELECTED_CARD_MEMORY_KEY;
+}
+
+function getCurrentCardMemoryKey(layout) {
+  return normalizeCardMemoryKey(layout || (cardTypeSelect ? cardTypeSelect.value : ''));
+}
+
+function getCardScopedStorageKey(baseKey, layout) {
+  return baseKey + '__card__' + getCurrentCardMemoryKey(layout);
+}
+
+function loadSelectedHeaderLogos(layout) {
   try {
-    const stored = JSON.parse(window.localStorage.getItem(HEADER_LOGO_STORAGE_KEY) || 'null');
+    const stored = JSON.parse(window.localStorage.getItem(getCardScopedStorageKey(HEADER_LOGO_STORAGE_KEY, layout)) || 'null');
     if (stored && typeof stored === 'object') {
       const normalizeStoredLogo = value => String(value || '').replace(/^default$/, '');
       return {
@@ -3668,7 +3691,7 @@ function loadSelectedHeaderLogos() {
 
 function saveSelectedHeaderLogos() {
   try {
-    window.localStorage.setItem(HEADER_LOGO_STORAGE_KEY, JSON.stringify(selectedHeaderLogos));
+    window.localStorage.setItem(getCardScopedStorageKey(HEADER_LOGO_STORAGE_KEY), JSON.stringify(selectedHeaderLogos));
   } catch(e) {
     // Keep the in-memory selection even if browser storage is unavailable.
   }
@@ -3680,9 +3703,9 @@ function normalizeLogoSize(value) {
   return Math.min(220, Math.max(50, Math.round(size / 5) * 5));
 }
 
-function loadSelectedHeaderLogoSizes() {
+function loadSelectedHeaderLogoSizes(layout) {
   try {
-    const stored = JSON.parse(window.localStorage.getItem(HEADER_LOGO_SIZE_STORAGE_KEY) || 'null');
+    const stored = JSON.parse(window.localStorage.getItem(getCardScopedStorageKey(HEADER_LOGO_SIZE_STORAGE_KEY, layout)) || 'null');
     if (stored && typeof stored === 'object') {
       return {
         1: normalizeLogoSize(stored[1]),
@@ -3698,7 +3721,7 @@ function loadSelectedHeaderLogoSizes() {
 
 function saveSelectedHeaderLogoSizes() {
   try {
-    window.localStorage.setItem(HEADER_LOGO_SIZE_STORAGE_KEY, JSON.stringify(selectedHeaderLogoSizes));
+    window.localStorage.setItem(getCardScopedStorageKey(HEADER_LOGO_SIZE_STORAGE_KEY), JSON.stringify(selectedHeaderLogoSizes));
   } catch(e) {
     // Keep the in-memory sizes even if browser storage is unavailable.
   }
@@ -3718,9 +3741,9 @@ function normalizeLogoPosition(value) {
   };
 }
 
-function loadSelectedHeaderLogoPositions() {
+function loadSelectedHeaderLogoPositions(layout) {
   try {
-    const stored = JSON.parse(window.localStorage.getItem(HEADER_LOGO_POSITION_STORAGE_KEY) || 'null');
+    const stored = JSON.parse(window.localStorage.getItem(getCardScopedStorageKey(HEADER_LOGO_POSITION_STORAGE_KEY, layout)) || 'null');
     if (stored && typeof stored === 'object') {
       return {
         1: normalizeLogoPosition(stored[1]),
@@ -3740,10 +3763,37 @@ function loadSelectedHeaderLogoPositions() {
 
 function saveSelectedHeaderLogoPositions() {
   try {
-    window.localStorage.setItem(HEADER_LOGO_POSITION_STORAGE_KEY, JSON.stringify(selectedHeaderLogoPositions));
+    window.localStorage.setItem(getCardScopedStorageKey(HEADER_LOGO_POSITION_STORAGE_KEY), JSON.stringify(selectedHeaderLogoPositions));
   } catch(e) {
     // Keep the in-memory positions even if browser storage is unavailable.
   }
+}
+
+function loadCardScopedSettings(layout) {
+  selectedHeaderLogos = loadSelectedHeaderLogos(layout);
+  selectedHeaderLogoSizes = loadSelectedHeaderLogoSizes(layout);
+  selectedHeaderLogoPositions = loadSelectedHeaderLogoPositions(layout);
+  selectedTitleFontSize = loadFontSize(TITLE_FONT_STORAGE_KEY, DEFAULT_TITLE_FONT_SIZE, layout);
+  selectedTitlePrefixFontSize = loadFontSize(TITLE_PREFIX_FONT_STORAGE_KEY, DEFAULT_TITLE_PREFIX_FONT_SIZE, layout);
+  selectedTitleSuffixFontSize = loadFontSize(TITLE_SUFFIX_FONT_STORAGE_KEY, DEFAULT_TITLE_SUFFIX_FONT_SIZE, layout);
+  selectedDescFontSize = loadFontSize(DESC_FONT_STORAGE_KEY, DEFAULT_DESC_FONT_SIZE, layout);
+  selectedSeriesFontSize = loadFontSize(SERIES_FONT_STORAGE_KEY, DEFAULT_SERIES_FONT_SIZE, layout);
+  selectedHeadshotSize = loadFontSize(HEADSHOT_SIZE_STORAGE_KEY, DEFAULT_HEADSHOT_SIZE, layout);
+  selectedTimezone = loadSelectedTimezone(layout);
+  if (timezoneSelect) timezoneSelect.value = selectedTimezone;
+  selectedSideFontSizes = Object.fromEntries(Object.entries(SIDE_FONT_CONTROL_CONFIGS).map(([key, cfg]) => [
+    key,
+    loadFontSize(SIDE_FONT_STORAGE_PREFIX + key, cfg.defaultSize, layout)
+  ]));
+  populateHeaderLogoSelects();
+  updateHeaderLogoSizeControls();
+  refreshFontControlsFromState();
+  fitBandTitle();
+  applyBackCardFontSizes();
+  applyDescriptionFontSize();
+  applySeriesFontSize();
+  applyHeadshotSize();
+  updateSelectedTimezoneDisplay();
 }
 
 function formatLogoOffset(value) {
@@ -3942,8 +3992,8 @@ function applyHeaderLogoOverrides() {
   }
 }
 
-function getPartnerTimezoneStorageKey(key = activePartnerKey) {
-  return TIMEZONE_STORAGE_KEY + '_' + key;
+function getPartnerTimezoneStorageKey(key = activePartnerKey, layout) {
+  return getCardScopedStorageKey(TIMEZONE_STORAGE_KEY + '_' + key, layout);
 }
 
 function applyPartnerTheme() {
@@ -4149,14 +4199,26 @@ function syncCalendarCard() {
     resetCalendarSessionState();
   }
 
-  const partnerLogoOption = {
-    src: activePartnerConfig.partnerLogo,
-    alt: activePartnerConfig.partnerLogoAlt || activePartnerConfig.label || 'Partner logo',
-    key: getLogoKeyForSrcAlt(activePartnerConfig.partnerLogo, activePartnerConfig.partnerLogoAlt || activePartnerConfig.label)
+  const setCalendarLogo = (slot, imgId) => {
+    const img = document.getElementById(imgId);
+    const placeholder = document.getElementById('calendar-logo-' + slot + '-placeholder');
+    const option = getHeaderLogoOption(selectedHeaderLogos[slot]);
+    if (option && option.src) {
+      applyLogoOptionToImage(img, option);
+      if (placeholder) placeholder.classList.remove('visible');
+      return;
+    }
+    if (img) {
+      img.removeAttribute('src');
+      img.alt = '';
+      img.dataset.logoKey = '';
+      img.style.display = 'none';
+    }
+    if (placeholder) placeholder.classList.add('visible');
   };
-  applyLogoOptionToImage(document.getElementById('calendar-logo-partner'), getEffectiveLogoOption(1, partnerLogoOption));
-  applyLogoOptionToImage(document.getElementById('calendar-logo-af'), getEffectiveLogoOption(2, getDefaultLogoOption('af', 'Amyloidosis Foundation')));
-  applyLogoOptionToImage(document.getElementById('calendar-logo-oav'), getEffectiveLogoOption(3, getDefaultLogoOption('oav', 'oneAMYLOIDOSISvoice')));
+  setCalendarLogo(1, 'calendar-logo-partner');
+  setCalendarLogo(2, 'calendar-logo-af');
+  setCalendarLogo(3, 'calendar-logo-oav');
   setImg('calendar-subscribe-qr-code', cfg.qrSrc, cfg.qrAlt);
   setText('calendar-series-label', cfg.seriesLabel);
   setText('calendar-program-title', cfg.programTitle);
@@ -4399,9 +4461,9 @@ function updateAppLayoutMode() {
   appShell.classList.toggle('spotlight-session-layout', hasSessionLookup || hasVisibleResults);
 }
 
-function loadSelectedTimezone() {
+function loadSelectedTimezone(layout) {
   try {
-    const stored = window.localStorage.getItem(getPartnerTimezoneStorageKey());
+    const stored = window.localStorage.getItem(getPartnerTimezoneStorageKey(activePartnerKey, layout));
     return VALID_TIMEZONES.includes(stored) ? stored : (activePartnerConfig.defaultTimezone || 'ET');
   } catch(e) {
     return activePartnerConfig.defaultTimezone || 'ET';
@@ -4418,9 +4480,9 @@ function saveSelectedTimezone(zone) {
   }
 }
 
-function loadFontSize(storageKey, defaultSize) {
+function loadFontSize(storageKey, defaultSize, layout) {
   try {
-    const stored = window.localStorage.getItem(storageKey);
+    const stored = window.localStorage.getItem(getCardScopedStorageKey(storageKey, layout));
     return stored && !Number.isNaN(Number(stored)) ? stored : defaultSize;
   } catch(e) {
     return defaultSize;
@@ -4430,7 +4492,7 @@ function loadFontSize(storageKey, defaultSize) {
 function saveFontSize(storageKey, value, defaultSize) {
   const normalized = value && !Number.isNaN(Number(value)) ? String(value) : defaultSize;
   try {
-    window.localStorage.setItem(storageKey, normalized);
+    window.localStorage.setItem(getCardScopedStorageKey(storageKey), normalized);
   } catch(e) {
     // Keep the in-memory selection even if browser storage is unavailable.
   }
@@ -4502,6 +4564,42 @@ function setupFontDeltaSlider(select, defaultSize, currentSize, onInput, options
   apply(false);
   slider.addEventListener('input', () => apply(false));
   slider.addEventListener('change', () => apply(true));
+}
+
+function updateFontDeltaControl(select, defaultSize, currentSize, options = {}) {
+  if (!select) return;
+  const normalizedSize = formatFontSizeValue(currentSize || defaultSize);
+  addLooseSelectOption(select, normalizedSize);
+  select.value = normalizedSize;
+
+  const row = select.nextElementSibling;
+  const slider = row && row.classList.contains('font-delta-row') ? row.querySelector('.font-delta-slider') : null;
+  const output = row && row.classList.contains('font-delta-row') ? row.querySelector('.font-delta-output') : null;
+  if (!slider || !output) return;
+
+  const base = Number(defaultSize) || 0;
+  const min = options.min ?? -8;
+  const max = options.max ?? 8;
+  const step = options.step ?? 0.5;
+  const absolute = Number(normalizedSize);
+  const delta = normalizeDelta(Number.isFinite(absolute) ? absolute - base : 0, min, max, step);
+  slider.value = String(delta);
+  output.textContent = formatSignedPx(delta);
+  output.title = normalizedSize + 'px';
+}
+
+function refreshFontControlsFromState() {
+  updateFontDeltaControl(seriesFontSelect, DEFAULT_SERIES_FONT_SIZE, selectedSeriesFontSize, { min: -8, max: 8, step: 0.5 });
+  updateFontDeltaControl(titlePrefixFontSelect, DEFAULT_TITLE_PREFIX_FONT_SIZE, selectedTitlePrefixFontSize, { min: -8, max: 8, step: 0.5 });
+  updateFontDeltaControl(titleFontSelect, DEFAULT_TITLE_FONT_SIZE, selectedTitleFontSize, { min: -8, max: 8, step: 0.5 });
+  updateFontDeltaControl(titleSuffixFontSelect, DEFAULT_TITLE_SUFFIX_FONT_SIZE, selectedTitleSuffixFontSize, { min: -8, max: 8, step: 0.5 });
+  updateFontDeltaControl(descFontSelect, DEFAULT_DESC_FONT_SIZE, selectedDescFontSize, { min: -8, max: 8, step: 0.5 });
+  updateFontDeltaControl(headshotSizeSelect, DEFAULT_HEADSHOT_SIZE, selectedHeadshotSize, { min: -24, max: 30, step: 2 });
+  sideFontSelects.forEach(select => {
+    const key = select.dataset.sideFontKey;
+    const cfg = SIDE_FONT_CONTROL_CONFIGS[key];
+    if (cfg) updateFontDeltaControl(select, cfg.defaultSize, selectedSideFontSizes[key] || cfg.defaultSize);
+  });
 }
 
 function populateSideFontSelect(select, defaultSize) {
@@ -5303,6 +5401,7 @@ function setLayout(layout) {
   surface.classList.toggle('layout-partner-back', isPartnerBack);
   surface.classList.toggle('layout-coming-soon', isComingSoon);
   surface.classList.toggle('layout-calendar-card', isCalendarCard);
+  loadCardScopedSettings(layout);
 
   if (isPartnerBack) {
     surface.classList.remove('show-back', 'size-3x5');
