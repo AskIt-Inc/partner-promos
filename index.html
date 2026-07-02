@@ -271,6 +271,9 @@ body {
   color: var(--calendar-accent);
   letter-spacing: 0.02em;
 }
+body[data-partner="vamp"] .calendar-band-eyebrow-text {
+  color: #FFD84D;
+}
 .calendar-band-title {
   font-size: var(--calendar-band-title-size);
   font-weight: 800;
@@ -345,6 +348,9 @@ body {
   text-transform: uppercase;
   line-height: 1.1;
 }
+body[data-partner="vamp"] .calendar-chip-month {
+  color: #FFD84D;
+}
 .calendar-chip-day {
   font-size: 16px;
   font-weight: 900;
@@ -369,6 +375,9 @@ body {
   font-weight: 700;
   margin: 0 0 1px;
   line-height: 1.12;
+}
+body[data-partner="vamp"] .calendar-session-presenter {
+  color: #8A6400;
 }
 .calendar-card-footer {
   background: #fff;
@@ -3105,7 +3114,7 @@ const PARTNER_CONFIG_FALLBACK = {
       colors: {
         primary: '#1C1C1C',
         primaryDark: '#111111',
-        accent: '#FFE8A3',
+        accent: '#8A6400',
         borderAccent: '#FFE8A3',
         softBg: '#F8EFCF',
         sessionBandBg: '#000000'
@@ -4140,9 +4149,14 @@ function syncCalendarCard() {
     resetCalendarSessionState();
   }
 
-  setImg('calendar-logo-partner', activePartnerConfig.partnerLogo, activePartnerConfig.partnerLogoAlt || activePartnerConfig.label || 'Partner logo');
-  setImg('calendar-logo-af', defaultLeftLogoSrc, 'Amyloidosis Foundation');
-  setImg('calendar-logo-oav', oavLogoSrc, 'oneAMYLOIDOSISvoice');
+  const partnerLogoOption = {
+    src: activePartnerConfig.partnerLogo,
+    alt: activePartnerConfig.partnerLogoAlt || activePartnerConfig.label || 'Partner logo',
+    key: getLogoKeyForSrcAlt(activePartnerConfig.partnerLogo, activePartnerConfig.partnerLogoAlt || activePartnerConfig.label)
+  };
+  applyLogoOptionToImage(document.getElementById('calendar-logo-partner'), getEffectiveLogoOption(1, partnerLogoOption));
+  applyLogoOptionToImage(document.getElementById('calendar-logo-af'), getEffectiveLogoOption(2, getDefaultLogoOption('af', 'Amyloidosis Foundation')));
+  applyLogoOptionToImage(document.getElementById('calendar-logo-oav'), getEffectiveLogoOption(3, getDefaultLogoOption('oav', 'oneAMYLOIDOSISvoice')));
   setImg('calendar-subscribe-qr-code', cfg.qrSrc, cfg.qrAlt);
   setText('calendar-series-label', cfg.seriesLabel);
   setText('calendar-program-title', cfg.programTitle);
@@ -5274,6 +5288,7 @@ function updateHeaderLogos() {
   syncBackLogos();
   syncSessionPromoLogos();
   syncSessionBackContent();
+  if (isCalendarCardLayout()) syncCalendarCard();
   applyHeaderLogoSizes();
 }
 
