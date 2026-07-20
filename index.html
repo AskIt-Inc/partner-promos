@@ -829,6 +829,15 @@ body[data-partner="vamp"] .coming-soon-program-name {
   justify-content: center;
   gap: 14px;
 }
+.print-surface.layout-foundation .logo-bar[data-header-logo-count="1"] {
+  gap: 0;
+}
+.print-surface.layout-foundation .logo-bar[data-header-logo-count="2"] {
+  gap: 42px;
+}
+.print-surface.layout-foundation .logo-bar[data-header-logo-count="3"] {
+  gap: 14px;
+}
 .print-surface.layout-foundation .uoc-pill,
 .print-surface.layout-foundation .logo-left,
 .print-surface.layout-foundation .logo-right {
@@ -2457,6 +2466,14 @@ body[data-partner="vamp"] .session-back-title {
         <option value="HT">Hawaii Time - Honolulu</option>
       </select>
     </label>
+    <label class="field-control header-logo-count-control" for="header-logo-count">
+      <span>Header logos</span>
+      <select id="header-logo-count" aria-label="Number of header logos">
+        <option value="1">1 logo</option>
+        <option value="2">2 logos</option>
+        <option value="3">3 logos</option>
+      </select>
+    </label>
     <label class="field-control header-logo-control" data-logo-slot="1" for="header-logo-1-select">
       <span>Logo 1</span>
       <select id="header-logo-1-select" class="header-logo-select" data-logo-slot="1" aria-label="First header logo"></select>
@@ -3209,6 +3226,7 @@ const surface = document.getElementById('print-surface');
 const lbl     = document.getElementById('size-label');
 const appShell = document.querySelector('.app-shell');
 const logoBar = document.querySelector('.logo-bar');
+const headerCenter = document.querySelector('.header-center');
 const sessionBand = document.querySelector('.session-band');
 const bandLeft = document.querySelector('.band-left');
 const headerPartnerLogo = document.getElementById('uoc-pill');
@@ -3224,6 +3242,7 @@ const seriesFontSelect = document.getElementById('band-series-font-size');
 const headshotSizeSelect = document.getElementById('headshot-image-size');
 const sideFontSelects = Array.from(document.querySelectorAll('.side-font-select'));
 const headerLogoSelects = Array.from(document.querySelectorAll('.header-logo-select'));
+const headerLogoCountSelect = document.getElementById('header-logo-count');
 const sponsorControls = document.getElementById('sponsor-controls');
 const addSponsorLogoButton = document.getElementById('add-sponsor-logo');
 const headerLogoSizeSliders = Array.from(document.querySelectorAll('.logo-size-slider'));
@@ -3244,6 +3263,7 @@ let currentSide = 'front';
 let currentSessionRow = null;
 const PARTNER_STORAGE_KEY = 'facebook_promo_partner';
 const HEADER_LOGO_STORAGE_KEY = 'facebook_promo_header_logos';
+const HEADER_LOGO_COUNT_STORAGE_KEY = 'facebook_promo_header_logo_count';
 const HEADER_LOGO_SIZE_STORAGE_KEY = 'facebook_promo_header_logo_sizes';
 const HEADER_LOGO_POSITION_STORAGE_KEY = 'facebook_promo_header_logo_positions';
 const SPONSOR_LOGO_STORAGE_KEY = 'facebook_promo_sponsor_logos';
@@ -3269,6 +3289,7 @@ const HEADER_LOGO_STATIC_OPTIONS = [
 let headerLogoOptions = HEADER_LOGO_STATIC_OPTIONS.slice();
 let sponsorLogoOptions = [{ key: '', label: 'Select sponsor', src: '', alt: '' }];
 let selectedHeaderLogos = loadSelectedHeaderLogos(getCurrentCardMemoryKey());
+let selectedHeaderLogoCount = loadSelectedHeaderLogoCount(getCurrentCardMemoryKey());
 let selectedSponsorLogos = loadSelectedSponsorLogos(getCurrentCardMemoryKey());
 let selectedHeaderLogoSizes = loadSelectedHeaderLogoSizes(getCurrentCardMemoryKey());
 let selectedHeaderLogoPositions = loadSelectedHeaderLogoPositions(getCurrentCardMemoryKey());
@@ -3893,6 +3914,32 @@ function loadSelectedHeaderLogos(layout) {
   return { 1: '', 2: '', 3: '' };
 }
 
+function normalizeHeaderLogoCount(value) {
+  const count = Number(value);
+  return [1, 2, 3].includes(count) ? count : 3;
+}
+
+function loadSelectedHeaderLogoCount(layout) {
+  try {
+    return normalizeHeaderLogoCount(window.localStorage.getItem(
+      getCardScopedStorageKey(HEADER_LOGO_COUNT_STORAGE_KEY, layout)
+    ));
+  } catch (e) {
+    return 3;
+  }
+}
+
+function saveSelectedHeaderLogoCount() {
+  try {
+    window.localStorage.setItem(
+      getCardScopedStorageKey(HEADER_LOGO_COUNT_STORAGE_KEY),
+      String(selectedHeaderLogoCount)
+    );
+  } catch (e) {
+    // Keep the in-memory choice even if browser storage is unavailable.
+  }
+}
+
 function loadSelectedSponsorLogos(layout) {
   try {
     const stored = JSON.parse(window.localStorage.getItem(getCardScopedStorageKey(SPONSOR_LOGO_STORAGE_KEY, layout)) || 'null');
@@ -3989,6 +4036,7 @@ function saveSelectedHeaderLogoPositions() {
 
 function loadCardScopedSettings(layout) {
   selectedHeaderLogos = loadSelectedHeaderLogos(layout);
+  selectedHeaderLogoCount = loadSelectedHeaderLogoCount(layout);
   selectedSponsorLogos = loadSelectedSponsorLogos(layout);
   selectedHeaderLogoSizes = loadSelectedHeaderLogoSizes(layout);
   selectedHeaderLogoPositions = loadSelectedHeaderLogoPositions(layout);
@@ -4005,6 +4053,7 @@ function loadCardScopedSettings(layout) {
     loadFontSize(SIDE_FONT_STORAGE_PREFIX + key, cfg.defaultSize, layout)
   ]));
   populateHeaderLogoSelects();
+  updateHeaderLogoCountControl();
   populateSponsorLogoSelects();
   updateHeaderLogoSizeControls();
   refreshFontControlsFromState();
@@ -4134,6 +4183,53 @@ function populateHeaderLogoSelects() {
       select.value = '';
     }
   });
+}
+
+function updateHeaderLogoCountControl() {
+  if (headerLogoCountSelect) headerLogoCountSelect.value = String(selectedHeaderLogoCount);
+}
+
+function updateHeaderLogoLayout() {
+  if (!logoBar || !isPartnerOptionalCard()) return;
+
+  const count = normalizeHeaderLogoCount(selectedHeaderLogoCount);
+  logoBar.dataset.headerLogoCount = String(count);
+
+  const slotNodes = {
+    1: getSelectedSlotLogoOption(1) ? headerPartnerLogo : headerLogoPlaceholders[1],
+    2: getSelectedSlotLogoOption(2) ? leftLogo : headerLogoPlaceholders[2],
+    3: getSelectedSlotLogoOption(3) ? rightLogo : headerLogoPlaceholders[3]
+  };
+  const visibleNodes = Array.from({ length: count }, (_, index) => slotNodes[index + 1]).filter(Boolean);
+  const divider = () => {
+    const element = document.createElement('div');
+    element.className = 'logo-divider';
+    return element;
+  };
+
+  logoBar.replaceChildren();
+  visibleNodes.forEach((node, index) => {
+    if (index) logoBar.appendChild(divider());
+    logoBar.appendChild(node);
+  });
+}
+
+function restoreStandardHeaderLogoLayout() {
+  if (!logoBar) return;
+  logoBar.replaceChildren(
+    leftLogo,
+    headerLogoPlaceholders[1],
+    document.createElement('div'),
+    headerLogoPlaceholders[2],
+    headerCenter,
+    document.createElement('div'),
+    headerLogoPlaceholders[3],
+    rightLogo
+  );
+  logoBar.querySelectorAll(':scope > div:not(.logo-placeholder):not(.header-center)').forEach(divider => {
+    divider.className = 'logo-divider';
+  });
+  delete logoBar.dataset.headerLogoCount;
 }
 
 function populateSponsorLogoSelects() {
@@ -5319,6 +5415,7 @@ function updateControlAvailability() {
   const imageSizeControlVisible = sessionFontControlsVisible || (ready && currentSide === 'partner-back');
   const sessionLookupVisible = ready && !immediatePreview && !autoSessionList;
   const headerLogoControlsVisible = hasSelectedCard();
+  const headerLogoCountVisible = isPartnerOptionalCard();
   const btnBack = document.getElementById('btn-back');
   const btnPartnerBack = document.getElementById('btn-partner-back');
   const btn3x5 = document.getElementById('btn-3x5');
@@ -5336,17 +5433,23 @@ function updateControlAvailability() {
     el.style.display = imageSizeControlVisible ? '' : 'none';
   });
   document.querySelectorAll('.header-logo-control').forEach(el => {
-    el.style.display = headerLogoControlsVisible ? 'flex' : 'none';
+    const slot = Number(el.dataset.logoSlot);
+    el.style.display = headerLogoControlsVisible && (!headerLogoCountVisible || slot <= selectedHeaderLogoCount) ? 'flex' : 'none';
+  });
+  document.querySelectorAll('.header-logo-count-control').forEach(el => {
+    el.style.display = headerLogoCountVisible ? 'flex' : 'none';
   });
   document.querySelectorAll('.sponsor-control').forEach(el => {
     el.style.display = isMultiPresenterFacebookPromo() ? 'flex' : 'none';
   });
   if (addSponsorLogoButton) addSponsorLogoButton.style.display = isMultiPresenterFacebookPromo() ? '' : 'none';
   document.querySelectorAll('.logo-size-control-row').forEach(el => {
-    el.style.display = headerLogoControlsVisible ? '' : 'none';
+    const slot = Number(el.dataset.logoSlot);
+    el.style.display = headerLogoControlsVisible && (!headerLogoCountVisible || slot <= selectedHeaderLogoCount) ? '' : 'none';
   });
   document.querySelectorAll('.logo-nudge-control').forEach(el => {
-    el.style.display = headerLogoControlsVisible ? '' : 'none';
+    const slot = Number(el.dataset.logoSlot);
+    el.style.display = headerLogoControlsVisible && (!headerLogoCountVisible || slot <= selectedHeaderLogoCount) ? '' : 'none';
   });
   document.querySelectorAll('.logo-size-group').forEach(el => {
     el.style.display = headerLogoControlsVisible ? 'grid' : 'none';
@@ -5479,6 +5582,12 @@ headerLogoNudgeButtons.forEach(btn => {
 
 populateHeaderLogoSelects();
 loadPartnerLogoOptions();
+if (headerLogoCountSelect) headerLogoCountSelect.addEventListener('change', () => {
+  selectedHeaderLogoCount = normalizeHeaderLogoCount(headerLogoCountSelect.value);
+  saveSelectedHeaderLogoCount();
+  updateHeaderLogos();
+  updateControlAvailability();
+});
 headerLogoSelects.forEach(select => {
   select.addEventListener('change', () => {
     selectedHeaderLogos[select.dataset.logoSlot] = select.value;
@@ -5661,6 +5770,7 @@ function updateHeaderLogos() {
 
   if (isPartnerOptionalCard()) {
     applyHeaderLogoOverrides();
+    updateHeaderLogoLayout();
     syncBackLogos();
     syncSessionPromoLogos();
     syncSessionBackContent();
@@ -5712,6 +5822,7 @@ function setLayout(layout) {
   surface.classList.toggle('layout-partner-back', isPartnerBack);
   surface.classList.toggle('layout-coming-soon', isComingSoon);
   surface.classList.toggle('layout-calendar-card', isCalendarCard);
+  if (!isFacebookPromo && !isFacebookPromoMulti) restoreStandardHeaderLogoLayout();
   loadCardScopedSettings(layout);
 
   if (isPartnerBack) {
