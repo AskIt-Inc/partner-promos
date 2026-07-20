@@ -1252,17 +1252,24 @@ body[data-partner="vamp"] .microsite-url {
 .multi-presenter-card {
   display: grid;
   grid-template-columns: 52px minmax(0, 1fr);
-  grid-template-rows: repeat(3, min-content);
+  grid-template-rows: minmax(0, 1fr);
   column-gap: 7px;
-  align-content: center;
+  align-items: center;
   min-width: 0;
   text-align: left;
 }
 .multi-presenter-card + .multi-presenter-card { border-top: 1px solid var(--border-rose); }
-.multi-presenter-card .headshot-wrap { grid-column: 1; grid-row: 1 / span 3; width: 52px; height: 52px; border-width: 3px; }
-.multi-presenter-card .presenter-name,
-.multi-presenter-card .presenter-cred,
-.multi-presenter-card .presenter-role { grid-column: 2; text-align: left; }
+.multi-presenter-card .headshot-wrap { grid-column: 1; grid-row: 1; width: 52px; height: 52px; border-width: 3px; }
+.multi-presenter-copy {
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+.multi-presenter-copy .presenter-name,
+.multi-presenter-copy .presenter-cred,
+.multi-presenter-copy .presenter-role { text-align: left; }
 .multi-presenter-card .presenter-name { font-size: 10px; }
 .multi-presenter-card .presenter-cred,
 .multi-presenter-card .presenter-role { font-size: 8.5px; }
@@ -2860,18 +2867,22 @@ body[data-partner="vamp"] .session-back-title {
             <img id="multi-headshot-img-1" src="" alt="First presenter headshot">
             <div class="headshot-fallback" id="multi-headshot-fallback-1">No<br>photo</div>
           </div>
-          <div class="presenter-name" id="multi-presenter-name-1"></div>
-          <div class="presenter-cred" id="multi-presenter-cred-1"></div>
-          <div class="presenter-role" id="multi-presenter-role-1"></div>
+          <div class="multi-presenter-copy">
+            <div class="presenter-name" id="multi-presenter-name-1"></div>
+            <div class="presenter-cred" id="multi-presenter-cred-1"></div>
+            <div class="presenter-role" id="multi-presenter-role-1"></div>
+          </div>
         </article>
         <article class="multi-presenter-card" id="multi-presenter-2">
           <div class="headshot-wrap">
             <img id="multi-headshot-img-2" src="" alt="Second presenter headshot">
             <div class="headshot-fallback" id="multi-headshot-fallback-2">No<br>photo</div>
           </div>
-          <div class="presenter-name" id="multi-presenter-name-2"></div>
-          <div class="presenter-cred" id="multi-presenter-cred-2"></div>
-          <div class="presenter-role" id="multi-presenter-role-2"></div>
+          <div class="multi-presenter-copy">
+            <div class="presenter-name" id="multi-presenter-name-2"></div>
+            <div class="presenter-cred" id="multi-presenter-cred-2"></div>
+            <div class="presenter-role" id="multi-presenter-role-2"></div>
+          </div>
         </article>
       </div>
 
