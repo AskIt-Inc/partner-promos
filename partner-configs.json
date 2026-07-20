@@ -113,6 +113,49 @@
         "softBg": "#E7F5F8",
         "sessionBandBg": "linear-gradient(135deg, #006E8E 0%, #004F66 74%, #F58220 160%)"
       }
+    },
+    "mayo": {
+      "label": "Mayo Clinic",
+      "exportSlug": "mayo",
+      "partnerLogo": "mayo-clinic-logo.svg",
+      "partnerLogoAlt": "Mayo Clinic",
+      "defaultTimezone": "CT",
+      "sessionsApiUrl": "https://somebodytotalkto.com/api/spotlight/microsite/sessions?partner=13455&status=all",
+      "calendar": {
+        "programTitle": "Mayo Clinic Amyloidosis Program",
+        "monthLabel": "September",
+        "daysLabel": "Wednesdays",
+        "seriesLabel": "Amyloidosis Program Spotlight Series",
+        "micrositeUrl": "mayo.oneamyloidosisvoice.com",
+        "qrSrc": "mayo_microsite_qr.png",
+        "qrAlt": "Scan to visit mayo.oneamyloidosisvoice.com",
+        "sourceTimezone": "ET",
+        "sourceHour": 18,
+        "sourceMinute": 0,
+        "sessionsApiUrl": "https://somebodytotalkto.com/api/spotlight/microsite/sessions?partner=13455&status=all",
+        "profilesApiUrl": "https://somebodytotalkto.com/api/spotlight/microsite/profiles?partner=13455"
+      },
+      "sessionBack": {
+        "seriesDate": "September 2026",
+        "featureTitle": "Mayo Clinic Amyloidosis Program",
+        "featureProgram": "",
+        "eyebrow": "Mayo Clinic Amyloidosis Program",
+        "title": "Learn more about the September Spotlight series",
+        "primaryText": "Visit the microsite for program details, upcoming sessions, completed sessions, and clinical research information from the Mayo Clinic Amyloidosis Program team.",
+        "secondaryHtml": "<strong>September series:</strong> free online sessions with Mayo Clinic specialists for patients, caregivers, families, and healthcare professionals.",
+        "linkText": "https://mayo.oneamyloidosisvoice.com/",
+        "qrSrc": "mayo_microsite_qr.png",
+        "qrAlt": "Scan to visit https://mayo.oneamyloidosisvoice.com/",
+        "logos": [{ "src": "__partner_logo__", "alt": "Mayo Clinic" }]
+      },
+      "colors": {
+        "primary": "#0057B8",
+        "primaryDark": "#003B71",
+        "accent": "#FFC72C",
+        "borderAccent": "#B8D4EC",
+        "softBg": "#EAF3FA",
+        "sessionBandBg": "#0057B8"
+      }
     }
   }
 }
