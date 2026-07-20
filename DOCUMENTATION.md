@@ -36,6 +36,7 @@ index.html
 
 | Label | Value | Layout |
 |-------|-------|--------|
+| Facebook Promo (Multi Presenters) | `facebook-promo-multi` | Two-presenter Facebook card with configurable sponsor strip |
 | Medical Amyloidosis Session - Spotlight | `foundation` | New 3-logo card |
 | Medical Amyloidosis Session - Non Spotlight | `classic` | Original card |
 | Session Registration Promo Card | `session-front` | Separate 4×6 registration front with partner-specific Spotlight microsite back |
@@ -318,6 +319,9 @@ Expected shape from `GET /api/spotlight/microsite/session/search?q=`:
 - `description` may contain HTML markup; the card strips it.
 - `short_url` is optional; fallback chain is `short_url → reg_link.url → static default`.
 - Only `presenters[0]` is used; multi-presenter sessions show only the first presenter.
+- `facebook-promo-multi` keeps the standard Facebook Promo date, description, registration, and QR columns unchanged. It replaces only the left presenter column with two vertically stacked presenter profiles. Each profile uses `presenters[0]` or `presenters[1]` and can supply a photo on the presenter record (`headshot_base64`, `headshot_url`, `photo_url`, `image_url`, or equivalent). Its Sponsor controls use the same live employer-logo taxonomy API as the header-logo controls; they default to Alnylam, BridgeBio, and Immix Biopharma when those records are available. Use **+ Add sponsor** to add further logos at the bottom of the card.
+- The existing **Profile Image Size** control updates both multi-presenter headshots together. The multi-presenter version uses a proportionally smaller size so both portraits remain inside the fixed left column.
+- Presenter naming is consistent across cards: when `name_suffix` is present, the title is omitted from the displayed profile name and the suffix is shown separately.
 
 ---
 

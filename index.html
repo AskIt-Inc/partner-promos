@@ -1100,7 +1100,7 @@ body[data-partner="vamp"] .band-series-label {
 }
 .presenter-cred {
   font-size: 10px; color: #555;
-  text-align: center; line-height: 1.3; margin-top: -2px;
+  text-align: center; line-height: 1.3; margin-top: -7px;
 }
 .presenter-role {
   font-size: 10px; color: #555;
@@ -1233,6 +1233,70 @@ body[data-partner="vamp"] .microsite-url {
   border-top: 1px solid #F0F0F0;
   margin-top: auto; flex-shrink: 0; background: #fff;
 }
+
+/* Multi-presenter Facebook promo: two compact speaker profiles plus a
+   configurable sponsor strip. The standard Facebook layout is unchanged. */
+.multi-presenter-grid { display: none; }
+.sponsor-strip { display: none; }
+.print-surface.layout-facebook-multi .presenter-section {
+  grid-template-columns: 110px 1fr 96px;
+  column-gap: 16px;
+}
+.print-surface.layout-facebook-multi .headshot-col { display: none; }
+.print-surface.layout-facebook-multi .multi-presenter-grid {
+  grid-column: 1; grid-row: 1 / -1;
+  display: grid;
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  align-self: stretch;
+}
+.multi-presenter-card {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  grid-template-rows: repeat(3, min-content);
+  column-gap: 7px;
+  align-content: center;
+  min-width: 0;
+  text-align: left;
+}
+.multi-presenter-card + .multi-presenter-card { border-top: 1px solid var(--border-rose); }
+.multi-presenter-card .headshot-wrap { grid-column: 1; grid-row: 1 / span 3; width: 52px; height: 52px; border-width: 3px; }
+.multi-presenter-card .presenter-name,
+.multi-presenter-card .presenter-cred,
+.multi-presenter-card .presenter-role { grid-column: 2; text-align: left; }
+.multi-presenter-card .presenter-name { font-size: 10px; }
+.multi-presenter-card .presenter-cred,
+.multi-presenter-card .presenter-role { font-size: 8.5px; }
+.multi-presenter-card.is-empty { opacity: .55; }
+.sponsor-strip {
+  min-height: 39px;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 5px 22px;
+  border-top: 1px solid var(--border);
+  background: #fff;
+  flex-shrink: 0;
+}
+.print-surface.layout-facebook-multi .sponsor-strip { display: flex; }
+.sponsor-label {
+  color: #777;
+  font-size: 7.5px;
+  font-weight: 800;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+.sponsor-logos { display: flex; align-items: center; justify-content: center; gap: 15px; }
+.sponsor-logo { display: none; width: 78px; height: 23px; object-fit: contain; }
+.sponsor-logo.visible { display: block; }
+.print-surface.size-3x5.layout-facebook-multi .presenter-section { grid-template-columns: 76px 1fr 68px; }
+.print-surface.size-3x5.layout-facebook-multi .multi-presenter-card { grid-template-columns: 42px minmax(0, 1fr); column-gap: 4px; }
+.print-surface.size-3x5.layout-facebook-multi .multi-presenter-card .headshot-wrap { width: 42px; height: 42px; }
+.print-surface.size-3x5.layout-facebook-multi .multi-presenter-card .presenter-name { font-size: 8px; }
+.print-surface.size-3x5.layout-facebook-multi .multi-presenter-card .presenter-cred,
+.print-surface.size-3x5.layout-facebook-multi .multi-presenter-card .presenter-role { font-size: 7px; }
+.print-surface.size-3x5.layout-facebook-multi .sponsor-strip { min-height: 29px; padding: 3px 14px; gap: 10px; }
+.print-surface.size-3x5.layout-facebook-multi .sponsor-logo { width: 58px; height: 17px; }
+.print-surface.size-3x5.layout-facebook-multi .sponsor-logos { gap: 9px; }
 
 /* ══════════════════════════════════════════════════
    SHARED BACK SIDE: STTT SUBSCRIBE
@@ -2186,6 +2250,21 @@ body[data-partner="vamp"] .session-back-title {
 .header-logo-control {
   display: none;
 }
+.sponsor-control { display: none; }
+.sponsor-controls { display: contents; }
+.sponsor-add-control {
+  display: none;
+  align-self: end;
+  padding: 7px 10px;
+  border: 1px solid var(--border-rose);
+  border-radius: 4px;
+  background: #fff;
+  color: var(--maroon);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+}
 .search-config-row select,
 .search-input-row .field-control,
 .search-input-row input[type="text"] {
@@ -2336,6 +2415,7 @@ body[data-partner="vamp"] .session-back-title {
       <select id="session-card-type" aria-label="Card type">
         <option value="" disabled selected>Select Card</option>
         <option value="facebook-promo">Facebook Promo</option>
+        <option value="facebook-promo-multi">Facebook Promo (Multi Presenters)</option>
         <option value="foundation">Medical Amyloidosis Session - Spotlight</option>
         <option value="classic">Medical Amyloidosis Session - Non Spotlight</option>
         <option value="calendar-card">Monthly Calendar Card</option>
@@ -2381,6 +2461,21 @@ body[data-partner="vamp"] .session-back-title {
       <span>Logo 3</span>
       <select id="header-logo-3-select" class="header-logo-select" data-logo-slot="3" aria-label="Third header logo"></select>
     </label>
+    <div class="sponsor-controls" id="sponsor-controls">
+    <label class="field-control sponsor-control" for="sponsor-logo-1-select">
+      <span>Sponsor 1</span>
+      <select id="sponsor-logo-1-select" class="sponsor-logo-select" data-sponsor-slot="1" aria-label="First sponsor logo"></select>
+    </label>
+    <label class="field-control sponsor-control" for="sponsor-logo-2-select">
+      <span>Sponsor 2</span>
+      <select id="sponsor-logo-2-select" class="sponsor-logo-select" data-sponsor-slot="2" aria-label="Second sponsor logo"></select>
+    </label>
+    <label class="field-control sponsor-control" for="sponsor-logo-3-select">
+      <span>Sponsor 3</span>
+      <select id="sponsor-logo-3-select" class="sponsor-logo-select" data-sponsor-slot="3" aria-label="Third sponsor logo"></select>
+    </label>
+    <button class="sponsor-add-control" id="add-sponsor-logo" type="button">+ Add sponsor</button>
+    </div>
     <fieldset class="logo-size-group">
       <legend>Logo Size</legend>
       <label class="logo-size-control-row" data-logo-slot="1" for="header-logo-1-size">
@@ -2759,6 +2854,27 @@ body[data-partner="vamp"] .session-back-title {
         <div class="presenter-role" id="presenter-role"></div>
       </div>
 
+      <div class="multi-presenter-grid" aria-label="Session presenters">
+        <article class="multi-presenter-card" id="multi-presenter-1">
+          <div class="headshot-wrap">
+            <img id="multi-headshot-img-1" src="" alt="First presenter headshot">
+            <div class="headshot-fallback" id="multi-headshot-fallback-1">No<br>photo</div>
+          </div>
+          <div class="presenter-name" id="multi-presenter-name-1"></div>
+          <div class="presenter-cred" id="multi-presenter-cred-1"></div>
+          <div class="presenter-role" id="multi-presenter-role-1"></div>
+        </article>
+        <article class="multi-presenter-card" id="multi-presenter-2">
+          <div class="headshot-wrap">
+            <img id="multi-headshot-img-2" src="" alt="Second presenter headshot">
+            <div class="headshot-fallback" id="multi-headshot-fallback-2">No<br>photo</div>
+          </div>
+          <div class="presenter-name" id="multi-presenter-name-2"></div>
+          <div class="presenter-cred" id="multi-presenter-cred-2"></div>
+          <div class="presenter-role" id="multi-presenter-role-2"></div>
+        </article>
+      </div>
+
       <!-- MIDDLE: date + timezones + description + CTA -->
       <div class="content-col">
         <div class="date-pill">
@@ -2791,6 +2907,15 @@ body[data-partner="vamp"] .session-back-title {
         <div class="qr-label">Scan to<br>Register</div>
       </div>
 
+    </div>
+
+    <div class="sponsor-strip front-side" aria-label="Sponsors">
+      <span class="sponsor-label">With support from</span>
+      <div class="sponsor-logos">
+        <img class="sponsor-logo" id="sponsor-logo-1" src="" alt="">
+        <img class="sponsor-logo" id="sponsor-logo-2" src="" alt="">
+        <img class="sponsor-logo" id="sponsor-logo-3" src="" alt="">
+      </div>
     </div>
 
     <!-- ZONE 4: FINE PRINT -->
@@ -3087,6 +3212,8 @@ const seriesFontSelect = document.getElementById('band-series-font-size');
 const headshotSizeSelect = document.getElementById('headshot-image-size');
 const sideFontSelects = Array.from(document.querySelectorAll('.side-font-select'));
 const headerLogoSelects = Array.from(document.querySelectorAll('.header-logo-select'));
+const sponsorControls = document.getElementById('sponsor-controls');
+const addSponsorLogoButton = document.getElementById('add-sponsor-logo');
 const headerLogoSizeSliders = Array.from(document.querySelectorAll('.logo-size-slider'));
 const headerLogoNudgeControls = Array.from(document.querySelectorAll('.logo-nudge-control'));
 const headerLogoNudgeButtons = Array.from(document.querySelectorAll('.logo-nudge-btn'));
@@ -3107,6 +3234,7 @@ const PARTNER_STORAGE_KEY = 'facebook_promo_partner';
 const HEADER_LOGO_STORAGE_KEY = 'facebook_promo_header_logos';
 const HEADER_LOGO_SIZE_STORAGE_KEY = 'facebook_promo_header_logo_sizes';
 const HEADER_LOGO_POSITION_STORAGE_KEY = 'facebook_promo_header_logo_positions';
+const SPONSOR_LOGO_STORAGE_KEY = 'facebook_promo_sponsor_logos';
 const UNSELECTED_CARD_MEMORY_KEY = 'no_card_selected';
 const PARTNER_LOGOS_API = 'https://somebodytotalkto.com/api/session-editor/partners/logos?limit=1000&include_base64=true';
 const HEADER_LOGO_STATIC_OPTIONS = [
@@ -3127,7 +3255,9 @@ const HEADER_LOGO_STATIC_OPTIONS = [
   { key: 'boston-university', label: 'Boston University', src: 'header-logos/boston-university-logo.png', alt: 'Boston University' }
 ];
 let headerLogoOptions = HEADER_LOGO_STATIC_OPTIONS.slice();
+let sponsorLogoOptions = [{ key: '', label: 'Select sponsor', src: '', alt: '' }];
 let selectedHeaderLogos = loadSelectedHeaderLogos(getCurrentCardMemoryKey());
+let selectedSponsorLogos = loadSelectedSponsorLogos(getCurrentCardMemoryKey());
 let selectedHeaderLogoSizes = loadSelectedHeaderLogoSizes(getCurrentCardMemoryKey());
 let selectedHeaderLogoPositions = loadSelectedHeaderLogoPositions(getCurrentCardMemoryKey());
 const PARTNER_CONFIG_FALLBACK = {
@@ -3527,7 +3657,11 @@ function hasSelectedCard() {
 }
 
 function isPartnerOptionalCard() {
-  return Boolean(cardTypeSelect && cardTypeSelect.value === 'facebook-promo');
+  return Boolean(cardTypeSelect && ['facebook-promo', 'facebook-promo-multi'].includes(cardTypeSelect.value));
+}
+
+function isMultiPresenterFacebookPromo() {
+  return Boolean(cardTypeSelect && cardTypeSelect.value === 'facebook-promo-multi');
 }
 
 function hasReadySelection() {
@@ -3649,6 +3783,7 @@ function getStaticHeaderLogoKeyForPartner(name) {
     vanderbiltamyloidosismultidisciplinaryprogram: 'vamp',
     cityofhope: 'city-of-hope',
     endeavorhealth: 'endeavor-health',
+    immixbiopharma: 'immix',
     bostonuniversity: 'boston-university'
   };
   const key = normalizeLogoLookupKey(name);
@@ -3691,6 +3826,9 @@ function setHeaderLogoOptionsFromApi(rows) {
   const sortedLogoOptions = [...mergedStaticOptions.filter(option => option.key), ...extraApiOptions]
     .sort((a, b) => String(a.label || '').localeCompare(String(b.label || ''), undefined, { sensitivity: 'base' }));
   headerLogoOptions = [blankOption, ...sortedLogoOptions];
+  sponsorLogoOptions = [blankOption, ...apiOptions
+    .slice()
+    .sort((a, b) => String(a.label || '').localeCompare(String(b.label || ''), undefined, { sensitivity: 'base' }))];
 }
 
 async function loadPartnerLogoOptions() {
@@ -3700,6 +3838,7 @@ async function loadPartnerLogoOptions() {
     const json = await res.json();
     setHeaderLogoOptionsFromApi(json.data || []);
     populateHeaderLogoSelects();
+    populateSponsorLogoSelects();
     updateHeaderLogos();
   } catch (e) {
     headerLogoOptions = [
@@ -3707,7 +3846,9 @@ async function loadPartnerLogoOptions() {
       ...HEADER_LOGO_STATIC_OPTIONS.slice(1)
         .sort((a, b) => String(a.label || '').localeCompare(String(b.label || ''), undefined, { sensitivity: 'base' }))
     ];
+    sponsorLogoOptions = [{ key: '', label: 'Select sponsor', src: '', alt: '' }];
     populateHeaderLogoSelects();
+    populateSponsorLogoSelects();
   }
 }
 
@@ -3738,6 +3879,20 @@ function loadSelectedHeaderLogos(layout) {
     // Ignore invalid saved choices and use defaults.
   }
   return { 1: '', 2: '', 3: '' };
+}
+
+function loadSelectedSponsorLogos(layout) {
+  try {
+    const stored = JSON.parse(window.localStorage.getItem(getCardScopedStorageKey(SPONSOR_LOGO_STORAGE_KEY, layout)) || 'null');
+    if (stored && typeof stored === 'object') return { 1: stored[1] || '', 2: stored[2] || '', 3: stored[3] || '' };
+  } catch(e) {}
+  return layout === 'facebook-promo-multi'
+    ? { 1: 'alnylam', 2: 'bridgebio', 3: 'immix' }
+    : { 1: '', 2: '', 3: '' };
+}
+
+function saveSelectedSponsorLogos() {
+  try { window.localStorage.setItem(getCardScopedStorageKey(SPONSOR_LOGO_STORAGE_KEY), JSON.stringify(selectedSponsorLogos)); } catch(e) {}
 }
 
 function saveSelectedHeaderLogos() {
@@ -3822,6 +3977,7 @@ function saveSelectedHeaderLogoPositions() {
 
 function loadCardScopedSettings(layout) {
   selectedHeaderLogos = loadSelectedHeaderLogos(layout);
+  selectedSponsorLogos = loadSelectedSponsorLogos(layout);
   selectedHeaderLogoSizes = loadSelectedHeaderLogoSizes(layout);
   selectedHeaderLogoPositions = loadSelectedHeaderLogoPositions(layout);
   selectedTitleFontSize = loadFontSize(TITLE_FONT_STORAGE_KEY, DEFAULT_TITLE_FONT_SIZE, layout);
@@ -3837,6 +3993,7 @@ function loadCardScopedSettings(layout) {
     loadFontSize(SIDE_FONT_STORAGE_PREFIX + key, cfg.defaultSize, layout)
   ]));
   populateHeaderLogoSelects();
+  populateSponsorLogoSelects();
   updateHeaderLogoSizeControls();
   refreshFontControlsFromState();
   fitBandTitle();
@@ -3965,6 +4122,74 @@ function populateHeaderLogoSelects() {
       select.value = '';
     }
   });
+}
+
+function populateSponsorLogoSelects() {
+  ensureSponsorLogoControls();
+  getSponsorLogoSelects().forEach(select => {
+    select.innerHTML = sponsorLogoOptions.map(option =>
+      '<option value="' + escapeHtml(option.key) + '">' + escapeHtml(option.label) + '</option>'
+    ).join('');
+    select.value = selectedSponsorLogos[select.dataset.sponsorSlot] || '';
+    if (select.value !== (selectedSponsorLogos[select.dataset.sponsorSlot] || '')) select.value = '';
+  });
+  applySponsorLogos();
+}
+
+function applySponsorLogos() {
+  const container = document.querySelector('.sponsor-logos');
+  if (!container) return;
+  container.innerHTML = '';
+  getSponsorSlots().forEach(slot => {
+    const option = sponsorLogoOptions.find(item => item.key === selectedSponsorLogos[slot]);
+    if (option && option.src) {
+      const img = document.createElement('img');
+      img.className = 'sponsor-logo visible';
+      img.id = 'sponsor-logo-' + slot;
+      setLogoImageSrc(img, option);
+      container.appendChild(img);
+    }
+  });
+}
+
+function getSponsorLogoSelects() {
+  return Array.from(document.querySelectorAll('.sponsor-logo-select'));
+}
+
+function getSponsorSlots() {
+  return Object.keys(selectedSponsorLogos)
+    .map(Number)
+    .filter(Number.isFinite)
+    .sort((a, b) => a - b);
+}
+
+function createSponsorLogoControl(slot) {
+  if (!sponsorControls || document.getElementById('sponsor-logo-' + slot + '-select')) return;
+  const label = document.createElement('label');
+  label.className = 'field-control sponsor-control';
+  label.htmlFor = 'sponsor-logo-' + slot + '-select';
+  const text = document.createElement('span');
+  text.textContent = 'Sponsor ' + slot;
+  const select = document.createElement('select');
+  select.id = 'sponsor-logo-' + slot + '-select';
+  select.className = 'sponsor-logo-select';
+  select.dataset.sponsorSlot = slot;
+  select.setAttribute('aria-label', 'Sponsor logo ' + slot);
+  label.append(text, select);
+  sponsorControls.insertBefore(label, addSponsorLogoButton);
+}
+
+function ensureSponsorLogoControls() {
+  getSponsorSlots().forEach(createSponsorLogoControl);
+}
+
+function addSponsorLogoSlot() {
+  const slots = getSponsorSlots();
+  const nextSlot = (slots[slots.length - 1] || 0) + 1;
+  selectedSponsorLogos[nextSlot] = '';
+  createSponsorLogoControl(nextSlot);
+  populateSponsorLogoSelects();
+  saveSelectedSponsorLogos();
 }
 
 function setImageFromLogoOption(img, option) {
@@ -4747,10 +4972,20 @@ function applyCalendarFontSizes() {
 
 function applyHeadshotSize() {
   const baseSize = Number(selectedHeadshotSize) || Number(DEFAULT_HEADSHOT_SIZE);
-  const size = surface.classList.contains('size-3x5') ? Math.round(baseSize * 0.66) : baseSize;
-  document.querySelectorAll('.headshot-wrap, .session-promo-headshot').forEach(el => {
+  const isSmallCard = surface.classList.contains('size-3x5');
+  const size = isSmallCard ? Math.round(baseSize * 0.66) : baseSize;
+  document.querySelectorAll('.headshot-col .headshot-wrap, .session-promo-headshot').forEach(el => {
     el.style.width = size + 'px';
     el.style.height = size + 'px';
+  });
+  const multiSize = Math.round(baseSize * 0.55 * (isSmallCard ? 0.66 : 1));
+  document.querySelectorAll('.multi-presenter-card').forEach(card => {
+    card.style.gridTemplateColumns = multiSize + 'px minmax(0, 1fr)';
+    const headshot = card.querySelector('.headshot-wrap');
+    if (headshot) {
+      headshot.style.width = multiSize + 'px';
+      headshot.style.height = multiSize + 'px';
+    }
   });
   const topLogoHeight = Math.max(18, Math.min(42, Math.round(baseSize * 0.32)));
   document.querySelectorAll('.session-back-top-logo').forEach(el => {
@@ -5091,6 +5326,10 @@ function updateControlAvailability() {
   document.querySelectorAll('.header-logo-control').forEach(el => {
     el.style.display = headerLogoControlsVisible ? 'flex' : 'none';
   });
+  document.querySelectorAll('.sponsor-control').forEach(el => {
+    el.style.display = isMultiPresenterFacebookPromo() ? 'flex' : 'none';
+  });
+  if (addSponsorLogoButton) addSponsorLogoButton.style.display = isMultiPresenterFacebookPromo() ? '' : 'none';
   document.querySelectorAll('.logo-size-control-row').forEach(el => {
     el.style.display = headerLogoControlsVisible ? '' : 'none';
   });
@@ -5235,6 +5474,15 @@ headerLogoSelects.forEach(select => {
     updateHeaderLogos();
   });
 });
+if (sponsorControls) sponsorControls.addEventListener('change', event => {
+  const select = event.target.closest('.sponsor-logo-select');
+  if (select) {
+    selectedSponsorLogos[select.dataset.sponsorSlot] = select.value;
+    saveSelectedSponsorLogos();
+    applySponsorLogos();
+  }
+});
+if (addSponsorLogoButton) addSponsorLogoButton.addEventListener('click', addSponsorLogoSlot);
 
 document.querySelectorAll('.calendar-filter-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -5442,11 +5690,13 @@ function updateHeaderLogos() {
 function setLayout(layout) {
   const isClassic = layout === 'classic';
   const isFacebookPromo = layout === 'facebook-promo';
+  const isFacebookPromoMulti = layout === 'facebook-promo-multi';
   const isPartnerBack = layout === 'partner-back';
   const isComingSoon = layout === 'coming-soon';
   const isCalendarCard = layout === 'calendar-card';
   surface.classList.toggle('layout-classic', isClassic);
-  surface.classList.toggle('layout-foundation', layout === 'foundation' || isFacebookPromo);
+  surface.classList.toggle('layout-foundation', layout === 'foundation' || isFacebookPromo || isFacebookPromoMulti);
+  surface.classList.toggle('layout-facebook-multi', isFacebookPromoMulti);
   surface.classList.toggle('layout-partner-back', isPartnerBack);
   surface.classList.toggle('layout-coming-soon', isComingSoon);
   surface.classList.toggle('layout-calendar-card', isCalendarCard);
@@ -6031,14 +6281,14 @@ function normalizeImageSrc(value) {
   }
 }
 
-function getPresenterHeadshotSrc(row = {}) {
-  const presenter = (row.presenters || [])[0] || {};
+function getPresenterHeadshotSrc(row = {}, presenterIndex = 0) {
+  const presenter = (row.presenters || [])[presenterIndex] || {};
   const candidates = [
-    row.headshot_base64,
-    row.headshot_url,
-    row.photo_url,
-    row.presenter_photo_url,
-    row.presenter_image_url,
+    presenterIndex === 0 ? row.headshot_base64 : '',
+    presenterIndex === 0 ? row.headshot_url : '',
+    presenterIndex === 0 ? row.photo_url : '',
+    presenterIndex === 0 ? row.presenter_photo_url : '',
+    presenterIndex === 0 ? row.presenter_image_url : '',
     presenter.headshot_base64,
     presenter.headshot_url,
     presenter.photo_url,
@@ -6080,16 +6330,44 @@ function getPresenterEmployer(presenter) {
   return '';
 }
 
-function getPresenterDisplay(row) {
-  const presenter = (row.presenters || [])[0] || {};
+function getPresenterDisplay(row, presenterIndex = 0) {
+  const presenter = (row.presenters || [])[presenterIndex] || {};
   const titleVal = (presenter.title || '').trim();
   const baseName = [presenter.first_name, presenter.last_name].filter(Boolean).join(' ') || presenter.display_name || '';
   const suffix = (presenter.name_suffix || '').trim();
   const employer = getPresenterEmployer(presenter);
   return {
-    name: titleVal ? titleVal + ' ' + baseName : baseName,
+    name: suffix ? baseName : (titleVal ? titleVal + ' ' + baseName : baseName),
     detail: [suffix, employer].filter(Boolean).join(' · ')
   };
+}
+
+function populateMultiPresenter(row, index) {
+  const presenter = (row.presenters || [])[index] || {};
+  const slot = index + 1;
+  const card = document.getElementById('multi-presenter-' + slot);
+  const display = getPresenterDisplay(row, index);
+  const name = document.getElementById('multi-presenter-name-' + slot);
+  const cred = document.getElementById('multi-presenter-cred-' + slot);
+  const role = document.getElementById('multi-presenter-role-' + slot);
+  const img = document.getElementById('multi-headshot-img-' + slot);
+  const fallback = document.getElementById('multi-headshot-fallback-' + slot);
+  const src = getPresenterHeadshotSrc(row, index);
+  const hasPresenter = Boolean(display.name);
+  card.classList.toggle('is-empty', !hasPresenter);
+  name.textContent = display.name || 'Presenter TBA';
+  cred.textContent = presenter.name_suffix || '';
+  role.textContent = getPresenterEmployer(presenter);
+  if (src) {
+    img.removeAttribute('crossorigin');
+    img.src = src;
+    img.style.display = 'block';
+    fallback.style.display = 'none';
+  } else {
+    img.removeAttribute('src');
+    img.style.display = 'none';
+    fallback.style.display = 'block';
+  }
 }
 
 function syncSessionRegistrationPromo(row, displayUrl, displayText) {
@@ -6228,7 +6506,7 @@ function populateCard(row) {
   const presNameEl = document.getElementById('presenter-name');
   const presenterDisplay = getPresenterDisplay(row);
   const suffix     = (presenter.name_suffix || '').trim();
-  // title -> prefix before full name; name_suffix -> credential line below name.
+  // A suffix suppresses the title prefix; name_suffix remains on the credential line below.
   presNameEl.innerHTML = escapeHtml(presenterDisplay.name);
 
   document.getElementById('presenter-cred').textContent = suffix;
@@ -6261,6 +6539,12 @@ function populateCard(row) {
     headshotImg.style.display = 'none';
     headshotFb.style.display  = 'block';
     headshotFb.textContent    = 'No photo';
+  }
+
+  if (isMultiPresenterFacebookPromo()) {
+    populateMultiPresenter(row, 0);
+    populateMultiPresenter(row, 1);
+    applySponsorLogos();
   }
 
   // QR code
