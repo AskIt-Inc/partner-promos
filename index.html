@@ -580,7 +580,8 @@ body[data-partner="vamp"] .calendar-session-presenter {
 .coming-soon-logo-bar img.coming-logo-vamp { height: 56px; max-width: none; }
 .coming-soon-logo-bar .logo-divider {
   height: 40px;
-  background: var(--coming-accent, var(--gold));
+  background: var(--coming-divider, var(--coming-accent, var(--gold)));
+  order: 0;
 }
 .coming-soon-title-strip {
   background: #fff;
@@ -593,7 +594,7 @@ body[data-partner="vamp"] .calendar-session-presenter {
 }
 .coming-soon-badge {
   display: inline-block;
-  background: var(--coming-accent, var(--gold));
+  background: var(--coming-badge-bg, var(--coming-accent, var(--gold)));
   color: var(--coming-badge-text, #fff);
   font-size: 8px;
   font-weight: 800;
@@ -636,12 +637,9 @@ body[data-partner="vamp"] .coming-soon-program-name {
   gap: 5px;
   margin-bottom: 4px;
 }
-.coming-soon-label::before {
-  content: "";
-  width: 7px;
-  height: 7px;
-  border-radius: 999px;
-  background: var(--coming-label, var(--gold));
+.coming-soon-label svg {
+  width: 18px;
+  height: 18px;
   flex-shrink: 0;
 }
 .coming-soon-label span {
@@ -667,9 +665,12 @@ body[data-partner="vamp"] .coming-soon-program-name {
   flex-shrink: 0;
   max-width: 190px;
   min-height: 56px;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 .coming-soon-partner-pill img {
-  width: 166px;
+  width: 100%;
+  max-width: 166px;
   max-height: 42px;
   object-fit: contain;
   display: block;
@@ -1383,6 +1384,10 @@ body[data-partner="vamp"] .microsite-url {
   border-radius: 999px;
   padding: 2px 12px;
 }
+.coming-soon-front-side .coming-soon-badge {
+  background: var(--coming-primary, var(--maroon));
+  color: #fff;
+}
 .program-back-kicker {
   font-size: 11px;
   font-weight: 800;
@@ -1884,6 +1889,8 @@ body[data-partner="vamp"] .card-back .program-back-qr .qr-box {
   min-height: 32px;
   padding: 6px 10px;
   width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 .session-back-feature-logo-card img {
   display: block;
@@ -2487,6 +2494,10 @@ body[data-partner="vamp"] .session-back-title {
       <span>Logo 3</span>
       <select id="header-logo-3-select" class="header-logo-select" data-logo-slot="3" aria-label="Third header logo"></select>
     </label>
+    <label class="field-control header-logo-control feature-logo-control" data-logo-slot="4" for="header-logo-4-select">
+      <span>Logo 4</span>
+      <select id="header-logo-4-select" class="header-logo-select" data-logo-slot="4" aria-label="Feature banner logo"></select>
+    </label>
     <div class="sponsor-controls" id="sponsor-controls">
     <label class="field-control sponsor-control" for="sponsor-logo-1-select">
       <span>Sponsor 1</span>
@@ -2552,9 +2563,17 @@ body[data-partner="vamp"] .session-back-title {
         </div>
         <output id="header-logo-3-position-output">0,0</output>
       </div>
+      <label class="logo-size-control-row feature-logo-control" data-logo-slot="4" for="header-logo-4-size">
+        <span>Logo 4</span>
+        <input id="header-logo-4-size" class="logo-size-slider" type="range" min="50" max="220" step="5" data-logo-slot="4" aria-label="Logo 4 size">
+        <output id="header-logo-4-size-output" for="header-logo-4-size">100%</output>
+      </label>
+      <div class="logo-nudge-control feature-logo-control" data-logo-slot="4">
+        <span>Move</span><div class="logo-nudge-pad"></div><output id="header-logo-4-position-output">0,0</output>
+      </div>
       <label class="logo-size-control-row feature-logo-control" for="feature-logo-canvas-width">
         <span>Canvas width</span>
-        <input id="feature-logo-canvas-width" type="range" min="35" max="100" step="5" aria-label="Feature logo canvas width">
+        <input id="feature-logo-canvas-width" type="range" min="15" max="100" step="5" aria-label="Feature logo canvas width">
         <output id="feature-logo-canvas-width-output" for="feature-logo-canvas-width">100%</output>
       </label>
       <label class="logo-size-control-row feature-logo-control" for="feature-logo-canvas-height">
@@ -2729,6 +2748,26 @@ body[data-partner="vamp"] .session-back-title {
         <span>Footer Note</span>
         <select id="partner-back-footer-font-size" class="side-font-select" data-side-font-key="partnerBackFooter" aria-label="Partner back footer note font size"></select>
       </label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="coming-front" for="coming-badge-font-size"><span>Coming Soon Badge</span><select id="coming-badge-font-size" class="side-font-select" data-side-font-key="comingBadge"></select></label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="coming-front" for="coming-program-font-size"><span>Header Program</span><select id="coming-program-font-size" class="side-font-select" data-side-font-key="comingProgram"></select></label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="coming-front" for="coming-date-font-size"><span>Header Date</span><select id="coming-date-font-size" class="side-font-select" data-side-font-key="comingDate"></select></label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="coming-front" for="coming-feature-label-font-size"><span>Feature Label</span><select id="coming-feature-label-font-size" class="side-font-select" data-side-font-key="comingFeatureLabel"></select></label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="coming-front" for="coming-feature-title-font-size"><span>Feature Title</span><select id="coming-feature-title-font-size" class="side-font-select" data-side-font-key="comingFeatureTitle"></select></label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="coming-front" for="coming-body-font-size"><span>Body Text</span><select id="coming-body-font-size" class="side-font-select" data-side-font-key="comingBody"></select></label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="coming-front" for="coming-cta-font-size"><span>CTA Text</span><select id="coming-cta-font-size" class="side-font-select" data-side-font-key="comingCta"></select></label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="coming-front" for="coming-url-font-size"><span>URL</span><select id="coming-url-font-size" class="side-font-select" data-side-font-key="comingUrl"></select></label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="coming-front" for="coming-qr-label-font-size"><span>QR Label</span><select id="coming-qr-label-font-size" class="side-font-select" data-side-font-key="comingQrLabel"></select></label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="coming-front" for="coming-footer-font-size"><span>Footer Note</span><select id="coming-footer-font-size" class="side-font-select" data-side-font-key="comingFooter"></select></label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="coming-back" for="coming-back-badge-font-size"><span>Coming Soon Badge</span><select id="coming-back-badge-font-size" class="side-font-select" data-side-font-key="comingBackBadge"></select></label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="coming-back" for="coming-back-program-font-size"><span>Header Program</span><select id="coming-back-program-font-size" class="side-font-select" data-side-font-key="comingBackProgram"></select></label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="coming-back" for="coming-back-date-font-size"><span>Header Date</span><select id="coming-back-date-font-size" class="side-font-select" data-side-font-key="comingBackDate"></select></label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="coming-back" for="coming-back-feature-label-font-size"><span>Feature Label</span><select id="coming-back-feature-label-font-size" class="side-font-select" data-side-font-key="comingBackFeatureLabel"></select></label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="coming-back" for="coming-back-feature-title-font-size"><span>Feature Title</span><select id="coming-back-feature-title-font-size" class="side-font-select" data-side-font-key="comingBackFeatureTitle"></select></label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="coming-back" for="coming-back-body-font-size"><span>Body Text</span><select id="coming-back-body-font-size" class="side-font-select" data-side-font-key="comingBackBody"></select></label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="coming-back" for="coming-back-cta-font-size"><span>CTA Text</span><select id="coming-back-cta-font-size" class="side-font-select" data-side-font-key="comingBackCta"></select></label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="coming-back" for="coming-back-url-font-size"><span>URL</span><select id="coming-back-url-font-size" class="side-font-select" data-side-font-key="comingBackUrl"></select></label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="coming-back" for="coming-back-qr-label-font-size"><span>QR Label</span><select id="coming-back-qr-label-font-size" class="side-font-select" data-side-font-key="comingBackQrLabel"></select></label>
+      <label class="field-control font-size-control side-font-control" data-font-scope="coming-back" for="coming-back-footer-font-size"><span>Footer Note</span><select id="coming-back-footer-font-size" class="side-font-select" data-side-font-key="comingBackFooter"></select></label>
       <label class="field-control font-size-control side-font-control" data-font-scope="back" for="back-header-program-font-size">
         <span>Header Program</span>
         <select id="back-header-program-font-size" class="side-font-select" data-side-font-key="backHeaderProgram" aria-label="Back card header program font size"></select>
@@ -3044,7 +3083,7 @@ body[data-partner="vamp"] .session-back-title {
 
       <div class="coming-soon-band">
         <div class="coming-soon-band-left">
-          <div class="coming-soon-label"><span>Featuring</span></div>
+          <div class="coming-soon-label"><svg viewBox="0 0 24 24" fill="none" stroke="#FFE8A3" stroke-width="2" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="12" cy="10" r="3"></circle><line x1="12" y1="1" x2="12" y2="4"></line><line x1="4.22" y1="3.22" x2="6.34" y2="5.34"></line><line x1="1" y1="10" x2="4" y2="10"></line><line x1="19.78" y1="3.22" x2="17.66" y2="5.34"></line><line x1="23" y1="10" x2="20" y2="10"></line><path d="M7 17l1.5-4h7L17 17"></path><line x1="5" y1="21" x2="19" y2="21"></line><line x1="8" y1="21" x2="8" y2="17"></line><line x1="16" y1="21" x2="16" y2="17"></line></svg><span>Featuring</span></div>
           <div id="coming-feature-name" class="coming-soon-feature-name">University of Chicago<br>Amyloidosis Program</div>
         </div>
         <div class="coming-soon-partner-pill">
@@ -3158,7 +3197,7 @@ body[data-partner="vamp"] .session-back-title {
 
       <div class="coming-soon-band">
         <div class="coming-soon-band-left">
-          <div class="coming-soon-label"><span id="coming-back-label">Stay Updated</span></div>
+          <div class="coming-soon-label"><svg viewBox="0 0 24 24" fill="none" stroke="#FFE8A3" stroke-width="2" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="12" cy="10" r="3"></circle><line x1="12" y1="1" x2="12" y2="4"></line><line x1="4.22" y1="3.22" x2="6.34" y2="5.34"></line><line x1="1" y1="10" x2="4" y2="10"></line><line x1="19.78" y1="3.22" x2="17.66" y2="5.34"></line><line x1="23" y1="10" x2="20" y2="10"></line><path d="M7 17l1.5-4h7L17 17"></path><line x1="5" y1="21" x2="19" y2="21"></line><line x1="8" y1="21" x2="8" y2="17"></line><line x1="16" y1="21" x2="16" y2="17"></line></svg><span id="coming-back-label">Stay Updated</span></div>
           <div id="coming-back-feature-name" class="coming-soon-feature-name">Subscribe for session registration links</div>
         </div>
       </div>
@@ -3461,7 +3500,7 @@ const PARTNER_CONFIG_FALLBACK = {
       colors: {
         primary: '#0057B8',
         primaryDark: '#003B71',
-        accent: '#FFC72C',
+        accent: '#FFE8A3',
         borderAccent: '#B8D4EC',
         softBg: '#EAF3FA',
         sessionBandBg: '#0057B8'
@@ -3491,6 +3530,7 @@ const COMING_SOON_CONFIGS = {
       label: '#FFE8A3',
       softBg: '#F8EFCF',
       badgeText: '#fff',
+      badgeBg: '#FFE8A3',
       bandBg: '#000000',
       backBandBg: '#000000'
     }
@@ -3634,6 +3674,26 @@ const SIDE_FONT_CONTROL_CONFIGS = {
     defaultSize: '9.4',
     selectors: ['.session-back-card .session-promo-footer']
   },
+  comingBadge: { scope: 'coming-front', defaultSize: '8', selectors: ['.coming-soon-front-side .coming-soon-badge'] },
+  comingProgram: { scope: 'coming-front', defaultSize: '13', selectors: ['.coming-soon-front-side .coming-soon-program-name'] },
+  comingDate: { scope: 'coming-front', defaultSize: '12', selectors: ['.coming-soon-front-side .coming-soon-date'] },
+  comingFeatureLabel: { scope: 'coming-front', defaultSize: '9', selectors: ['.coming-soon-front-side .coming-soon-label span'] },
+  comingFeatureTitle: { scope: 'coming-front', defaultSize: '23', selectors: ['.coming-soon-front-side .coming-soon-feature-name'] },
+  comingBody: { scope: 'coming-front', defaultSize: '12', selectors: ['.coming-soon-front-side .coming-soon-copy p'] },
+  comingCta: { scope: 'coming-front', defaultSize: '14', selectors: ['.coming-soon-front-side .coming-soon-cta'] },
+  comingUrl: { scope: 'coming-front', defaultSize: '12', selectors: ['.coming-soon-front-side .coming-soon-url'] },
+  comingQrLabel: { scope: 'coming-front', defaultSize: '11', selectors: ['.coming-soon-front-side .coming-soon-qr-label'] },
+  comingFooter: { scope: 'coming-front', defaultSize: '9', selectors: ['.coming-soon-front-side .coming-soon-fine-print'] },
+  comingBackBadge: { scope: 'coming-back', defaultSize: '8', selectors: ['.coming-soon-back-side .coming-soon-badge'] },
+  comingBackProgram: { scope: 'coming-back', defaultSize: '13', selectors: ['.coming-soon-back-side .coming-soon-program-name'] },
+  comingBackDate: { scope: 'coming-back', defaultSize: '12', selectors: ['.coming-soon-back-side .coming-soon-date'] },
+  comingBackFeatureLabel: { scope: 'coming-back', defaultSize: '9', selectors: ['.coming-soon-back-side .coming-soon-label span'] },
+  comingBackFeatureTitle: { scope: 'coming-back', defaultSize: '23', selectors: ['.coming-soon-back-side .coming-soon-feature-name'] },
+  comingBackBody: { scope: 'coming-back', defaultSize: '12', selectors: ['.coming-soon-back-side .coming-soon-copy p'] },
+  comingBackCta: { scope: 'coming-back', defaultSize: '14', selectors: ['.coming-soon-back-side .coming-soon-cta'] },
+  comingBackUrl: { scope: 'coming-back', defaultSize: '12', selectors: ['.coming-soon-back-side .coming-soon-url'] },
+  comingBackQrLabel: { scope: 'coming-back', defaultSize: '11', selectors: ['.coming-soon-back-side .coming-soon-qr-label'] },
+  comingBackFooter: { scope: 'coming-back', defaultSize: '9', selectors: ['.coming-soon-back-side .coming-soon-fine-print'] },
   backHeaderProgram: {
     scope: 'back',
     defaultSize: '13',
@@ -3963,13 +4023,14 @@ function loadSelectedHeaderLogos(layout) {
       return {
         1: normalizeStoredLogo(stored[1]),
         2: normalizeStoredLogo(stored[2]),
-        3: normalizeStoredLogo(stored[3])
+        3: normalizeStoredLogo(stored[3]),
+        4: normalizeStoredLogo(stored[4])
       };
     }
   } catch(e) {
     // Ignore invalid saved choices and use defaults.
   }
-  return { 1: '', 2: '', 3: '' };
+  return { 1: '', 2: '', 3: '', 4: '' };
 }
 
 function normalizeHeaderLogoCount(value) {
@@ -4029,7 +4090,7 @@ function normalizeLogoSize(value) {
 function normalizeFeatureCanvasWidth(value) {
   const width = Number(value);
   if (!Number.isFinite(width)) return 100;
-  return Math.min(100, Math.max(35, Math.round(width / 5) * 5));
+  return Math.min(100, Math.max(15, Math.round(width / 5) * 5));
 }
 
 function normalizeFeatureCanvasHeight(value) {
@@ -4068,13 +4129,14 @@ function loadSelectedHeaderLogoSizes(layout) {
       return {
         1: normalizeLogoSize(stored[1]),
         2: normalizeLogoSize(stored[2]),
-        3: normalizeLogoSize(stored[3])
+        3: normalizeLogoSize(stored[3]),
+        4: normalizeLogoSize(stored[4])
       };
     }
   } catch(e) {
     // Ignore invalid saved choices and use defaults.
   }
-  return { 1: 100, 2: 100, 3: 100 };
+  return { 1: 100, 2: 100, 3: 100, 4: 100 };
 }
 
 function saveSelectedHeaderLogoSizes() {
@@ -4106,7 +4168,8 @@ function loadSelectedHeaderLogoPositions(layout) {
       return {
         1: normalizeLogoPosition(stored[1]),
         2: normalizeLogoPosition(stored[2]),
-        3: normalizeLogoPosition(stored[3])
+        3: normalizeLogoPosition(stored[3]),
+        4: normalizeLogoPosition(stored[4])
       };
     }
   } catch(e) {
@@ -4115,7 +4178,8 @@ function loadSelectedHeaderLogoPositions(layout) {
   return {
     1: { x: 0, y: 0 },
     2: { x: 0, y: 0 },
-    3: { x: 0, y: 0 }
+    3: { x: 0, y: 0 },
+    4: { x: 0, y: 0 }
   };
 }
 
@@ -4213,7 +4277,7 @@ function updateHeaderLogoSizeControls() {
     const output = document.getElementById(slider.id + '-output');
     if (output) output.textContent = size + '%';
   });
-  [1, 2, 3].forEach(slot => {
+  [1, 2, 3, 4].forEach(slot => {
     const pos = normalizeLogoPosition(selectedHeaderLogoPositions[slot]);
     const output = document.getElementById('header-logo-' + slot + '-position-output');
     if (output) output.textContent = pos.x + ',' + pos.y;
@@ -4277,6 +4341,8 @@ function applyHeaderLogoSizes() {
       '#coming-logo-sttt',
       '#coming-back-logo-sttt',
       '#calendar-logo-oav',
+    ],
+    4: [
       '#coming-partner-logo',
       '.session-back-feature-logo-card img'
     ]
@@ -4547,8 +4613,52 @@ function applyPartnerTheme() {
   updateSizeLabel();
 }
 
+function getGeneratedComingSoonConfig() {
+  const partner = activePartnerConfig || {};
+  const sessionBack = partner.sessionBack || {};
+  const calendar = partner.calendar || {};
+  const label = partner.label || 'Partner';
+  const featureName = sessionBack.featureTitle || calendar.programTitle || label;
+  const link = sessionBack.linkText || calendar.micrositeUrl || '';
+  const fullLink = /^https?:\/\//i.test(link) ? link : (link ? 'https://' + link : '');
+  const displayLink = link.replace(/^https?:\/\//i, '').replace(/\/$/, '');
+  const colors = partner.colors || {};
+  const month = calendar.monthLabel || '';
+
+  return {
+    date: sessionBack.seriesDate || (month ? month + ' 2026' : ''),
+    featureName: escapeHtml(featureName),
+    logo: partner.partnerLogo || '',
+    logoAlt: partner.partnerLogoAlt || featureName,
+    qr: sessionBack.qrSrc || calendar.qrSrc || '',
+    qrAlt: sessionBack.qrAlt || calendar.qrAlt || (displayLink ? 'Scan to visit ' + displayLink : 'Scan to visit microsite'),
+    link: displayLink,
+    fullLink,
+    primaryHtml: '<strong>Visit the ' + escapeHtml(featureName) + ' microsite</strong> for program details, speaker updates, session information, and registration links for the Amyloidosis Program Spotlight Series.',
+    secondaryText: 'Keep this card for the latest ' + featureName + ' spotlight information and registration access.',
+    backPrimaryHtml: '<strong>Subscribe to SomeBodyToTalkTo</strong> to receive session registration links, ' + escapeHtml(featureName) + ' updates, and free weekly amyloidosis session reminders directly to your inbox.',
+    colors: {
+      primary: colors.primary || '#8B1F2D',
+      accent: colors.accent || '#FFE8A3',
+      label: colors.accent || '#FFE8A3',
+      divider: colors.borderAccent || colors.accent || '#FFE8A3',
+      softBg: colors.softBg || '#F5EAEC',
+      badgeText: '#fff',
+      badgeBg: colors.accent || '#FFE8A3',
+      bandBg: colors.sessionBandBg || colors.primary || '#8B1F2D',
+      backBandBg: colors.sessionBandBg || colors.primary || '#8B1F2D'
+    }
+  };
+}
+
 function getComingSoonConfig() {
-  return COMING_SOON_CONFIGS[activePartnerKey] || COMING_SOON_CONFIGS.uoc;
+  const generated = getGeneratedComingSoonConfig();
+  const override = COMING_SOON_CONFIGS[activePartnerKey] || {};
+  return {
+    ...generated,
+    ...override,
+    colors: { ...generated.colors, ...(override.colors || {}) }
+  };
 }
 
 function syncComingSoonCard() {
@@ -4557,9 +4667,11 @@ function syncComingSoonCard() {
   const root = document.documentElement;
   root.style.setProperty('--coming-primary', colors.primary || '#8B1F2D');
   root.style.setProperty('--coming-accent', colors.accent || '#FFE8A3');
+  root.style.setProperty('--coming-divider', colors.divider || colors.accent || '#FFE8A3');
   root.style.setProperty('--coming-label', colors.label || colors.accent || '#FFE8A3');
   root.style.setProperty('--coming-soft-bg', colors.softBg || '#F5EAEC');
   root.style.setProperty('--coming-badge-text', colors.badgeText || '#fff');
+  root.style.setProperty('--coming-badge-bg', colors.badgeBg || colors.accent || '#FFE8A3');
   root.style.setProperty('--coming-band-bg', colors.bandBg || colors.primary || '#8B1F2D');
   root.style.setProperty('--coming-back-band-bg', colors.backBandBg || colors.bandBg || colors.primary || '#8B1F2D');
 
@@ -4585,7 +4697,11 @@ function syncComingSoonCard() {
   applySelectedLogoToImage(1, document.getElementById('coming-back-logo-af'));
   applySelectedLogoToImage(2, document.getElementById('coming-back-logo-oav'));
   applySelectedLogoToImage(3, document.getElementById('coming-back-logo-sttt'));
-  applySelectedLogoToImage(1, document.getElementById('coming-partner-logo'));
+  if (getSelectedSlotLogoOption(4)) {
+    applySelectedLogoToImage(4, document.getElementById('coming-partner-logo'));
+  } else {
+    setImg('coming-partner-logo', cfg.logo, cfg.logoAlt);
+  }
   setImg('coming-qr-img', cfg.qr, cfg.qrAlt);
   setImg('coming-back-qr-img', cfg.backQr || 'sttt_subscribe_qr.png', cfg.backQrAlt || 'Scan to subscribe at somebodytotalkto.com/subscribe');
 
@@ -4605,7 +4721,7 @@ function syncComingSoonCard() {
   setHtml('coming-back-qr-label', cfg.backQrLabelHtml || 'scan to<br>subscribe');
   setText('coming-back-secondary', cfg.backSecondaryText || 'Subscribing is free and helps you stay connected to upcoming online sessions.');
   setText('coming-back-fine-print', cfg.backFinePrint || '* Subscribing is free and your information is never shared with third parties.');
-  setHtml('coming-fine-print', '* Microsite link: <strong>' + (cfg.fullLink || '') + '</strong>');
+  setText('coming-fine-print', cfg.finePrint || 'Receive session registration links and program updates directly to your inbox. Subscribing is free and your information will not be shared with third parties.');
   applyHeaderLogoSizes();
 }
 
@@ -5422,7 +5538,7 @@ function syncSessionBackContent() {
       };
     });
   }
-  const selectedFeatureLogo = getHeaderLogoOption(selectedHeaderLogos[3]);
+  const selectedFeatureLogo = getHeaderLogoOption(selectedHeaderLogos[4]);
   if (selectedFeatureLogo && selectedFeatureLogo.src) {
     logoCards.forEach((card, index) => {
       const img = card.querySelector('img');
@@ -5431,7 +5547,7 @@ function syncSessionBackContent() {
         return;
       }
       card.style.display = '';
-      applySelectedLogoToImage(3, img);
+      applySelectedLogoToImage(4, img);
     });
     applyBackCardFontSizes();
     return;
@@ -5443,7 +5559,14 @@ function syncSessionBackContent() {
       return;
     }
     card.style.display = '';
-    applySelectedLogoToImage(3, img);
+    const defaultLogo = cfg.logos && cfg.logos[0];
+    if (defaultLogo && defaultLogo.src) {
+      img.src = defaultLogo.src === '__partner_logo__' ? activePartnerConfig.partnerLogo : defaultLogo.src;
+      img.alt = defaultLogo.alt || activePartnerConfig.partnerLogoAlt || 'Partner logo';
+      img.style.display = '';
+    } else {
+      applySelectedLogoToImage(4, img);
+    }
   });
   applyBackCardFontSizes();
 }
@@ -5527,10 +5650,14 @@ function updateControlAvailability() {
   const autoSessionList = ready && isSpotlightSessionListLayout();
   updateAppLayoutMode();
   const sessionLayoutReady = ready && (surface.classList.contains('layout-foundation') || surface.classList.contains('layout-classic'));
-  const activeFontScope = currentSide === 'partner-back' ? 'partner-back' : (currentSide === 'back' ? 'back' : 'front');
+  const activeFontScope = currentSide === 'partner-back'
+    ? 'partner-back'
+    : (currentSide === 'back' ? (isComingSoonLayout() ? 'coming-back' : 'back') : (isComingSoonLayout() ? 'coming-front' : 'front'));
   const sessionFontControlsVisible = (activeFontScope === 'front' && (sessionLayoutReady || (ready && calendarCard)))
     || (activeFontScope === 'back' && sessionLayoutReady)
-    || (activeFontScope === 'partner-back' && ready && canShowPartnerBackSide());
+    || (activeFontScope === 'partner-back' && ready && canShowPartnerBackSide())
+    || (activeFontScope === 'coming-front' && ready && isComingSoonLayout())
+    || (activeFontScope === 'coming-back' && ready && isComingSoonLayout());
   const imageSizeControlVisible = sessionFontControlsVisible || (ready && currentSide === 'partner-back');
   const sessionLookupVisible = ready && !immediatePreview && !autoSessionList;
   const headerLogoControlsVisible = hasSelectedCard();
@@ -5553,6 +5680,7 @@ function updateControlAvailability() {
   });
   document.querySelectorAll('.header-logo-control').forEach(el => {
     const slot = Number(el.dataset.logoSlot);
+    if (slot === 4) return;
     el.style.display = headerLogoControlsVisible && (!headerLogoCountVisible || slot <= selectedHeaderLogoCount) ? 'flex' : 'none';
   });
   document.querySelectorAll('.header-logo-count-control').forEach(el => {
@@ -5564,10 +5692,12 @@ function updateControlAvailability() {
   if (addSponsorLogoButton) addSponsorLogoButton.style.display = isMultiPresenterFacebookPromo() ? '' : 'none';
   document.querySelectorAll('.logo-size-control-row').forEach(el => {
     const slot = Number(el.dataset.logoSlot);
+    if (slot === 4) return;
     el.style.display = headerLogoControlsVisible && (!headerLogoCountVisible || slot <= selectedHeaderLogoCount) ? '' : 'none';
   });
   document.querySelectorAll('.logo-nudge-control').forEach(el => {
     const slot = Number(el.dataset.logoSlot);
+    if (slot === 4) return;
     el.style.display = headerLogoControlsVisible && (!headerLogoCountVisible || slot <= selectedHeaderLogoCount) ? '' : 'none';
   });
   document.querySelectorAll('.logo-size-group').forEach(el => {
@@ -5733,6 +5863,7 @@ headerLogoSelects.forEach(select => {
     selectedHeaderLogos[select.dataset.logoSlot] = select.value;
     saveSelectedHeaderLogos();
     updateHeaderLogos();
+    if (isComingSoonLayout()) syncComingSoonCard();
   });
 });
 if (sponsorControls) sponsorControls.addEventListener('change', event => {
