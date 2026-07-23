@@ -2552,6 +2552,16 @@ body[data-partner="vamp"] .session-back-title {
         </div>
         <output id="header-logo-3-position-output">0,0</output>
       </div>
+      <label class="logo-size-control-row feature-logo-control" for="feature-logo-canvas-width">
+        <span>Canvas width</span>
+        <input id="feature-logo-canvas-width" type="range" min="35" max="100" step="5" aria-label="Feature logo canvas width">
+        <output id="feature-logo-canvas-width-output" for="feature-logo-canvas-width">100%</output>
+      </label>
+      <label class="logo-size-control-row feature-logo-control" for="feature-logo-canvas-height">
+        <span>Canvas height</span>
+        <input id="feature-logo-canvas-height" type="range" min="50" max="180" step="5" aria-label="Feature logo canvas height">
+        <output id="feature-logo-canvas-height-output" for="feature-logo-canvas-height">100%</output>
+      </label>
     </fieldset>
     <fieldset class="font-size-group">
       <legend>Font Size</legend>
@@ -3247,8 +3257,10 @@ const headerLogoCountSelect = document.getElementById('header-logo-count');
 const sponsorControls = document.getElementById('sponsor-controls');
 const addSponsorLogoButton = document.getElementById('add-sponsor-logo');
 const headerLogoSizeSliders = Array.from(document.querySelectorAll('.logo-size-slider'));
-const headerLogoNudgeControls = Array.from(document.querySelectorAll('.logo-nudge-control'));
+const headerLogoNudgeControls = Array.from(document.querySelectorAll('.logo-nudge-control[data-logo-slot]'));
 const headerLogoNudgeButtons = Array.from(document.querySelectorAll('.logo-nudge-btn'));
+const featureLogoCanvasSlider = document.getElementById('feature-logo-canvas-width');
+const featureLogoCanvasHeightSlider = document.getElementById('feature-logo-canvas-height');
 const leftLogo = document.querySelector('.logo-left');
 const rightLogo = document.querySelector('.logo-right');
 const headerLogoPlaceholders = {
@@ -3267,6 +3279,7 @@ const HEADER_LOGO_STORAGE_KEY = 'facebook_promo_header_logos';
 const HEADER_LOGO_COUNT_STORAGE_KEY = 'facebook_promo_header_logo_count';
 const HEADER_LOGO_SIZE_STORAGE_KEY = 'facebook_promo_header_logo_sizes';
 const HEADER_LOGO_POSITION_STORAGE_KEY = 'facebook_promo_header_logo_positions';
+const FEATURE_LOGO_STORAGE_KEY = 'facebook_promo_feature_logo';
 const SPONSOR_LOGO_STORAGE_KEY = 'facebook_promo_sponsor_logos';
 const UNSELECTED_CARD_MEMORY_KEY = 'no_card_selected';
 const PARTNER_LOGOS_API = 'https://somebodytotalkto.com/api/session-editor/partners/logos?limit=1000&include_base64=true';
@@ -3294,6 +3307,7 @@ let selectedHeaderLogoCount = loadSelectedHeaderLogoCount(getCurrentCardMemoryKe
 let selectedSponsorLogos = loadSelectedSponsorLogos(getCurrentCardMemoryKey());
 let selectedHeaderLogoSizes = loadSelectedHeaderLogoSizes(getCurrentCardMemoryKey());
 let selectedHeaderLogoPositions = loadSelectedHeaderLogoPositions(getCurrentCardMemoryKey());
+let selectedFeatureLogoSettings = loadFeatureLogoSettings(getCurrentCardMemoryKey());
 const PARTNER_CONFIG_FALLBACK = {
   defaultPartner: 'uoc',
   partners: {
@@ -4012,6 +4026,41 @@ function normalizeLogoSize(value) {
   return Math.min(220, Math.max(50, Math.round(size / 5) * 5));
 }
 
+function normalizeFeatureCanvasWidth(value) {
+  const width = Number(value);
+  if (!Number.isFinite(width)) return 100;
+  return Math.min(100, Math.max(35, Math.round(width / 5) * 5));
+}
+
+function normalizeFeatureCanvasHeight(value) {
+  const height = Number(value);
+  if (!Number.isFinite(height)) return 100;
+  return Math.min(180, Math.max(50, Math.round(height / 5) * 5));
+}
+
+function loadFeatureLogoSettings(layout) {
+  try {
+    const stored = JSON.parse(window.localStorage.getItem(getCardScopedStorageKey(FEATURE_LOGO_STORAGE_KEY, layout)) || 'null');
+    if (stored && typeof stored === 'object') {
+      return {
+        canvasWidth: normalizeFeatureCanvasWidth(stored.canvasWidth),
+        canvasHeight: normalizeFeatureCanvasHeight(stored.canvasHeight)
+      };
+    }
+  } catch(e) {
+    // Ignore invalid saved choices and use defaults.
+  }
+  return { canvasWidth: 100, canvasHeight: 100 };
+}
+
+function saveFeatureLogoSettings() {
+  try {
+    window.localStorage.setItem(getCardScopedStorageKey(FEATURE_LOGO_STORAGE_KEY), JSON.stringify(selectedFeatureLogoSettings));
+  } catch(e) {
+    // Keep the in-memory settings even if browser storage is unavailable.
+  }
+}
+
 function loadSelectedHeaderLogoSizes(layout) {
   try {
     const stored = JSON.parse(window.localStorage.getItem(getCardScopedStorageKey(HEADER_LOGO_SIZE_STORAGE_KEY, layout)) || 'null');
@@ -4084,6 +4133,7 @@ function loadCardScopedSettings(layout) {
   selectedSponsorLogos = loadSelectedSponsorLogos(layout);
   selectedHeaderLogoSizes = loadSelectedHeaderLogoSizes(layout);
   selectedHeaderLogoPositions = loadSelectedHeaderLogoPositions(layout);
+  selectedFeatureLogoSettings = loadFeatureLogoSettings(layout);
   selectedTitleFontSize = loadFontSize(TITLE_FONT_STORAGE_KEY, DEFAULT_TITLE_FONT_SIZE, layout);
   selectedTitlePrefixFontSize = loadFontSize(TITLE_PREFIX_FONT_STORAGE_KEY, DEFAULT_TITLE_PREFIX_FONT_SIZE, layout);
   selectedTitleSuffixFontSize = loadFontSize(TITLE_SUFFIX_FONT_STORAGE_KEY, DEFAULT_TITLE_SUFFIX_FONT_SIZE, layout);
@@ -4100,6 +4150,7 @@ function loadCardScopedSettings(layout) {
   updateHeaderLogoCountControl();
   populateSponsorLogoSelects();
   updateHeaderLogoSizeControls();
+  updateFeatureLogoControls();
   refreshFontControlsFromState();
   fitBandTitle();
   applyBackCardFontSizes();
@@ -4177,6 +4228,28 @@ function updateHeaderLogoSizeControls() {
   });
 }
 
+function updateFeatureLogoControls() {
+  const settings = selectedFeatureLogoSettings;
+  if (featureLogoCanvasSlider) featureLogoCanvasSlider.value = settings.canvasWidth;
+  if (featureLogoCanvasHeightSlider) featureLogoCanvasHeightSlider.value = settings.canvasHeight;
+  const canvasOutput = document.getElementById('feature-logo-canvas-width-output');
+  const canvasHeightOutput = document.getElementById('feature-logo-canvas-height-output');
+  if (canvasOutput) canvasOutput.textContent = settings.canvasWidth + '%';
+  if (canvasHeightOutput) canvasHeightOutput.textContent = settings.canvasHeight + '%';
+}
+
+function applyFeatureLogoSettings() {
+  const settings = selectedFeatureLogoSettings;
+  const cards = document.querySelectorAll('.session-back-feature-logo-card, .coming-soon-partner-pill');
+  cards.forEach(card => {
+    card.style.width = settings.canvasWidth + '%';
+    card.style.alignSelf = 'flex-end';
+    const baseHeight = card.classList.contains('coming-soon-partner-pill') ? 56 : 32;
+    card.style.minHeight = (baseHeight * settings.canvasHeight / 100) + 'px';
+    card.style.height = (baseHeight * settings.canvasHeight / 100) + 'px';
+  });
+}
+
 function applyHeaderLogoSizes() {
   const slotSelectors = {
     1: [
@@ -4204,6 +4277,7 @@ function applyHeaderLogoSizes() {
       '#coming-logo-sttt',
       '#coming-back-logo-sttt',
       '#calendar-logo-oav',
+      '#coming-partner-logo',
       '.session-back-feature-logo-card img'
     ]
   };
@@ -4215,6 +4289,7 @@ function applyHeaderLogoSizes() {
       img.style.transformOrigin = 'center center';
     });
   });
+  applyFeatureLogoSettings();
 }
 
 function populateHeaderLogoSelects() {
@@ -5498,6 +5573,10 @@ function updateControlAvailability() {
   document.querySelectorAll('.logo-size-group').forEach(el => {
     el.style.display = headerLogoControlsVisible ? 'grid' : 'none';
   });
+  const showFeatureCanvasControls = ready && (currentSide === 'partner-back' || (isComingSoonLayout() && currentSide === 'front'));
+  document.querySelectorAll('.feature-logo-control').forEach(el => {
+    el.style.display = showFeatureCanvasControls ? '' : 'none';
+  });
   document.querySelectorAll('.timezone-control').forEach(el => {
     el.style.display = ready && (sessionLookupVisible || calendarCard) ? '' : 'none';
   });
@@ -5593,6 +5672,23 @@ if (headshotSizeSelect) {
 
 initHeaderLogoNudgeSliders();
 updateHeaderLogoSizeControls();
+updateFeatureLogoControls();
+[
+  [featureLogoCanvasSlider, 'canvasWidth', normalizeFeatureCanvasWidth],
+  [featureLogoCanvasHeightSlider, 'canvasHeight', normalizeFeatureCanvasHeight]
+].forEach(([slider, key, normalize]) => {
+  if (!slider) return;
+  const apply = () => {
+    selectedFeatureLogoSettings[key] = normalize(slider.value);
+    updateFeatureLogoControls();
+    applyFeatureLogoSettings();
+  };
+  slider.addEventListener('input', apply);
+  slider.addEventListener('change', () => {
+    apply();
+    saveFeatureLogoSettings();
+  });
+});
 headerLogoSizeSliders.forEach(slider => {
   slider.addEventListener('input', () => {
     selectedHeaderLogoSizes[slider.dataset.logoSlot] = normalizeLogoSize(slider.value);
