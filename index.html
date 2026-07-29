@@ -839,6 +839,11 @@ body[data-partner="vamp"] .coming-soon-program-name {
 .print-surface.layout-foundation .logo-bar[data-header-logo-count="3"] {
   gap: 14px;
 }
+/* The optional header is rendered in its selected logo order. Reset the
+   legacy flex ordering so each divider remains after its preceding logo. */
+.print-surface.layout-foundation .logo-bar[data-header-logo-count] > * {
+  order: initial;
+}
 .print-surface.layout-foundation .uoc-pill,
 .print-surface.layout-foundation .logo-left,
 .print-surface.layout-foundation .logo-right {
