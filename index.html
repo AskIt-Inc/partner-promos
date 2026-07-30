@@ -26,7 +26,7 @@
   --calendar-primary: #006E8E;
   --calendar-border: #B9DEE6;
   --calendar-accent: #FFE8A3;
-  --calendar-text-accent: #8A6400;
+  --calendar-text-accent: #0057B8;
   --calendar-series-size: 10px;
   --calendar-band-title-size: 15px;
   --calendar-session-title-size: 10.35px;
@@ -388,8 +388,31 @@ body[data-partner="vamp"] .calendar-chip-month {
   margin: 0 0 1px;
   line-height: 1.12;
 }
-body[data-partner="vamp"] .calendar-session-presenter {
-  color: #8A6400;
+.calendar-load-state {
+  align-self: center;
+  margin: auto;
+  text-align: center;
+  width: min(82%, 260px);
+}
+.calendar-load-label {
+  color: var(--calendar-primary);
+  font-size: 10px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+.calendar-load-track {
+  background: #e7edf3;
+  border-radius: 999px;
+  height: 7px;
+  overflow: hidden;
+  width: 100%;
+}
+.calendar-load-bar {
+  background: var(--calendar-primary);
+  border-radius: inherit;
+  height: 100%;
+  transition: width 0.22s ease;
+  width: 10%;
 }
 .calendar-card-footer {
   background: #fff;
@@ -3833,6 +3856,8 @@ let calendarSessionsLoaded = false;
 let calendarSessionsPromise = null;
 let calendarSessionsData = { sessions: [], profiles: [] };
 let calendarSessionsSourceKey = '';
+let calendarLoadProgressTimer = null;
+let calendarLoadProgressValue = 10;
 let selectedCalendarFilters = new Set(['Mon', 'Wed', 'Thu']);
 let selectedCalendarRange = 'all';
 
@@ -4879,9 +4904,50 @@ function getCalendarSourceKey(cfg = getCalendarConfig()) {
 }
 
 function resetCalendarSessionState() {
+  window.clearInterval(calendarLoadProgressTimer);
+  calendarLoadProgressTimer = null;
   calendarSessionsLoaded = false;
   calendarSessionsPromise = null;
   calendarSessionsData = { sessions: [], profiles: [] };
+}
+
+function setCalendarLoadProgress(percent) {
+  const list = document.getElementById('calendar-sessions-list');
+  if (!list) return;
+  const value = Math.max(10, Math.min(100, Number(percent) || 10));
+  let state = list.querySelector('.calendar-load-state');
+  if (!state) {
+    list.replaceChildren();
+    state = document.createElement('div');
+    state.className = 'calendar-load-state';
+    state.setAttribute('role', 'status');
+    state.setAttribute('aria-live', 'polite');
+    state.innerHTML = '<p class="calendar-load-label"></p><div class="calendar-load-track"><div class="calendar-load-bar"></div></div>';
+    list.appendChild(state);
+  }
+  state.querySelector('.calendar-load-label').textContent = 'Loading calendar data · ' + value + '%';
+  state.querySelector('.calendar-load-bar').style.width = value + '%';
+}
+
+function startCalendarLoadProgress() {
+  window.clearInterval(calendarLoadProgressTimer);
+  calendarLoadProgressValue = 10;
+  setCalendarLoadProgress(calendarLoadProgressValue);
+  calendarLoadProgressTimer = window.setInterval(() => {
+    calendarLoadProgressValue = Math.min(90, calendarLoadProgressValue + 10);
+    setCalendarLoadProgress(calendarLoadProgressValue);
+    if (calendarLoadProgressValue === 90) window.clearInterval(calendarLoadProgressTimer);
+  }, 250);
+}
+
+async function finishCalendarLoadProgress(sourceKey) {
+  window.clearInterval(calendarLoadProgressTimer);
+  calendarLoadProgressTimer = null;
+  while (calendarLoadProgressValue < 100 && calendarSessionsSourceKey === sourceKey) {
+    calendarLoadProgressValue = Math.min(100, calendarLoadProgressValue + 10);
+    setCalendarLoadProgress(calendarLoadProgressValue);
+    await new Promise(resolve => window.setTimeout(resolve, 100));
+  }
 }
 
 function syncCalendarCard() {
@@ -4891,7 +4957,7 @@ function syncCalendarCard() {
   root.style.setProperty('--calendar-primary', colors.primary || '#006E8E');
   root.style.setProperty('--calendar-border', colors.borderAccent || '#B9DEE6');
   root.style.setProperty('--calendar-accent', colors.accent || '#FFE8A3');
-  root.style.setProperty('--calendar-text-accent', activePartnerKey === 'vamp' ? (colors.accent || '#FFE8A3') : '#8A6400');
+  root.style.setProperty('--calendar-text-accent', '#0057B8');
   applyCalendarFontSizes();
   const setImg = (id, src, alt) => {
     const img = document.getElementById(id);
@@ -5097,6 +5163,7 @@ async function loadCalendarSessions() {
     return Promise.resolve();
   }
   const sourceKey = getCalendarSourceKey(cfg);
+  startCalendarLoadProgress();
 
   calendarSessionsPromise = Promise.all([
     fetch(getAllCalendarSessionsApiUrl(cfg.sessionsApiUrl), { mode: 'cors', headers: { Accept: 'application/json' } }),
@@ -5107,10 +5174,15 @@ async function loadCalendarSessions() {
       const sessionsJson = await sessionsRes.json();
       const profilesJson = await profilesRes.json();
       if (calendarSessionsSourceKey !== sourceKey) return;
+      await finishCalendarLoadProgress(sourceKey);
+      if (calendarSessionsSourceKey !== sourceKey) return;
       renderCalendarSessionsFromApi(sessionsJson.data || [], profilesJson.data || []);
     })
     .catch(e => {
+      window.clearInterval(calendarLoadProgressTimer);
+      calendarLoadProgressTimer = null;
       console.warn('[calendar card] API unavailable; using current card content.', e);
+      if (calendarSessionsSourceKey === sourceKey) renderCalendarSessionsFromApi([], []);
     })
     .finally(() => {
       calendarSessionsPromise = null;
