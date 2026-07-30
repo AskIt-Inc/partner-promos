@@ -2144,6 +2144,52 @@ body[data-partner="vamp"] .session-back-title {
   line-height: 1;
   text-transform: uppercase;
 }
+.calendar-day-filter-group {
+  border: 1px solid var(--border-rose);
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr;
+  margin: 0;
+  padding: 12px;
+  width: 100%;
+}
+.calendar-day-filter-group legend {
+  color: var(--maroon);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 0 6px;
+  text-transform: uppercase;
+}
+.calendar-day-option {
+  align-items: center;
+  border: 1px solid #e4e4e4;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  gap: 8px;
+  padding: 8px 10px;
+}
+.calendar-day-option:has(input:checked) {
+  background: #eef8fb;
+  border-color: #49a9c8;
+}
+.calendar-day-option input {
+  accent-color: #49a9c8;
+  margin: 0;
+}
+.calendar-day-option span {
+  color: #444;
+  font-size: 12px;
+  font-weight: 700;
+}
+.calendar-day-filter-help {
+  color: #666;
+  font-size: 10px;
+  line-height: 1.35;
+  margin: 0;
+}
 .font-size-group {
   border: 1px solid var(--border-rose);
   border-radius: 8px;
@@ -2452,6 +2498,22 @@ body[data-partner="vamp"] .session-back-title {
         <option value="coming-soon">Coming Soon Card</option>
       </select>
     </label>
+    <fieldset class="calendar-day-filter-group calendar-filter-control">
+      <legend>Session Days</legend>
+      <label class="calendar-day-option">
+        <input class="calendar-day-checkbox" type="checkbox" value="Mon" checked>
+        <span>Monday</span>
+      </label>
+      <label class="calendar-day-option">
+        <input class="calendar-day-checkbox" type="checkbox" value="Wed" checked>
+        <span>Wednesday</span>
+      </label>
+      <label class="calendar-day-option">
+        <input class="calendar-day-checkbox" type="checkbox" value="Thu" checked>
+        <span>Thursday</span>
+      </label>
+      <p class="calendar-day-filter-help">Select which session days to show in the monthly calendar. At least one day must be selected.</p>
+    </fieldset>
     <label class="field-control image-size-control" for="headshot-image-size">
       <span>Profile Image Size</span>
       <select id="headshot-image-size" aria-label="Profile image size">
@@ -2848,12 +2910,6 @@ body[data-partner="vamp"] .session-back-title {
   <label>Size:</label>
   <button id="btn-4x6" class="active" onclick="setSize('4x6')">4&times;6</button>
   <button id="btn-3x5" onclick="setSize('3x5')">3&times;5</button>
-  <span class="control-divider calendar-filter-control">|</span>
-  <label class="calendar-filter-control">Filter:</label>
-  <button class="calendar-filter-control calendar-filter-btn active" data-calendar-filter="all" type="button">All</button>
-  <button class="calendar-filter-control calendar-filter-btn" data-calendar-filter="Mon" type="button">Monday</button>
-  <button class="calendar-filter-control calendar-filter-btn" data-calendar-filter="Wed" type="button">Wednesday</button>
-  <button class="calendar-filter-control calendar-filter-btn" data-calendar-filter="Thu" type="button">Thursday</button>
   <span class="control-divider calendar-filter-control">|</span>
   <button class="calendar-filter-control calendar-range-btn active" data-calendar-range="all" type="button">Full Month</button>
   <button class="calendar-filter-control calendar-range-btn" data-calendar-range="early" type="button">Card 1</button>
@@ -3443,7 +3499,7 @@ const PARTNER_CONFIG_FALLBACK = {
         sourceTimezone: 'PT',
         sourceHour: 15,
         sourceMinute: 0,
-        sessionsApiUrl: 'https://somebodytotalkto.com/api/spotlight/microsite/sessions?indication=4,12362&partner=12759',
+        sessionsApiUrl: 'https://somebodytotalkto.com/api/spotlight/microsite/sessions?indication=4,12362&partner=12759&status=all',
         profilesApiUrl: 'https://somebodytotalkto.com/api/spotlight/microsite/profiles?indication=4,5&partner=12759'
       },
       sessionBack: {
@@ -3777,7 +3833,7 @@ let calendarSessionsLoaded = false;
 let calendarSessionsPromise = null;
 let calendarSessionsData = { sessions: [], profiles: [] };
 let calendarSessionsSourceKey = '';
-let selectedCalendarFilters = new Set();
+let selectedCalendarFilters = new Set(['Mon', 'Wed', 'Thu']);
 let selectedCalendarRange = 'all';
 
 function normalizePartnerConfig(config) {
@@ -4809,8 +4865,17 @@ function getCalendarConfig() {
   };
 }
 
+function getAllCalendarSessionsApiUrl(url) {
+  const value = String(url || '');
+  if (!value) return '';
+  if (/[?&]status=/i.test(value)) {
+    return value.replace(/([?&]status=)[^&]*/i, '$1all');
+  }
+  return value + (value.includes('?') ? '&' : '?') + 'status=all';
+}
+
 function getCalendarSourceKey(cfg = getCalendarConfig()) {
-  return [activePartnerKey, cfg.sessionsApiUrl, cfg.profilesApiUrl].join('|');
+  return [activePartnerKey, getAllCalendarSessionsApiUrl(cfg.sessionsApiUrl), cfg.profilesApiUrl].join('|');
 }
 
 function resetCalendarSessionState() {
@@ -4904,7 +4969,14 @@ function updateCalendarTimezoneDisplay() {
   const el = document.getElementById('calendar-footer-timezone');
   if (!el) return;
   const cfg = getCalendarConfig();
-  el.textContent = (cfg.daysLabel || 'Mondays & Wednesdays') + ' in ' + (cfg.monthLabel || 'Upcoming') + ' · ' + getCalendarProgramTime();
+  const dayLabels = { Mon: 'Mondays', Wed: 'Wednesdays', Thu: 'Thursdays' };
+  const selectedDays = ['Mon', 'Wed', 'Thu']
+    .filter(day => selectedCalendarFilters.has(day))
+    .map(day => dayLabels[day]);
+  const daysLabel = selectedDays.length > 1
+    ? selectedDays.slice(0, -1).join(', ') + ' & ' + selectedDays.at(-1)
+    : selectedDays[0] || cfg.daysLabel || 'Session days';
+  el.textContent = daysLabel + ' in ' + (cfg.monthLabel || 'Upcoming') + ' · ' + getCalendarProgramTime();
 }
 
 function renderCalendarSessionsFromApi(sessions, profiles) {
@@ -4919,15 +4991,13 @@ function renderCalendarSessionsFromApi(sessions, profiles) {
   const sorted = (Array.isArray(sessions) ? sessions : [])
     .slice()
     .sort((a, b) => Number(a.timestamp || 0) - Number(b.timestamp || 0));
-  const filtered = selectedCalendarFilters.size === 0
-    ? sorted.filter(calendarMatchesSelectedRange)
-    : sorted.filter(session =>
-      selectedCalendarFilters.has(calendarParseApiDate(session.date).weekday)
-      && calendarMatchesSelectedRange(session)
-    );
+  const filtered = sorted.filter(session =>
+    selectedCalendarFilters.has(calendarParseApiDate(session.date).weekday)
+    && calendarMatchesSelectedRange(session)
+  );
 
   list.replaceChildren();
-  list.classList.toggle('calendar-sessions-filtered', selectedCalendarFilters.size > 0);
+  list.classList.toggle('calendar-sessions-filtered', selectedCalendarFilters.size < 3);
   list.classList.toggle('calendar-sessions-dense', filtered.length > 7);
 
   if (!filtered.length) {
@@ -4993,22 +5063,17 @@ function renderCalendarSessionsFromApi(sessions, profiles) {
   calendarSessionsLoaded = true;
 }
 
-function setCalendarFilter(filter) {
-  if (filter === 'all') {
-    selectedCalendarFilters.clear();
-  } else if (['Mon', 'Wed', 'Thu'].includes(filter)) {
-    if (selectedCalendarFilters.has(filter)) {
-      selectedCalendarFilters.delete(filter);
-    } else {
-      selectedCalendarFilters.add(filter);
-    }
+function setCalendarFilter(filter, checked) {
+  if (!['Mon', 'Wed', 'Thu'].includes(filter)) return;
+  if (checked) {
+    selectedCalendarFilters.add(filter);
+  } else if (selectedCalendarFilters.size > 1) {
+    selectedCalendarFilters.delete(filter);
   }
-  document.querySelectorAll('.calendar-filter-btn').forEach(btn => {
-    const btnFilter = btn.dataset.calendarFilter;
-    btn.classList.toggle('active', btnFilter === 'all'
-      ? selectedCalendarFilters.size === 0
-      : selectedCalendarFilters.has(btnFilter));
+  document.querySelectorAll('.calendar-day-checkbox').forEach(input => {
+    input.checked = selectedCalendarFilters.has(input.value);
   });
+  updateCalendarTimezoneDisplay();
   if (calendarSessionsLoaded) {
     renderCalendarSessionsFromApi(calendarSessionsData.sessions, calendarSessionsData.profiles);
   }
@@ -5034,7 +5099,7 @@ async function loadCalendarSessions() {
   const sourceKey = getCalendarSourceKey(cfg);
 
   calendarSessionsPromise = Promise.all([
-    fetch(cfg.sessionsApiUrl, { mode: 'cors', headers: { Accept: 'application/json' } }),
+    fetch(getAllCalendarSessionsApiUrl(cfg.sessionsApiUrl), { mode: 'cors', headers: { Accept: 'application/json' } }),
     fetch(cfg.profilesApiUrl, { mode: 'cors', headers: { Accept: 'application/json' } })
   ])
     .then(async ([sessionsRes, profilesRes]) => {
@@ -5881,9 +5946,9 @@ if (sponsorControls) sponsorControls.addEventListener('change', event => {
 });
 if (addSponsorLogoButton) addSponsorLogoButton.addEventListener('click', addSponsorLogoSlot);
 
-document.querySelectorAll('.calendar-filter-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    setCalendarFilter(btn.dataset.calendarFilter);
+document.querySelectorAll('.calendar-day-checkbox').forEach(input => {
+  input.addEventListener('change', () => {
+    setCalendarFilter(input.value, input.checked);
   });
 });
 

@@ -89,7 +89,7 @@
         "sourceTimezone": "PT",
         "sourceHour": 15,
         "sourceMinute": 0,
-        "sessionsApiUrl": "https://somebodytotalkto.com/api/spotlight/microsite/sessions?indication=4,12362&partner=12759",
+        "sessionsApiUrl": "https://somebodytotalkto.com/api/spotlight/microsite/sessions?indication=4,12362&partner=12759&status=all",
         "profilesApiUrl": "https://somebodytotalkto.com/api/spotlight/microsite/profiles?indication=4,5&partner=12759"
       },
       "sessionBack": {
