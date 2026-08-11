@@ -36,7 +36,7 @@ index.html
 
 | Label | Value | Layout |
 |-------|-------|--------|
-| Facebook Promo (Multi Presenters) | `facebook-promo-multi` | Two-presenter Facebook card with configurable sponsor strip |
+| Facebook Promo (Multi Presenters) | `facebook-promo-multi` | Up-to-three-presenter Facebook card with configurable sponsor strip |
 | Medical Amyloidosis Session - Spotlight | `foundation` | New 3-logo card |
 | Medical Amyloidosis Session - Non Spotlight | `classic` | Original card |
 | Session Registration Promo Card | `session-front` | Separate 4×6 registration front with partner-specific Spotlight microsite back |
@@ -319,8 +319,10 @@ Expected shape from `GET /api/spotlight/microsite/session/search?q=`:
 - `description` may contain HTML markup; the card strips it.
 - `short_url` is optional; fallback chain is `short_url → reg_link.url → static default`.
 - Only `presenters[0]` is used; multi-presenter sessions show only the first presenter.
-- `facebook-promo-multi` keeps the standard Facebook Promo date, description, registration, and QR columns unchanged. It replaces only the left presenter column with two vertically stacked presenter profiles. Each profile uses `presenters[0]` or `presenters[1]` and can supply a photo on the presenter record (`headshot_base64`, `headshot_url`, `photo_url`, `image_url`, or equivalent). Its Sponsor controls use the same live employer-logo taxonomy API as the header-logo controls; they default to Alnylam, BridgeBio, and Immix Biopharma when those records are available. Use **+ Add sponsor** to add further logos at the bottom of the card.
+- `facebook-promo-multi` keeps the standard Facebook Promo date, description, registration, QR, and export dimensions unchanged. Two-presenter sessions use the left stacked profile column. Three-presenter sessions switch to a full-width horizontal profile rail above the session copy and QR so every profile remains visible without clipping the fixed-height card. Each profile uses `presenters[0]`, `presenters[1]`, or `presenters[2]` and can supply a photo on the presenter record (`headshot_base64`, `headshot_url`, `photo_url`, `image_url`, or equivalent). Its Sponsor controls use the same live employer-logo taxonomy API as the header-logo controls; they default to Alnylam, BridgeBio, and Immix Biopharma when those records are available. Use **+ Add sponsor** to add further logos at the bottom of the card.
 - The existing **Profile Image Size** control updates both multi-presenter headshots together. The multi-presenter version uses a proportionally smaller size so both portraits remain inside the fixed left column.
+- Multi-presenter cards also expose **Date and Time Size**, **QR Code Size**, **Presenter Gap**, **Presenter Name Size**, **Credentials and Employer Size**, and **Registration Link Size** sliders. Their values are saved per card layout and update the preview and exported artwork together. Date-pill padding and icon size scale with its text; registration label, URL text, and URL padding scale together. Three-presenter profiles retain centered visual dividers and readable vertical text spacing, the QR code is constrained so its registration label remains visible, and oversized description text is reduced only as needed to prevent clipping inside the fixed card dimensions.
+- Session workspaces use four ordered columns: dropdown and logo controls, **Font Size & Card Adjustments**, the session list/search panel, and the promo-card preview. Selecting a configured partner on the multi-presenter card automatically loads its upcoming sessions into the third column; manual title search is not required for this card type.
 - Presenter naming is consistent across cards: when `name_suffix` is present, the title is omitted from the displayed profile name and the suffix is shown separately.
 
 ---
