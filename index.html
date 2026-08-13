@@ -1423,6 +1423,7 @@ body[data-partner="vamp"] .microsite-url {
   flex-shrink: 0;
 }
 .print-surface.layout-facebook-multi .sponsor-strip { display: flex; }
+.print-surface.layout-facebook-multi.hide-sponsors .sponsor-strip { display: none; }
 .sponsor-label {
   color: #777;
   font-size: 7.5px;
@@ -2464,6 +2465,7 @@ body[data-partner="vamp"] .session-back-title {
 .header-logo-control {
   display: none;
 }
+.sponsor-visibility-control { display: none; }
 .sponsor-control { display: none; }
 .sponsor-controls { display: contents; }
 .sponsor-add-control {
@@ -2767,6 +2769,13 @@ body[data-partner="vamp"] .session-back-title {
     <label class="field-control header-logo-control feature-logo-control" data-logo-slot="4" for="header-logo-4-select">
       <span>Logo 4</span>
       <select id="header-logo-4-select" class="header-logo-select" data-logo-slot="4" aria-label="Feature banner logo"></select>
+    </label>
+    <label class="field-control sponsor-visibility-control" for="show-sponsors-select">
+      <span>Show sponsors</span>
+      <select id="show-sponsors-select" aria-label="Show sponsors on the card">
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+      </select>
     </label>
     <div class="sponsor-controls" id="sponsor-controls">
     <label class="field-control sponsor-control" for="sponsor-logo-1-select">
@@ -3577,6 +3586,7 @@ const multiRegistrationSizeSlider = document.getElementById('multi-registration-
 const sideFontSelects = Array.from(document.querySelectorAll('.side-font-select'));
 const headerLogoSelects = Array.from(document.querySelectorAll('.header-logo-select'));
 const headerLogoCountSelect = document.getElementById('header-logo-count');
+const showSponsorsSelect = document.getElementById('show-sponsors-select');
 const sponsorControls = document.getElementById('sponsor-controls');
 const addSponsorLogoButton = document.getElementById('add-sponsor-logo');
 const headerLogoSizeSliders = Array.from(document.querySelectorAll('.logo-size-slider'));
@@ -3621,6 +3631,7 @@ const HEADER_LOGO_SIZE_STORAGE_KEY = 'facebook_promo_header_logo_sizes';
 const HEADER_LOGO_POSITION_STORAGE_KEY = 'facebook_promo_header_logo_positions';
 const FEATURE_LOGO_STORAGE_KEY = 'facebook_promo_feature_logo';
 const SPONSOR_LOGO_STORAGE_KEY = 'facebook_promo_sponsor_logos';
+const SHOW_SPONSORS_STORAGE_KEY = 'facebook_promo_show_sponsors';
 const UNSELECTED_CARD_MEMORY_KEY = 'no_card_selected';
 const PARTNER_LOGOS_API = 'https://somebodytotalkto.com/api/session-editor/partners/logos?limit=1000&include_base64=true';
 const HEADER_LOGO_STATIC_OPTIONS = [
@@ -3645,6 +3656,7 @@ let sponsorLogoOptions = [{ key: '', label: 'Select sponsor', src: '', alt: '' }
 let selectedHeaderLogos = loadSelectedHeaderLogos(getCurrentCardMemoryKey());
 let selectedHeaderLogoCount = loadSelectedHeaderLogoCount(getCurrentCardMemoryKey());
 let selectedSponsorLogos = loadSelectedSponsorLogos(getCurrentCardMemoryKey());
+let showSponsors = loadShowSponsors(getCurrentCardMemoryKey());
 let selectedHeaderLogoSizes = loadSelectedHeaderLogoSizes(getCurrentCardMemoryKey());
 let selectedHeaderLogoPositions = loadSelectedHeaderLogoPositions(getCurrentCardMemoryKey());
 let selectedFeatureLogoSettings = loadFeatureLogoSettings(getCurrentCardMemoryKey());
@@ -4394,6 +4406,22 @@ function saveSelectedSponsorLogos() {
   try { window.localStorage.setItem(getCardScopedStorageKey(SPONSOR_LOGO_STORAGE_KEY), JSON.stringify(selectedSponsorLogos)); } catch(e) {}
 }
 
+function loadShowSponsors(layout) {
+  try {
+    return window.localStorage.getItem(getCardScopedStorageKey(SHOW_SPONSORS_STORAGE_KEY, layout)) !== 'no';
+  } catch (e) {
+    return true;
+  }
+}
+
+function saveShowSponsors() {
+  try {
+    window.localStorage.setItem(getCardScopedStorageKey(SHOW_SPONSORS_STORAGE_KEY), showSponsors ? 'yes' : 'no');
+  } catch (e) {
+    // Keep the in-memory choice even if browser storage is unavailable.
+  }
+}
+
 function saveSelectedHeaderLogos() {
   try {
     window.localStorage.setItem(getCardScopedStorageKey(HEADER_LOGO_STORAGE_KEY), JSON.stringify(selectedHeaderLogos));
@@ -4516,6 +4544,7 @@ function loadCardScopedSettings(layout) {
   selectedHeaderLogos = loadSelectedHeaderLogos(layout);
   selectedHeaderLogoCount = loadSelectedHeaderLogoCount(layout);
   selectedSponsorLogos = loadSelectedSponsorLogos(layout);
+  showSponsors = loadShowSponsors(layout);
   selectedHeaderLogoSizes = loadSelectedHeaderLogoSizes(layout);
   selectedHeaderLogoPositions = loadSelectedHeaderLogoPositions(layout);
   selectedFeatureLogoSettings = loadFeatureLogoSettings(layout);
@@ -4540,6 +4569,7 @@ function loadCardScopedSettings(layout) {
   populateHeaderLogoSelects();
   updateHeaderLogoCountControl();
   populateSponsorLogoSelects();
+  applySponsorVisibility();
   updateHeaderLogoSizeControls();
   updateFeatureLogoControls();
   refreshFontControlsFromState();
@@ -4771,6 +4801,11 @@ function applySponsorLogos() {
       container.appendChild(img);
     }
   });
+}
+
+function applySponsorVisibility() {
+  surface.classList.toggle('hide-sponsors', !showSponsors);
+  if (showSponsorsSelect) showSponsorsSelect.value = showSponsors ? 'yes' : 'no';
 }
 
 function getSponsorLogoSelects() {
@@ -6196,9 +6231,12 @@ function updateControlAvailability() {
     el.style.display = headerLogoCountVisible ? 'flex' : 'none';
   });
   document.querySelectorAll('.sponsor-control').forEach(el => {
+    el.style.display = isMultiPresenterFacebookPromo() && showSponsors ? 'flex' : 'none';
+  });
+  document.querySelectorAll('.sponsor-visibility-control').forEach(el => {
     el.style.display = isMultiPresenterFacebookPromo() ? 'flex' : 'none';
   });
-  if (addSponsorLogoButton) addSponsorLogoButton.style.display = isMultiPresenterFacebookPromo() ? '' : 'none';
+  if (addSponsorLogoButton) addSponsorLogoButton.style.display = isMultiPresenterFacebookPromo() && showSponsors ? '' : 'none';
   document.querySelectorAll('.logo-size-control-row').forEach(el => {
     const slot = Number(el.dataset.logoSlot);
     if (slot === 4) return;
@@ -6401,6 +6439,12 @@ if (sponsorControls) sponsorControls.addEventListener('change', event => {
     saveSelectedSponsorLogos();
     applySponsorLogos();
   }
+});
+if (showSponsorsSelect) showSponsorsSelect.addEventListener('change', () => {
+  showSponsors = showSponsorsSelect.value === 'yes';
+  saveShowSponsors();
+  applySponsorVisibility();
+  updateControlAvailability();
 });
 if (addSponsorLogoButton) addSponsorLogoButton.addEventListener('click', addSponsorLogoSlot);
 
