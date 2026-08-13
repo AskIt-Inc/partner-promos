@@ -6809,6 +6809,7 @@ async function captureCard(scale, pxW, pxH) {
   // re-enable them after. This stops dom-to-image from ever seeing those rules.
   const disabledSheets = [];
   let restoreImages = () => {};
+  let restoreExportQrSize = () => {};
   for (const sheet of Array.from(document.styleSheets)) {
     try {
       // Accessing cssRules throws for cross-origin sheets — those are safe to skip
@@ -6828,6 +6829,29 @@ async function captureCard(scale, pxW, pxH) {
 
   try {
     restoreImages = await prepareImagesForExport(surface);
+    if (isMultiPresenterFacebookPromo() && surface.classList.contains('multi-presenter-count-3')) {
+      applyMultiPresenterAdjustments();
+      const qrBox = surface.querySelector('.qr-col .qr-box');
+      const qrImage = qrBox && qrBox.querySelector('img');
+      if (qrBox && qrImage) {
+        const boxWidth = qrBox.style.width;
+        const boxHeight = qrBox.style.height;
+        const imageWidth = qrImage.style.width;
+        const imageHeight = qrImage.style.height;
+        const renderedBoxSize = Math.round(qrBox.getBoundingClientRect().width);
+        const renderedImageSize = Math.max(1, renderedBoxSize - 6);
+        qrBox.style.setProperty('width', renderedBoxSize + 'px', 'important');
+        qrBox.style.setProperty('height', renderedBoxSize + 'px', 'important');
+        qrImage.style.setProperty('width', renderedImageSize + 'px', 'important');
+        qrImage.style.setProperty('height', renderedImageSize + 'px', 'important');
+        restoreExportQrSize = () => {
+          qrBox.style.width = boxWidth;
+          qrBox.style.height = boxHeight;
+          qrImage.style.width = imageWidth;
+          qrImage.style.height = imageHeight;
+        };
+      }
+    }
     return await domtoimage.toPng(surface, {
       width: pxW, height: pxH,
       disableEmbedFonts: true,
@@ -6839,6 +6863,7 @@ async function captureCard(scale, pxW, pxH) {
       }
     });
   } finally {
+    restoreExportQrSize();
     restoreImages();
     // Always re-enable disabled sheets
     for (const sheet of disabledSheets) {
