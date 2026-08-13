@@ -6799,6 +6799,29 @@ async function prepareImagesForExport(root) {
   return () => restorers.reverse().forEach(restore => restore());
 }
 
+function freezePreviewAdjustmentsForExport(root) {
+  const restorers = [];
+  Array.from(root.querySelectorAll('*')).forEach(el => {
+    const originalStyle = el.getAttribute('style');
+    const inlineProperties = Array.from(el.style);
+    const computedFontSize = window.getComputedStyle(el).fontSize;
+    if (!inlineProperties.length && !computedFontSize) return;
+
+    restorers.push(() => {
+      if (originalStyle === null) el.removeAttribute('style');
+      else el.setAttribute('style', originalStyle);
+    });
+
+    inlineProperties.forEach(property => {
+      const value = el.style.getPropertyValue(property);
+      if (value) el.style.setProperty(property, value, 'important');
+    });
+    if (computedFontSize) el.style.setProperty('font-size', computedFontSize, 'important');
+  });
+
+  return () => restorers.reverse().forEach(restore => restore());
+}
+
 async function captureCard(scale, pxW, pxH) {
   // dom-to-image-more scans ALL document.styleSheets for @font-face rules and
   // tries to fetch each font URL. Chrome/Firefox extension stylesheets inject
@@ -6810,6 +6833,7 @@ async function captureCard(scale, pxW, pxH) {
   const disabledSheets = [];
   let restoreImages = () => {};
   let restoreExportQrSize = () => {};
+  let restorePreviewAdjustments = () => {};
   for (const sheet of Array.from(document.styleSheets)) {
     try {
       // Accessing cssRules throws for cross-origin sheets — those are safe to skip
@@ -6852,6 +6876,7 @@ async function captureCard(scale, pxW, pxH) {
         };
       }
     }
+    restorePreviewAdjustments = freezePreviewAdjustmentsForExport(surface);
     return await domtoimage.toPng(surface, {
       width: pxW, height: pxH,
       disableEmbedFonts: true,
@@ -6863,6 +6888,7 @@ async function captureCard(scale, pxW, pxH) {
       }
     });
   } finally {
+    restorePreviewAdjustments();
     restoreExportQrSize();
     restoreImages();
     // Always re-enable disabled sheets
