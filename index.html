@@ -33,6 +33,9 @@
   --calendar-session-presenter-size: 9.4px;
   --calendar-dense-session-title-size: 8.2px;
   --calendar-dense-session-presenter-size: 7.6px;
+  --calendar-date-chip-scale: 1;
+  --calendar-date-chip-column-width: 32px;
+  --calendar-date-chip-standard-column-width: 38px;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -328,7 +331,7 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
 .calendar-session-row {
   flex: 1;
   display: grid;
-  grid-template-columns: 38px 1fr;
+  grid-template-columns: var(--calendar-date-chip-standard-column-width) 1fr;
   gap: 11px;
   align-items: center;
   padding: 8px 0;
@@ -342,7 +345,7 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
   padding: 2px 14px;
 }
 .calendar-sessions.calendar-sessions-dense .calendar-session-row {
-  grid-template-columns: 32px 1fr;
+  grid-template-columns: var(--calendar-date-chip-column-width) 1fr;
   gap: 8px;
   padding: 3px 0;
 }
@@ -360,6 +363,25 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
 .calendar-sessions.calendar-sessions-dense .calendar-chip-weekday {
   font-size: 5px;
 }
+.calendar-sessions.calendar-sessions-compact {
+  padding-block: 1px;
+}
+.calendar-sessions.calendar-sessions-compact .calendar-session-row {
+  gap: 7px;
+  min-height: 0;
+  padding: 1px 0;
+}
+.calendar-sessions.calendar-sessions-compact .calendar-session-title {
+  font-size: calc(var(--calendar-dense-session-title-size) * .86);
+  line-height: 1.02;
+}
+.calendar-sessions.calendar-sessions-compact .calendar-session-presenter {
+  font-size: calc(var(--calendar-dense-session-presenter-size) * .86);
+  line-height: 1.02;
+}
+.calendar-sessions.calendar-sessions-compact .calendar-date-chip {
+  padding-block: 1px;
+}
 .calendar-sessions.calendar-sessions-dense .calendar-session-title {
   font-size: var(--calendar-dense-session-title-size);
   line-height: 1.08;
@@ -376,6 +398,7 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
   padding: 3px 2px 2px;
   align-self: center;
   flex-shrink: 0;
+  transform: scale(var(--calendar-date-chip-scale));
 }
 .calendar-chip-month {
   font-size: 6.5px;
@@ -2677,6 +2700,13 @@ body[data-partner="vamp"] .session-back-title {
       </label>
       <p class="calendar-day-filter-help">Select which session days to show in the monthly calendar. At least one day must be selected.</p>
     </fieldset>
+    <label class="field-control calendar-filter-control" for="calendar-date-chip-size">
+      <span>Day &amp; Date Box Size</span>
+      <span class="adjustment-slider-row">
+        <input id="calendar-date-chip-size" type="range" min="70" max="130" step="5" value="100" aria-label="Day and date box size">
+        <output id="calendar-date-chip-size-output" for="calendar-date-chip-size">100%</output>
+      </span>
+    </label>
     <label class="field-control image-size-control" for="headshot-image-size">
       <span>Profile Image Size</span>
       <select id="headshot-image-size" aria-label="Profile image size">
@@ -3583,6 +3613,7 @@ const multiProfileGapSlider = document.getElementById('multi-profile-gap');
 const multiPresenterNameSizeSlider = document.getElementById('multi-presenter-name-size');
 const multiPresenterDetailSizeSlider = document.getElementById('multi-presenter-detail-size');
 const multiRegistrationSizeSlider = document.getElementById('multi-registration-size');
+const calendarDateChipSizeSlider = document.getElementById('calendar-date-chip-size');
 const sideFontSelects = Array.from(document.querySelectorAll('.side-font-select'));
 const headerLogoSelects = Array.from(document.querySelectorAll('.header-logo-select'));
 const headerLogoCountSelect = document.getElementById('header-logo-count');
@@ -3929,6 +3960,7 @@ const MULTI_PROFILE_GAP_STORAGE_KEY = 'facebook_promo_multi_profile_gap';
 const MULTI_PRESENTER_NAME_SIZE_STORAGE_KEY = 'facebook_promo_multi_presenter_name_size';
 const MULTI_PRESENTER_DETAIL_SIZE_STORAGE_KEY = 'facebook_promo_multi_presenter_detail_size';
 const MULTI_REGISTRATION_SIZE_STORAGE_KEY = 'facebook_promo_multi_registration_size';
+const CALENDAR_DATE_CHIP_SIZE_STORAGE_KEY = 'facebook_promo_calendar_date_chip_size';
 const DEFAULT_TITLE_FONT_SIZE = '17';
 const DEFAULT_TITLE_PREFIX_FONT_SIZE = '14';
 const DEFAULT_TITLE_SUFFIX_FONT_SIZE = '17';
@@ -3941,6 +3973,7 @@ const DEFAULT_MULTI_PROFILE_GAP = '14';
 const DEFAULT_MULTI_PRESENTER_NAME_SIZE = '10.5';
 const DEFAULT_MULTI_PRESENTER_DETAIL_SIZE = '8.5';
 const DEFAULT_MULTI_REGISTRATION_SIZE = '11';
+const DEFAULT_CALENDAR_DATE_CHIP_SIZE = '100';
 let selectedTitleFontSize = loadFontSize(TITLE_FONT_STORAGE_KEY, DEFAULT_TITLE_FONT_SIZE, getCurrentCardMemoryKey());
 let selectedTitlePrefixFontSize = loadFontSize(TITLE_PREFIX_FONT_STORAGE_KEY, DEFAULT_TITLE_PREFIX_FONT_SIZE, getCurrentCardMemoryKey());
 let selectedTitleSuffixFontSize = loadFontSize(TITLE_SUFFIX_FONT_STORAGE_KEY, DEFAULT_TITLE_SUFFIX_FONT_SIZE, getCurrentCardMemoryKey());
@@ -3953,6 +3986,7 @@ let selectedMultiProfileGap = loadFontSize(MULTI_PROFILE_GAP_STORAGE_KEY, DEFAUL
 let selectedMultiPresenterNameSize = loadFontSize(MULTI_PRESENTER_NAME_SIZE_STORAGE_KEY, DEFAULT_MULTI_PRESENTER_NAME_SIZE, getCurrentCardMemoryKey());
 let selectedMultiPresenterDetailSize = loadFontSize(MULTI_PRESENTER_DETAIL_SIZE_STORAGE_KEY, DEFAULT_MULTI_PRESENTER_DETAIL_SIZE, getCurrentCardMemoryKey());
 let selectedMultiRegistrationSize = loadFontSize(MULTI_REGISTRATION_SIZE_STORAGE_KEY, DEFAULT_MULTI_REGISTRATION_SIZE, getCurrentCardMemoryKey());
+let selectedCalendarDateChipSize = loadFontSize(CALENDAR_DATE_CHIP_SIZE_STORAGE_KEY, DEFAULT_CALENDAR_DATE_CHIP_SIZE, getCurrentCardMemoryKey());
 const SIDE_FONT_STORAGE_PREFIX = 'facebook_promo_side_font_size_';
 const SIDE_FONT_CONTROL_CONFIGS = {
   partnerBackTopTitle: {
@@ -4560,6 +4594,7 @@ function loadCardScopedSettings(layout) {
   selectedMultiPresenterNameSize = loadFontSize(MULTI_PRESENTER_NAME_SIZE_STORAGE_KEY, DEFAULT_MULTI_PRESENTER_NAME_SIZE, layout);
   selectedMultiPresenterDetailSize = loadFontSize(MULTI_PRESENTER_DETAIL_SIZE_STORAGE_KEY, DEFAULT_MULTI_PRESENTER_DETAIL_SIZE, layout);
   selectedMultiRegistrationSize = loadFontSize(MULTI_REGISTRATION_SIZE_STORAGE_KEY, DEFAULT_MULTI_REGISTRATION_SIZE, layout);
+  selectedCalendarDateChipSize = loadFontSize(CALENDAR_DATE_CHIP_SIZE_STORAGE_KEY, DEFAULT_CALENDAR_DATE_CHIP_SIZE, layout);
   selectedTimezone = loadSelectedTimezone(layout);
   if (timezoneSelect) timezoneSelect.value = selectedTimezone;
   selectedSideFontSizes = Object.fromEntries(Object.entries(SIDE_FONT_CONTROL_CONFIGS).map(([key, cfg]) => [
@@ -4574,6 +4609,7 @@ function loadCardScopedSettings(layout) {
   updateFeatureLogoControls();
   refreshFontControlsFromState();
   refreshMultiPresenterAdjustmentControls();
+  refreshCalendarDateChipSizeControl();
   fitBandTitle();
   applyBackCardFontSizes();
   applyDescriptionFontSize();
@@ -5342,6 +5378,7 @@ function renderCalendarSessionsFromApi(sessions, profiles) {
   list.replaceChildren();
   list.classList.toggle('calendar-sessions-filtered', selectedCalendarFilters.size < 3);
   list.classList.toggle('calendar-sessions-dense', filtered.length > 7);
+  list.classList.toggle('calendar-sessions-compact', filtered.length > 11);
 
   if (!filtered.length) {
     const empty = document.createElement('div');
@@ -5359,15 +5396,19 @@ function renderCalendarSessionsFromApi(sessions, profiles) {
   }
 
   filtered.forEach(session => {
-    const presenter = (session.presenters && session.presenters[0]) || {};
-    const profile = profileMap.get(calendarPersonKey(presenter.first_name, presenter.last_name)) || {};
     const date = calendarParseApiDate(session.date);
-    const presenterName = calendarFormatPerson(
-      profile.first_name || presenter.first_name,
-      profile.last_name || presenter.last_name,
-      profile.name_suffix || presenter.name_suffix,
-      profile.title || presenter.title
-    ) || 'Presenter TBD';
+    const presenterNames = (Array.isArray(session.presenters) ? session.presenters : [])
+      .map(presenter => {
+        const profile = profileMap.get(calendarPersonKey(presenter.first_name, presenter.last_name)) || {};
+        return calendarFormatPerson(
+          profile.first_name || presenter.first_name,
+          profile.last_name || presenter.last_name,
+          profile.name_suffix || presenter.name_suffix,
+          profile.title || presenter.title
+        );
+      })
+      .filter(Boolean);
+    const presenterName = presenterNames.join(' • ') || 'Presenter TBD';
     const row = document.createElement('div');
     row.className = 'calendar-session-row';
 
@@ -5732,6 +5773,21 @@ function applyCalendarFontSizes() {
   root.style.setProperty('--calendar-dense-session-title-size', (prefixSize * 8.2 / 14).toFixed(2) + 'px');
   root.style.setProperty('--calendar-session-presenter-size', (suffixSize * 9.4 / 17).toFixed(2) + 'px');
   root.style.setProperty('--calendar-dense-session-presenter-size', (suffixSize * 7.6 / 17).toFixed(2) + 'px');
+}
+
+function applyCalendarDateChipSize() {
+  const size = Math.max(70, Math.min(130, Number(selectedCalendarDateChipSize) || 100));
+  document.documentElement.style.setProperty('--calendar-date-chip-scale', String(size / 100));
+  document.documentElement.style.setProperty('--calendar-date-chip-column-width', (32 * size / 100).toFixed(1) + 'px');
+  document.documentElement.style.setProperty('--calendar-date-chip-standard-column-width', (38 * size / 100).toFixed(1) + 'px');
+}
+
+function refreshCalendarDateChipSizeControl() {
+  if (!calendarDateChipSizeSlider) return;
+  calendarDateChipSizeSlider.value = selectedCalendarDateChipSize;
+  const output = document.getElementById('calendar-date-chip-size-output');
+  if (output) output.textContent = formatFontSizeValue(selectedCalendarDateChipSize) + '%';
+  applyCalendarDateChipSize();
 }
 
 function applyHeadshotSize() {
@@ -6364,7 +6420,20 @@ bindMultiPresenterAdjustment(multiPresenterDetailSizeSlider, MULTI_PRESENTER_DET
 bindMultiPresenterAdjustment(multiRegistrationSizeSlider, MULTI_REGISTRATION_SIZE_STORAGE_KEY, DEFAULT_MULTI_REGISTRATION_SIZE, value => {
   selectedMultiRegistrationSize = value;
 });
+if (calendarDateChipSizeSlider) {
+  const updateCalendarDateChipSize = persist => {
+    selectedCalendarDateChipSize = persist
+      ? saveFontSize(CALENDAR_DATE_CHIP_SIZE_STORAGE_KEY, calendarDateChipSizeSlider.value, DEFAULT_CALENDAR_DATE_CHIP_SIZE)
+      : calendarDateChipSizeSlider.value;
+    const output = document.getElementById('calendar-date-chip-size-output');
+    if (output) output.textContent = formatFontSizeValue(selectedCalendarDateChipSize) + '%';
+    applyCalendarDateChipSize();
+  };
+  calendarDateChipSizeSlider.addEventListener('input', () => updateCalendarDateChipSize(false));
+  calendarDateChipSizeSlider.addEventListener('change', () => updateCalendarDateChipSize(true));
+}
 refreshMultiPresenterAdjustmentControls();
+refreshCalendarDateChipSizeControl();
 
 initHeaderLogoNudgeSliders();
 updateHeaderLogoSizeControls();
