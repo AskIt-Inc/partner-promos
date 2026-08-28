@@ -55,7 +55,7 @@ Defined on `:root`. All components reference these variables; never use raw colo
 | `--card-height` | `4in`        | Print surface default height               |
 | `--maroon`      | `#8B1F2D`   | Primary brand colour; band bg, titles, CTAs |
 | `--maroon-dark` | `#6E1A24`   | Reserved (not currently applied)            |
-| `--gold`        | `#FFE8A3`   | Series label text on maroon band            |
+| `--band-series-label-color` | `#FFE8A3` | Series label text on maroon band; the default for new partners |
 | `--border`      | `#E8E8E8`   | Logo bar bottom border                      |
 | `--border-rose` | `#DDD0D2`   | Headshot border, date pill border, QR border |
 | `--bg-rose`     | `#f5eaec`   | Headshot placeholder bg, date pill bg       |
@@ -107,7 +107,7 @@ The center date/time block still exists for the classic layout. In the new `foun
 |-------------------|-------------------------|----------------------------------------|
 | Series label row  | `#band-series-row`      | `display: none` → `.visible` when `series_label` present |
 | Series dot (SVG)  | `.band-series-dot`      | Gold star SVG icon, always inside row  |
-| Series text       | `#band-series-label`    | `--gold` colour, italic, 14px          |
+| Series text       | `#band-series-label`    | Legacy gold by default, italic, 14px   |
 | Session title     | `#band-title`           | White, 700 weight, 17px; stays one line when it fits, otherwise splits at the first colon |
 
 In the `foundation` layout, there is no partner pill in the maroon band; `#uoc-pill` is moved into Zone 1 as the left logo. In the `classic` layout, the same element is moved back into the maroon band as the original partner pill.

@@ -1060,7 +1060,7 @@ body[data-partner="vamp"] .coming-soon-program-name {
   font-size: 18px;
   font-weight: 700;
   font-style: italic;
-  color: var(--gold);
+  color: var(--band-series-label-color, #FFE8A3);
   line-height: 1.2;
   display: inline-block;
 }
@@ -4996,6 +4996,7 @@ function applyPartnerTheme() {
   root.style.setProperty('--maroon', colors.primary || '#8B1F2D');
   root.style.setProperty('--maroon-dark', colors.primaryDark || '#6E1A24');
   root.style.setProperty('--gold', colors.accent || '#FFE8A3');
+  root.style.setProperty('--band-series-label-color', colors.seriesLabel || '#FFE8A3');
   root.style.setProperty('--border-rose', colors.borderAccent || '#DDD0D2');
   root.style.setProperty('--bg-rose', colors.softBg || '#f5eaec');
   root.style.setProperty('--session-band-bg', colors.sessionBandBg || colors.primary || '#8B1F2D');
