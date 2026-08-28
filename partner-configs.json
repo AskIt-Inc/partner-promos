@@ -156,6 +156,26 @@
         "softBg": "#EAF3FA",
         "sessionBandBg": "#0057B8"
       }
+    },
+    "houston-methodist": {
+      "label": "Houston Methodist",
+      "exportSlug": "houston-methodist",
+      "defaultTimezone": "CT",
+      "sessionsApiUrl": "https://somebodytotalkto.com/api/spotlight/microsite/sessions?partner=13475&status=all",
+      "colors": {
+        "primary": "#124A7E",
+        "primaryDark": "#0D3559",
+        "accent": "#FFFFFF",
+        "borderAccent": "#B8D4EC",
+        "softBg": "#EAF3FA",
+        "sessionBandBg": "#124A7E"
+      }
+    },
+    "tufts-medicine": {
+      "label": "Tufts Medicine",
+      "exportSlug": "tufts-medicine",
+      "defaultTimezone": "ET",
+      "sessionsApiUrl": "https://somebodytotalkto.com/api/spotlight/microsite/sessions?partner=13477&status=all"
     }
   }
 }
