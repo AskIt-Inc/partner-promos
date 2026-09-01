@@ -6174,7 +6174,10 @@ function getPartnerBackSeriesMonth(partnerKey) {
   const partner = getPartnerConfig(partnerKey);
   const endpoint = partner.sessionsApiUrl || (partner.calendar && partner.calendar.sessionsApiUrl) || '';
   const request = endpoint
-    ? fetch(getAllCalendarSessionsApiUrl(endpoint), { mode: 'cors', headers: { Accept: 'application/json' } })
+    ? fetch(getSessionApiUrl(getAllCalendarSessionsApiUrl(endpoint), {
+      base64: 'no',
+      view: 'summary'
+    }), { mode: 'cors', headers: { Accept: 'application/json' } })
       .then(response => response.ok ? response.json() : null)
       .then(payload => getNextSpotlightSeriesMonth(payload && payload.data))
       .catch(() => '')
@@ -7251,19 +7254,25 @@ function getPartnerSessionsApiUrl() {
     || '';
 }
 
+function getSessionApiUrl(url, params = {}) {
+  const apiUrl = new URL(url, window.location.href);
+  Object.entries(params).forEach(([name, value]) => apiUrl.searchParams.set(name, value));
+  return apiUrl.href;
+}
+
 function getSessionListApiUrl() {
-  const url = new URL(getPartnerSessionsApiUrl(), window.location.href);
-  url.searchParams.set('base64', 'no');
-  url.searchParams.set('view', 'summary');
-  return url.href;
+  return getSessionApiUrl(getPartnerSessionsApiUrl(), {
+    base64: 'no',
+    view: 'summary'
+  });
 }
 
 function getSessionAssetApiUrl(uuid) {
-  const url = new URL(getPartnerSessionsApiUrl(), window.location.href);
-  url.searchParams.set('uuid', uuid);
-  url.searchParams.set('base64', 'yes');
-  url.searchParams.set('view', 'full');
-  return url.href;
+  return getSessionApiUrl(getPartnerSessionsApiUrl(), {
+    uuid,
+    base64: 'yes',
+    view: 'full'
+  });
 }
 
 function getSessionSortValue(row) {
