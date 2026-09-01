@@ -3,6 +3,7 @@
   "partners": {
     "vamp": {
       "label": "Vanderbilt (VAMP)",
+      "employerTermName": "Vanderbilt Health",
       "exportSlug": "vamp",
       "partnerLogo": "vamp-logo.png",
       "partnerLogoAlt": "Vanderbilt Amyloidosis Multidisciplinary Program",

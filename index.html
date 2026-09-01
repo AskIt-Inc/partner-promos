@@ -1986,7 +1986,7 @@ body[data-partner="vamp"] .card-back .program-back-qr .qr-box {
   min-width: 0;
 }
 .session-back-feature-eyebrow {
-  color: var(--gold);
+  color: var(--band-series-label-color, #FFE8A3);
   display: flex;
   align-items: center;
   gap: 5px;
@@ -4144,6 +4144,7 @@ let calendarLoadProgressValue = 10;
 let selectedCalendarFilters = new Set(['Mon', 'Wed', 'Thu']);
 let selectedCalendarRange = 'all';
 const partnerBackSeriesMonthRequests = new Map();
+const partnerBackMicrositeRequests = new Map();
 
 function normalizePartnerConfig(config) {
   const merged = config && config.partners ? config : PARTNER_CONFIG_FALLBACK;
@@ -6103,8 +6104,8 @@ function getSessionBackConfig() {
     featureTitle: partnerName,
     featureProgram: '',
     eyebrow: partnerName,
-    title: 'Learn more about this Spotlight series',
-    primaryText: 'Visit the microsite for program details, upcoming sessions, completed sessions, and clinical research information.',
+    title: 'Learn more about the ' + partnerName + ' Spotlight series',
+    primaryText: 'Visit the ' + partnerName + ' microsite for program details, upcoming sessions, completed sessions, and clinical research information.',
     secondaryHtml: '<strong>Use the microsite</strong> to review the series and share the resource with patients, caregivers, and families.',
     linkText: '',
     qrSrc: '',
@@ -6178,6 +6179,42 @@ function syncPartnerBackSeriesMonth(cfg) {
   });
 }
 
+function normalizeEmployerTermName(value) {
+  return String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+function getPartnerBackMicrositeUrl(partnerKey) {
+  if (partnerBackMicrositeRequests.has(partnerKey)) return partnerBackMicrositeRequests.get(partnerKey);
+
+  const partner = getPartnerConfig(partnerKey);
+  const employerName = normalizeEmployerTermName(partner.employerTermName || partner.label);
+  const request = employerName
+    ? fetch('https://somebodytotalkto.com/jsonapi/taxonomy_term/employer?page%5Blimit%5D=50', {
+      mode: 'cors',
+      headers: { Accept: 'application/vnd.api+json' }
+    })
+      .then(response => response.ok ? response.json() : null)
+      .then(payload => (payload && payload.data || []).find(term =>
+        normalizeEmployerTermName(term.attributes && term.attributes.name) === employerName
+      ))
+      .then(term => term && term.attributes && term.attributes.field_spotlight_microsite_url || '')
+      .catch(() => '')
+    : Promise.resolve('');
+
+  partnerBackMicrositeRequests.set(partnerKey, request);
+  return request;
+}
+
+function syncPartnerBackMicrositeUrl() {
+  const partnerKey = activePartnerKey;
+  if (!partnerKey) return;
+
+  getPartnerBackMicrositeUrl(partnerKey).then(url => {
+    if (partnerKey !== activePartnerKey || !url) return;
+    setSessionBackText('session-back-link', url.replace(/^https?:\/\//i, '').replace(/\/$/, ''));
+  });
+}
+
 function syncSessionBackContent() {
   const cfg = getSessionBackConfig();
   const setText = (id, value) => {
@@ -6195,6 +6232,7 @@ function syncSessionBackContent() {
   renderSessionBackSeriesMonth(cfg, cfg.seriesDate);
   setText('session-back-link', cfg.linkText);
   syncPartnerBackSeriesMonth(cfg);
+  syncPartnerBackMicrositeUrl();
 
   const featureProgram = document.getElementById('session-back-feature-program');
   const featureRule = document.getElementById('session-back-feature-rule');
