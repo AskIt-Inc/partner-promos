@@ -6235,6 +6235,13 @@ function syncPartnerBackEmployerData() {
     if (partnerKey !== activePartnerKey) return;
     if (data.micrositeUrl) {
       setSessionBackText('session-back-link', data.micrositeUrl.replace(/^https?:\/\//i, '').replace(/\/$/, ''));
+      const configuredQr = getSessionBackConfig().qrSrc;
+      if (!configuredQr) {
+        setSessionBackQr(
+          getSessionBackGeneratedQrSrc(data.micrositeUrl),
+          'Scan to visit ' + data.micrositeUrl
+        );
+      }
     }
     const selectedFeatureLogo = getHeaderLogoOption(selectedHeaderLogos[4]);
     const featureLogo = document.querySelector('.session-back-feature-logo-card img');
@@ -6245,6 +6252,31 @@ function syncPartnerBackEmployerData() {
     const placeholder = ensureDynamicLogoPlaceholder(featureLogo, 4);
     if (placeholder) placeholder.classList.remove('visible');
   });
+}
+
+function getSessionBackGeneratedQrSrc(url) {
+  const value = String(url || '').trim();
+  return value
+    ? 'https://api.qrserver.com/v1/create-qr-code/?size=128x128&format=png&margin=0&data=' + encodeURIComponent(value)
+    : '';
+}
+
+function setSessionBackQr(qrSrc, qrAlt) {
+  const qrImg = document.getElementById('session-back-qr-img');
+  const qrWrap = qrImg && qrImg.closest('.session-back-qr-wrap');
+  if (!qrImg || !qrWrap) return;
+
+  if (qrSrc) {
+    qrImg.crossOrigin = 'anonymous';
+    qrImg.src = qrSrc;
+    qrImg.alt = qrAlt || 'Scan to visit microsite';
+    qrWrap.style.display = '';
+  } else {
+    qrImg.removeAttribute('src');
+    qrImg.removeAttribute('crossorigin');
+    qrImg.alt = '';
+    qrWrap.style.display = 'none';
+  }
 }
 
 function syncSessionBackContent() {
@@ -6272,18 +6304,7 @@ function syncSessionBackContent() {
   if (featureProgram) featureProgram.style.display = showProgram ? '' : 'none';
   if (featureRule) featureRule.style.display = showProgram ? '' : 'none';
 
-  const qrImg = document.getElementById('session-back-qr-img');
-  const qrWrap = qrImg && qrImg.closest('.session-back-qr-wrap');
-  if (qrImg) {
-    if (cfg.qrSrc) {
-      qrImg.src = cfg.qrSrc;
-      qrImg.alt = cfg.qrAlt || 'Scan to visit microsite';
-    } else {
-      qrImg.removeAttribute('src');
-      qrImg.alt = '';
-    }
-  }
-  if (qrWrap) qrWrap.style.display = cfg.qrSrc ? '' : 'none';
+  setSessionBackQr(cfg.qrSrc, cfg.qrAlt);
 
   const logoCards = Array.from(document.querySelectorAll('.session-back-feature-logo-card'));
   if (!syncSessionBackContent.defaultLogos) {
