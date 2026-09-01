@@ -7217,6 +7217,21 @@ function getPartnerSessionsApiUrl() {
     || '';
 }
 
+function getSessionListApiUrl() {
+  const url = new URL(getPartnerSessionsApiUrl(), window.location.href);
+  url.searchParams.set('base64', 'no');
+  url.searchParams.set('view', 'summary');
+  return url.href;
+}
+
+function getSessionAssetApiUrl(uuid) {
+  const url = new URL(getPartnerSessionsApiUrl(), window.location.href);
+  url.searchParams.set('uuid', uuid);
+  url.searchParams.set('base64', 'yes');
+  url.searchParams.set('view', 'full');
+  return url.href;
+}
+
 function getSessionSortValue(row) {
   const timestamp = Number(row && row.timestamp);
   if (Number.isFinite(timestamp) && timestamp > 0) return timestamp;
@@ -7426,7 +7441,7 @@ async function loadPartnerSessionList() {
     setSessionLoadProgress(progress, 'Loading sessions');
   }, 300);
   try {
-    const res = await fetch(url, { mode: 'cors', headers: { Accept: 'application/json' } });
+    const res = await fetch(getSessionListApiUrl(), { mode: 'cors', headers: { Accept: 'application/json' } });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     progress = Math.max(progress, 94);
     setSessionLoadProgress(progress, 'Processing sessions');
@@ -7505,7 +7520,10 @@ async function getEnrichedSessionRow(row) {
   const query = (row.title || '').trim();
   if (!query) return row;
 
-  const res = await fetch(`${SEARCH_API}?q=${encodeURIComponent(query)}`, { headers: { Accept: 'application/json' } });
+  const detailUrl = row.uuid
+    ? getSessionAssetApiUrl(row.uuid)
+    : `${SEARCH_API}?q=${encodeURIComponent(query)}`;
+  const res = await fetch(detailUrl, { headers: { Accept: 'application/json' } });
   if (!res.ok) throw new Error('HTTP ' + res.status);
 
   const json = await res.json();
