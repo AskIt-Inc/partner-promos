@@ -4143,6 +4143,7 @@ let calendarLoadProgressTimer = null;
 let calendarLoadProgressValue = 10;
 let selectedCalendarFilters = new Set(['Mon', 'Wed', 'Thu']);
 let selectedCalendarRange = 'all';
+const partnerBackSeriesMonthRequests = new Map();
 
 function normalizePartnerConfig(config) {
   const merged = config && config.partners ? config : PARTNER_CONFIG_FALLBACK;
@@ -6112,6 +6113,71 @@ function getSessionBackConfig() {
   };
 }
 
+function replaceSeriesMonth(value, configuredDate, resolvedDate) {
+  const text = String(value || '');
+  const configuredMonth = String(configuredDate || '').match(/^[A-Za-z]+/);
+  const resolvedMonth = String(resolvedDate || '').match(/^[A-Za-z]+/);
+  if (!configuredMonth || !resolvedMonth || configuredMonth[0] === resolvedMonth[0]) return text;
+  return text.replace(new RegExp('\\b' + configuredMonth[0] + '\\b', 'gi'), resolvedMonth[0]);
+}
+
+function setSessionBackText(id, value) {
+  const el = document.getElementById(id);
+  if (el && value !== undefined) el.textContent = value;
+}
+
+function setSessionBackHtml(id, value) {
+  const el = document.getElementById(id);
+  if (el && value !== undefined) el.innerHTML = value;
+}
+
+function renderSessionBackSeriesMonth(cfg, seriesDate) {
+  setSessionBackText('session-back-series-date', seriesDate);
+  setSessionBackText('session-back-title', replaceSeriesMonth(cfg.title, cfg.seriesDate, seriesDate));
+  setSessionBackText('session-back-text-primary', replaceSeriesMonth(cfg.primaryText, cfg.seriesDate, seriesDate));
+  setSessionBackHtml('session-back-text-secondary', replaceSeriesMonth(cfg.secondaryHtml, cfg.seriesDate, seriesDate));
+}
+
+function getNextSpotlightSeriesMonth(rows) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const nextSession = (Array.isArray(rows) ? rows : [])
+    .map(row => String(row && row.date || '').trim())
+    .map(date => ({ date, parsed: new Date(date.replace(',', '') + ' 12:00:00 UTC') }))
+    .filter(item => item.date && !Number.isNaN(item.parsed.getTime()) && item.parsed >= today)
+    .sort((a, b) => a.parsed - b.parsed)[0];
+
+  return nextSession
+    ? nextSession.parsed.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' })
+    : '';
+}
+
+function getPartnerBackSeriesMonth(partnerKey) {
+  if (partnerBackSeriesMonthRequests.has(partnerKey)) return partnerBackSeriesMonthRequests.get(partnerKey);
+
+  const partner = getPartnerConfig(partnerKey);
+  const endpoint = partner.sessionsApiUrl || (partner.calendar && partner.calendar.sessionsApiUrl) || '';
+  const request = endpoint
+    ? fetch(getAllCalendarSessionsApiUrl(endpoint), { mode: 'cors', headers: { Accept: 'application/json' } })
+      .then(response => response.ok ? response.json() : null)
+      .then(payload => getNextSpotlightSeriesMonth(payload && payload.data))
+      .catch(() => '')
+    : Promise.resolve('');
+
+  partnerBackSeriesMonthRequests.set(partnerKey, request);
+  return request;
+}
+
+function syncPartnerBackSeriesMonth(cfg) {
+  const partnerKey = activePartnerKey;
+  if (!partnerKey) return;
+
+  getPartnerBackSeriesMonth(partnerKey).then(seriesDate => {
+    if (partnerKey !== activePartnerKey || !seriesDate) return;
+    renderSessionBackSeriesMonth(cfg, seriesDate);
+  });
+}
+
 function syncSessionBackContent() {
   const cfg = getSessionBackConfig();
   const setText = (id, value) => {
@@ -6123,14 +6189,12 @@ function syncSessionBackContent() {
     if (el && value !== undefined) el.innerHTML = value;
   };
 
-  setText('session-back-series-date', cfg.seriesDate);
   setText('session-back-feature-title', cfg.featureTitle);
   setText('session-back-feature-program', cfg.featureProgram || '');
   setText('session-back-eyebrow', cfg.eyebrow);
-  setText('session-back-title', cfg.title);
-  setText('session-back-text-primary', cfg.primaryText);
-  setHtml('session-back-text-secondary', cfg.secondaryHtml);
+  renderSessionBackSeriesMonth(cfg, cfg.seriesDate);
   setText('session-back-link', cfg.linkText);
+  syncPartnerBackSeriesMonth(cfg);
 
   const featureProgram = document.getElementById('session-back-feature-program');
   const featureRule = document.getElementById('session-back-feature-rule');

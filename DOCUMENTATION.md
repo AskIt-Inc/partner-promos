@@ -165,7 +165,7 @@ The `Session Registration Promo Card` layout is 4×6 only. Switching to that lay
 
 ### Partner Back Card data-safety rule
 
-Every `sessionBack` field belongs only to the currently selected partner. `syncSessionBackContent()` first creates a partner-neutral baseline, then overlays that partner's `sessionBack` configuration. It must never inherit another partner's series date, program name, copy, microsite URL, QR code, or logo. If an upcoming partner has not yet supplied `sessionBack` details (for example, Tufts Medicine), the card uses neutral partner-labelled copy and hides the QR area until the partner-specific URL and QR asset are configured.
+Every `sessionBack` field belongs only to the currently selected partner. `syncSessionBackContent()` first creates a partner-neutral baseline, then overlays that partner's `sessionBack` configuration. It must never inherit another partner's series date, program name, copy, microsite URL, QR code, or logo. The series month is refreshed from the selected partner's `sessionsApiUrl`: the earliest session dated today or later establishes the active Spotlight series month. The partner ID in that endpoint is the ownership boundary. `sessionBack.seriesDate` remains only as the offline/API-failure fallback. If an upcoming partner has not yet supplied `sessionBack` details (for example, Tufts Medicine), the card uses neutral partner-labelled copy and hides the QR area until the partner-specific URL and QR asset are configured.
 
 ---
 
