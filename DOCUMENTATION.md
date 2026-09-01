@@ -163,6 +163,10 @@ The 3×5 variant uses a cascade of `.print-surface.size-3x5 .{component}` overri
 
 The `Session Registration Promo Card` layout is 4×6 only. Switching to that layout removes `.size-3x5`, disables the 3×5 control, and keeps export output at 1800 × 1200 px for the 300 DPI print target. The Front/Back buttons remain available: Front is the session registration card with presenter headshot, and Back is the partner-specific Spotlight microsite promo side. Both Front and Back headers show STTT and OAV identity, with the partner feature area controlled by `sessionBack` config.
 
+### Partner Back Card data-safety rule
+
+Every `sessionBack` field belongs only to the currently selected partner. `syncSessionBackContent()` first creates a partner-neutral baseline, then overlays that partner's `sessionBack` configuration. It must never inherit another partner's series date, program name, copy, microsite URL, QR code, or logo. If an upcoming partner has not yet supplied `sessionBack` details (for example, Tufts Medicine), the card uses neutral partner-labelled copy and hides the QR area until the partner-specific URL and QR asset are configured.
+
 ---
 
 ## 5. JavaScript Modules
@@ -267,7 +271,7 @@ Maps API response fields onto DOM elements. Detailed field-by-field mapping:
 | `row.qr_base64`        | `#qr-img`             | Set as `src`; toggles img/placeholder visibility               |
 | `row.short_url`        | `#register-url`       | Prefers short URL; falls back to `row.reg_link.url`; strips `https://`; truncates at 36 chars if no short URL |
 | Static UChicago link   | `#microsite-url`      | Displays `uchicago.oneamyloidosisvoice.com`; hidden on classic layout |
-| selected partner `sessionBack` config | `.session-back-side` | Updates the Session Registration Promo Card back side with partner-specific series month, feature title, microsite URL, QR image, and feature logo |
+| selected partner `sessionBack` config | `.session-back-side` | Updates the Session Registration Promo Card back side with partner-specific series month, feature title, microsite URL, QR image, and feature logo. Missing configuration uses neutral copy and hides the QR area; it never reuses another partner's data. |
 
 **Card reveal:** On the first `populateCard()` call, `#controls-bar` and `#preview-wrapper` have their `display:none` removed, revealing the card and export controls.
 

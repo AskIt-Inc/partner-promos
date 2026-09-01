@@ -6092,8 +6092,28 @@ function syncSessionPromoLogos() {
   applySelectedLogoToImage(2, backOav);
 }
 
+function getSessionBackConfig() {
+  const partner = activePartnerConfig || {};
+  const configured = partner.sessionBack || {};
+  const partnerName = partner.label || 'Partner';
+
+  return {
+    seriesDate: '',
+    featureTitle: partnerName,
+    featureProgram: '',
+    eyebrow: partnerName,
+    title: 'Learn more about this Spotlight series',
+    primaryText: 'Visit the microsite for program details, upcoming sessions, completed sessions, and clinical research information.',
+    secondaryHtml: '<strong>Use the microsite</strong> to review the series and share the resource with patients, caregivers, and families.',
+    linkText: '',
+    qrSrc: '',
+    qrAlt: '',
+    ...configured
+  };
+}
+
 function syncSessionBackContent() {
-  const cfg = activePartnerConfig.sessionBack || {};
+  const cfg = getSessionBackConfig();
   const setText = (id, value) => {
     const el = document.getElementById(id);
     if (el && value !== undefined) el.textContent = value;
@@ -6103,14 +6123,14 @@ function syncSessionBackContent() {
     if (el && value !== undefined) el.innerHTML = value;
   };
 
-  setText('session-back-series-date', cfg.seriesDate || 'June 2026');
-  setText('session-back-feature-title', cfg.featureTitle || 'University of Chicago & Endeavor Health');
+  setText('session-back-series-date', cfg.seriesDate);
+  setText('session-back-feature-title', cfg.featureTitle);
   setText('session-back-feature-program', cfg.featureProgram || '');
-  setText('session-back-eyebrow', cfg.eyebrow || 'UOC / Endeavor Amyloidosis Program');
-  setText('session-back-title', cfg.title || 'Learn more about the June Spotlight series');
-  setText('session-back-text-primary', cfg.primaryText || 'Visit the microsite for program details, upcoming sessions, completed sessions, and clinical research information from the UOC and Endeavor amyloidosis teams.');
-  setHtml('session-back-text-secondary', cfg.secondaryHtml || '<strong>Use the microsite</strong> to review the series and share the resource with patients, caregivers, and families.');
-  setText('session-back-link', cfg.linkText || 'uchicago.oneamyloidosisvoice.com');
+  setText('session-back-eyebrow', cfg.eyebrow);
+  setText('session-back-title', cfg.title);
+  setText('session-back-text-primary', cfg.primaryText);
+  setHtml('session-back-text-secondary', cfg.secondaryHtml);
+  setText('session-back-link', cfg.linkText);
 
   const featureProgram = document.getElementById('session-back-feature-program');
   const featureRule = document.getElementById('session-back-feature-rule');
@@ -6119,10 +6139,17 @@ function syncSessionBackContent() {
   if (featureRule) featureRule.style.display = showProgram ? '' : 'none';
 
   const qrImg = document.getElementById('session-back-qr-img');
+  const qrWrap = qrImg && qrImg.closest('.session-back-qr-wrap');
   if (qrImg) {
-    qrImg.src = cfg.qrSrc || qrImg.src;
-    qrImg.alt = cfg.qrAlt || 'Scan to visit microsite';
+    if (cfg.qrSrc) {
+      qrImg.src = cfg.qrSrc;
+      qrImg.alt = cfg.qrAlt || 'Scan to visit microsite';
+    } else {
+      qrImg.removeAttribute('src');
+      qrImg.alt = '';
+    }
   }
+  if (qrWrap) qrWrap.style.display = cfg.qrSrc ? '' : 'none';
 
   const logoCards = Array.from(document.querySelectorAll('.session-back-feature-logo-card'));
   if (!syncSessionBackContent.defaultLogos) {
