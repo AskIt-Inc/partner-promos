@@ -4144,7 +4144,7 @@ let calendarLoadProgressValue = 10;
 let selectedCalendarFilters = new Set(['Mon', 'Wed', 'Thu']);
 let selectedCalendarRange = 'all';
 const partnerBackSeriesMonthRequests = new Map();
-const partnerBackMicrositeRequests = new Map();
+const partnerBackEmployerRequests = new Map();
 
 function normalizePartnerConfig(config) {
   const merged = config && config.partners ? config : PARTNER_CONFIG_FALLBACK;
@@ -6183,8 +6183,8 @@ function normalizeEmployerTermName(value) {
   return String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 }
 
-function getPartnerBackMicrositeUrl(partnerKey) {
-  if (partnerBackMicrositeRequests.has(partnerKey)) return partnerBackMicrositeRequests.get(partnerKey);
+function getPartnerBackEmployerData(partnerKey) {
+  if (partnerBackEmployerRequests.has(partnerKey)) return partnerBackEmployerRequests.get(partnerKey);
 
   const partner = getPartnerConfig(partnerKey);
   const employerName = normalizeEmployerTermName(partner.employerTermName || partner.label);
@@ -6197,21 +6197,53 @@ function getPartnerBackMicrositeUrl(partnerKey) {
       .then(payload => (payload && payload.data || []).find(term =>
         normalizeEmployerTermName(term.attributes && term.attributes.name) === employerName
       ))
-      .then(term => term && term.attributes && term.attributes.field_spotlight_microsite_url || '')
-      .catch(() => '')
-    : Promise.resolve('');
+      .then(term => {
+        if (!term) return { micrositeUrl: '', logoSrc: '', logoAlt: '' };
+        const imageUrl = term.relationships && term.relationships.field_image
+          && term.relationships.field_image.links && term.relationships.field_image.links.related
+          && term.relationships.field_image.links.related.href;
+        const logoAlt = term.relationships && term.relationships.field_image
+          && term.relationships.field_image.data && term.relationships.field_image.data.meta
+          && term.relationships.field_image.data.meta.alt || term.attributes.name;
+        const base = {
+          micrositeUrl: term.attributes.field_spotlight_microsite_url || '',
+          logoSrc: '',
+          logoAlt
+        };
+        return imageUrl
+          ? fetch(imageUrl, { mode: 'cors', headers: { Accept: 'application/vnd.api+json' } })
+            .then(response => response.ok ? response.json() : null)
+            .then(payload => {
+              const path = payload && payload.data && payload.data.attributes
+                && payload.data.attributes.uri && payload.data.attributes.uri.url;
+              return { ...base, logoSrc: path ? new URL(path, 'https://somebodytotalkto.com').href : '' };
+            })
+          : base;
+      })
+      .catch(() => ({ micrositeUrl: '', logoSrc: '', logoAlt: '' }))
+    : Promise.resolve({ micrositeUrl: '', logoSrc: '', logoAlt: '' });
 
-  partnerBackMicrositeRequests.set(partnerKey, request);
+  partnerBackEmployerRequests.set(partnerKey, request);
   return request;
 }
 
-function syncPartnerBackMicrositeUrl() {
+function syncPartnerBackEmployerData() {
   const partnerKey = activePartnerKey;
   if (!partnerKey) return;
 
-  getPartnerBackMicrositeUrl(partnerKey).then(url => {
-    if (partnerKey !== activePartnerKey || !url) return;
-    setSessionBackText('session-back-link', url.replace(/^https?:\/\//i, '').replace(/\/$/, ''));
+  getPartnerBackEmployerData(partnerKey).then(data => {
+    if (partnerKey !== activePartnerKey) return;
+    if (data.micrositeUrl) {
+      setSessionBackText('session-back-link', data.micrositeUrl.replace(/^https?:\/\//i, '').replace(/\/$/, ''));
+    }
+    const selectedFeatureLogo = getHeaderLogoOption(selectedHeaderLogos[4]);
+    const featureLogo = document.querySelector('.session-back-feature-logo-card img');
+    if (!data.logoSrc || (selectedFeatureLogo && selectedFeatureLogo.src) || !featureLogo) return;
+    featureLogo.src = data.logoSrc;
+    featureLogo.alt = data.logoAlt || activePartnerConfig.label || 'Partner logo';
+    featureLogo.style.display = '';
+    const placeholder = ensureDynamicLogoPlaceholder(featureLogo, 4);
+    if (placeholder) placeholder.classList.remove('visible');
   });
 }
 
@@ -6232,7 +6264,7 @@ function syncSessionBackContent() {
   renderSessionBackSeriesMonth(cfg, cfg.seriesDate);
   setText('session-back-link', cfg.linkText);
   syncPartnerBackSeriesMonth(cfg);
-  syncPartnerBackMicrositeUrl();
+  syncPartnerBackEmployerData();
 
   const featureProgram = document.getElementById('session-back-feature-program');
   const featureRule = document.getElementById('session-back-feature-rule');
