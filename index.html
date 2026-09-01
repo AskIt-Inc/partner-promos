@@ -4209,15 +4209,30 @@ function loadImageFromSrc(src) {
   });
 }
 
+async function getRemoteImageDataUrl(src) {
+  const fetchImage = async url => {
+    const response = await fetch(url, { mode: 'cors', cache: 'force-cache' });
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    return readBlobAsDataUrl(await response.blob());
+  };
+
+  try {
+    return await fetchImage(src);
+  } catch (error) {
+    // Employer files on somebodytotalkto.com do not send a CORS header. Route
+    // only the already-public image through a CORS-enabled image proxy so the
+    // card exporter can embed it as a Base64 data URL instead of dropping it.
+    return fetchImage('https://wsrv.nl/?url=' + encodeURIComponent(src) + '&output=png');
+  }
+}
+
 async function getDisplayLogoSrc(src) {
   if (!src || (!isRemoteSrc(src) && !String(src).startsWith('data:image/'))) return src;
   if (LOGO_DISPLAY_SRC_CACHE.has(src)) return LOGO_DISPLAY_SRC_CACHE.get(src);
 
   let sourceDataUrl = src;
   if (isRemoteSrc(src)) {
-    const response = await fetch(src, { mode: 'cors', cache: 'force-cache' });
-    if (!response.ok) throw new Error('HTTP ' + response.status);
-    sourceDataUrl = await readBlobAsDataUrl(await response.blob());
+    sourceDataUrl = await getRemoteImageDataUrl(src);
   }
   const sourceImg = await loadImageFromSrc(sourceDataUrl);
   const canvas = document.createElement('canvas');
@@ -7014,9 +7029,7 @@ async function getExportSafeImageSrc(img) {
 
   if (EXPORT_IMAGE_DATA_URL_CACHE.has(src)) return EXPORT_IMAGE_DATA_URL_CACHE.get(src);
 
-  const response = await fetch(src, { mode: 'cors', cache: 'force-cache' });
-  if (!response.ok) throw new Error('HTTP ' + response.status);
-  const dataUrl = await readBlobAsDataUrl(await response.blob());
+  const dataUrl = await getRemoteImageDataUrl(src);
   EXPORT_IMAGE_DATA_URL_CACHE.set(src, dataUrl);
   return dataUrl;
 }
