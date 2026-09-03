@@ -6113,19 +6113,20 @@ function getSessionBackConfig() {
   const partner = activePartnerConfig || {};
   const configured = partner.sessionBack || {};
   const partnerName = partner.label || 'Partner';
+  const programName = partnerName + ' Amyloidosis Program';
+  const configuredMonth = String(configured.seriesDate || '').match(/^[A-Za-z]+/);
+  const fallbackMonth = configuredMonth ? configuredMonth[0] : '';
 
   return {
-    seriesDate: '',
-    featureTitle: partnerName,
-    featureProgram: '',
-    eyebrow: partnerName,
-    title: 'Learn more about the ' + partnerName + ' Spotlight series',
-    primaryText: 'Visit the ' + partnerName + ' microsite for program details, upcoming sessions, completed sessions, and clinical research information.',
-    secondaryHtml: '<strong>Use the microsite</strong> to review the series and share the resource with patients, caregivers, and families.',
-    linkText: '',
-    qrSrc: '',
-    qrAlt: '',
-    ...configured
+    ...configured,
+    seriesDate: configured.seriesDate || '',
+    featureTitle: programName,
+    featureProgram: programName,
+    eyebrow: programName,
+    title: 'Learn more about the ' + (fallbackMonth ? fallbackMonth + ' ' : '') + 'Spotlight Series',
+    primaryText: 'Visit the microsite for program details, upcoming sessions, completed sessions, and clinical research information from the ' + programName + ' team.',
+    secondaryHtml: '<strong>' + escapeHtml(fallbackMonth || 'Spotlight') + ' series:</strong> free online sessions with ' + escapeHtml(partnerName) + ' specialists for patients, caregivers, families, and healthcare professionals.',
+    standardPartnerName: partnerName
   };
 }
 
@@ -6148,10 +6149,16 @@ function setSessionBackHtml(id, value) {
 }
 
 function renderSessionBackSeriesMonth(cfg, seriesDate) {
+  const resolvedMonth = String(seriesDate || '').match(/^[A-Za-z]+/);
   setSessionBackText('session-back-series-date', seriesDate);
-  setSessionBackText('session-back-title', replaceSeriesMonth(cfg.title, cfg.seriesDate, seriesDate));
+  if (resolvedMonth) {
+    setSessionBackText('session-back-title', 'Learn more about the ' + resolvedMonth[0] + ' Spotlight Series');
+    setSessionBackHtml('session-back-text-secondary', '<strong>' + escapeHtml(resolvedMonth[0]) + ' series:</strong> free online sessions with ' + escapeHtml(cfg.standardPartnerName || 'our') + ' specialists for patients, caregivers, families, and healthcare professionals.');
+  } else {
+    setSessionBackText('session-back-title', cfg.title);
+    setSessionBackHtml('session-back-text-secondary', cfg.secondaryHtml);
+  }
   setSessionBackText('session-back-text-primary', replaceSeriesMonth(cfg.primaryText, cfg.seriesDate, seriesDate));
-  setSessionBackHtml('session-back-text-secondary', replaceSeriesMonth(cfg.secondaryHtml, cfg.seriesDate, seriesDate));
 }
 
 function getNextSpotlightSeriesMonth(rows) {
