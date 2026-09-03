@@ -5289,10 +5289,29 @@ function calendarBuildProfileMap(profiles) {
   return map;
 }
 
+function getProfilesApiUrlForSessions(sessionsApiUrl) {
+  if (!sessionsApiUrl) return '';
+  try {
+    const profilesUrl = new URL(sessionsApiUrl, window.location.href);
+    profilesUrl.pathname = profilesUrl.pathname.replace(/\/sessions$/, '/profiles');
+    if (profilesUrl.pathname === new URL(sessionsApiUrl, window.location.href).pathname) return '';
+    profilesUrl.searchParams.delete('status');
+    profilesUrl.searchParams.delete('base64');
+    profilesUrl.searchParams.delete('view');
+    return profilesUrl.href;
+  } catch (e) {
+    return '';
+  }
+}
+
 function getCalendarConfig() {
+  const calendar = activePartnerConfig.calendar || {};
+  const sessionsApiUrl = calendar.sessionsApiUrl || activePartnerConfig.sessionsApiUrl || '';
   return {
     ...CALENDAR_DEFAULT_CONFIG,
-    ...(activePartnerConfig.calendar || {})
+    ...calendar,
+    sessionsApiUrl,
+    profilesApiUrl: calendar.profilesApiUrl || getProfilesApiUrlForSessions(sessionsApiUrl)
   };
 }
 
