@@ -2701,14 +2701,8 @@ body[data-partner="vamp"] .session-back-title {
   <div class="search-row search-config-row">
     <label class="field-control" for="partner-select">
       <span>Partner</span>
-      <select id="partner-select" aria-label="Partner">
-        <option value="" disabled selected>Select Partner</option>
-        <option value="vamp">Vanderbilt (VAMP)</option>
-        <option value="uoc">University of Chicago</option>
-        <option value="coh">City of Hope</option>
-        <option value="mayo">Mayo Clinic</option>
-        <option value="houston-methodist">Houston Methodist</option>
-        <option value="tufts-medicine">Tufts Medicine</option>
+      <select id="partner-select" aria-label="Partner" disabled>
+        <option value="" selected>Loading eligible partners…</option>
       </select>
     </label>
     <label class="field-control" for="session-card-type">
@@ -4117,6 +4111,95 @@ function normalizePartnerConfig(config) {
   return merged;
 }
 
+const EMPLOYERS_API_URL = 'https://somebodytotalkto.com/jsonapi/taxonomy_term/employer?page%5Blimit%5D=100';
+
+function getEmployerPartnerKey(term) {
+  const employerId = String(term && term.attributes && term.attributes.drupal_internal__tid || '');
+  const existingKey = Object.entries(partnerConfigs.partners || {}).find(([, partner]) => {
+    try {
+      return new URL(partner.sessionsApiUrl || '').searchParams.get('partner') === employerId;
+    } catch (error) {
+      return false;
+    }
+  });
+  if (existingKey) return existingKey[0];
+
+  const name = String(term && term.attributes && term.attributes.name || 'partner');
+  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  return partnerConfigs.partners[slug] ? slug + '-' + employerId : slug;
+}
+
+function getTimezoneCode(timezone) {
+  const codes = {
+    'America/New_York': 'ET', 'America/Chicago': 'CT', 'America/Denver': 'MT',
+    'America/Phoenix': 'AZ', 'America/Los_Angeles': 'PT',
+    'America/Anchorage': 'AK', 'Pacific/Honolulu': 'HT'
+  };
+  return codes[timezone] || 'ET';
+}
+
+function populatePartnerSelect() {
+  if (!partnerSelect) return;
+  const options = Object.entries(partnerConfigs.partners || {})
+    .filter(([, partner]) => partner.promoCardEnabled)
+    .sort(([, a], [, b]) => String(a.label).localeCompare(String(b.label)));
+
+  partnerSelect.replaceChildren();
+  const placeholder = document.createElement('option');
+  placeholder.value = '';
+  placeholder.disabled = true;
+  placeholder.selected = !activePartnerKey;
+  placeholder.textContent = 'Select Partner';
+  partnerSelect.appendChild(placeholder);
+  options.forEach(([key, partner]) => {
+    const option = document.createElement('option');
+    option.value = key;
+    option.textContent = partner.label;
+    option.selected = key === activePartnerKey;
+    partnerSelect.appendChild(option);
+  });
+  partnerSelect.disabled = options.length === 0;
+}
+
+async function loadPromoEmployers() {
+  const response = await fetch(EMPLOYERS_API_URL, {
+    mode: 'cors', headers: { Accept: 'application/vnd.api+json' }
+  });
+  if (!response.ok) throw new Error('Employer API request failed');
+
+  const payload = await response.json();
+  const apiKeys = new Set();
+  (payload.data || []).filter(term => term && term.attributes && term.attributes.field_promo_card_enabled === true)
+    .forEach(term => {
+      const attributes = term.attributes;
+      const key = getEmployerPartnerKey(term);
+      const current = partnerConfigs.partners[key] || {};
+      const employerColor = attributes.field_spotlight_bg_color_2 || (current.colors && current.colors.primary) || '#0057B8';
+      apiKeys.add(key);
+      partnerConfigs.partners[key] = {
+        ...current,
+        label: attributes.name,
+        employerTermName: attributes.name,
+        exportSlug: current.exportSlug || key,
+        promoCardEnabled: true,
+        micrositeUrl: attributes.field_spotlight_microsite_url || '',
+        defaultTimezone: getTimezoneCode(attributes.field_timezone),
+        sessionsApiUrl: current.sessionsApiUrl || ('https://somebodytotalkto.com/api/spotlight/microsite/sessions?partner=' + attributes.drupal_internal__tid + '&status=all'),
+        colors: {
+          ...(current.colors || {}),
+          primary: employerColor,
+          primaryDark: (current.colors && current.colors.primaryDark) || employerColor,
+          accent: attributes.field_spotlight_highlight_color || (current.colors && current.colors.accent) || '#FFE8A3',
+          sessionBandBg: employerColor
+        }
+      };
+    });
+
+  Object.entries(partnerConfigs.partners).forEach(([key, partner]) => {
+    partner.promoCardEnabled = apiKeys.has(key);
+  });
+}
+
 function loadSelectedPartnerKey() {
   return '';
 }
@@ -5048,6 +5131,11 @@ function syncComingSoonMicrosite(partnerKey) {
       }
     }
 
+    if (/^#[0-9a-f]{3,8}$/i.test(data.bannerColor || '')) {
+      document.documentElement.style.setProperty('--coming-band-bg', data.bannerColor);
+      document.documentElement.style.setProperty('--coming-back-band-bg', data.bannerColor);
+    }
+
     if (data.logoSrc) {
       getDisplayLogoSrc(data.logoSrc).then(src => {
         if (partnerKey !== activePartnerKey) return;
@@ -5533,10 +5621,18 @@ async function loadPartnerConfigs() {
     partnerConfigs = normalizePartnerConfig(PARTNER_CONFIG_FALLBACK);
   }
 
+  try {
+    await loadPromoEmployers();
+  } catch(e) {
+    // The API is the authority for eligibility. Do not surface a stale local
+    // partner list if its enabled state cannot be verified.
+    partnerConfigs = { ...partnerConfigs, partners: {} };
+  }
+
   if (activePartnerKey && !partnerConfigs.partners[activePartnerKey]) {
     activePartnerKey = '';
   }
-  if (partnerSelect) partnerSelect.value = activePartnerKey;
+  populatePartnerSelect();
   selectedTimezone = loadSelectedTimezone();
   if (timezoneSelect) timezoneSelect.value = selectedTimezone;
   applyPartnerTheme();
@@ -6224,6 +6320,8 @@ function getPartnerBackEmployerData(partnerKey) {
           && term.relationships.field_image.data.meta.alt || term.attributes.name;
         const base = {
           micrositeUrl: term.attributes.field_spotlight_microsite_url || '',
+          bannerColor: term.attributes.field_spotlight_bg_color_2
+            || term.attributes.field_spotlight_bg_start || '',
           logoSrc: '',
           logoAlt
         };
