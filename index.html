@@ -175,12 +175,33 @@ body {
   height: var(--card-height);
   background: #fff;
   overflow: hidden;
+  position: relative;
   display: flex;
   flex-direction: column;
   border-radius: 8px;
   box-shadow: 0 4px 28px rgba(0,0,0,0.20);
 }
+.session-publication-notice {
+  display: none;
+  position: absolute;
+  z-index: 20;
+  top: 10px;
+  right: 10px;
+  padding: 4px 8px;
+  border: 1px solid #8a4b00;
+  border-radius: 3px;
+  background: #fff3cd;
+  color: #6d3a00;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .07em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+.print-surface.is-unpublished-session .session-publication-notice { display: block; }
 .print-surface.size-3x5 { width: 5in; height: 3in; }
+.print-surface.size-3x5 .session-publication-notice { top: 6px; right: 6px; font-size: 7px; padding: 3px 5px; }
 .card-back { display: none; }
 .print-surface.show-back > .front-side { display: none !important; }
 .print-surface.show-back > .card-back {
@@ -2543,6 +2564,22 @@ body[data-partner="vamp"] .session-back-title {
 }
 .search-result-item strong { display: block; color: #111; font-size: 12.5px; }
 .search-result-item span   { color: #777; font-size: 11px; }
+.session-publication-badge {
+  display: inline-block;
+  margin: 4px 0 0;
+  padding: 1px 5px;
+  border: 1px solid #8a4b00;
+  border-radius: 2px;
+  background: #fff3cd;
+  color: #6d3a00 !important;
+  font-size: 9px !important;
+  font-style: normal;
+  font-weight: 800;
+  letter-spacing: .05em;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+.calendar-session-title .session-publication-badge { margin-left: 4px; vertical-align: middle; }
 .search-status { font-size: 11.5px; color: #888; font-style: italic; min-height: 18px; }
 .search-status.error { color: #c0392b; font-style: normal; font-weight: 600; }
 .load-progress {
@@ -3169,6 +3206,7 @@ body[data-partner="vamp"] .session-back-title {
   <div class="card-label" id="size-label">4 &times; 6 inch &nbsp;&middot;&nbsp; 1800 &times; 1200 px @ 300 DPI &nbsp;&middot;&nbsp; Facebook-ready</div>
 
   <div class="print-surface layout-foundation" id="print-surface">
+    <div class="session-publication-notice" id="session-publication-notice" role="status">Unpublished · internal review only</div>
 
     <!-- ZONE 1: LOGO BAR -->
     <div class="logo-bar front-side">
@@ -5454,6 +5492,13 @@ function renderCalendarSessionsFromApi(sessions, profiles) {
     const title = document.createElement('p');
     title.className = 'calendar-session-title';
     title.textContent = calendarNormalizeSpaces(session.title);
+    const publicationLabel = getSessionPublicationLabel(session);
+    if (publicationLabel) {
+      const badge = document.createElement('span');
+      badge.className = 'session-publication-badge';
+      badge.textContent = publicationLabel;
+      title.append(' ', badge);
+    }
 
     const presenterEl = document.createElement('p');
     presenterEl.className = 'calendar-session-presenter';
@@ -7268,14 +7313,14 @@ function getSessionApiUrl(url, params = {}) {
 }
 
 function getSessionListApiUrl() {
-  return getSessionApiUrl(getPartnerSessionsApiUrl(), {
+  return getSessionApiUrl(getAllCalendarSessionsApiUrl(getPartnerSessionsApiUrl()), {
     base64: 'no',
     view: 'summary'
   });
 }
 
 function getSessionAssetApiUrl(uuid) {
-  return getSessionApiUrl(getPartnerSessionsApiUrl(), {
+  return getSessionApiUrl(getAllCalendarSessionsApiUrl(getPartnerSessionsApiUrl()), {
     uuid,
     base64: 'yes',
     view: 'full'
@@ -7327,13 +7372,40 @@ function getSessionResultMeta(row) {
   return [formatSessionDisplayDate(row.date), timeText, presenterName].filter(Boolean).join(' · ');
 }
 
+function isUnpublishedSession(row = {}) {
+  const explicitPublication = [row.published, row.is_published, row.isPublished];
+  if (explicitPublication.some(value => value === false || value === 0 || String(value).trim().toLowerCase() === 'false' || String(value).trim() === '0')) {
+    return true;
+  }
+
+  const unpublishedStates = new Set(['unpublished', 'draft', 'pending', 'private', 'archived']);
+  return [row.publication_status, row.publish_status, row.moderation_state, row.workflow_state, row.status]
+    .some(value => unpublishedStates.has(String(value || '').trim().toLowerCase()));
+}
+
+function getSessionPublicationLabel(row = {}) {
+  const draftStates = new Set(['draft', 'pending']);
+  const states = [row.publication_status, row.publish_status, row.moderation_state, row.workflow_state, row.status]
+    .map(value => String(value || '').trim().toLowerCase());
+  if (states.some(value => draftStates.has(value))) return 'Draft';
+  return isUnpublishedSession(row) ? 'Unpublished' : '';
+}
+
+function syncSessionPublicationNotice(row = {}) {
+  const unpublished = isUnpublishedSession(row);
+  surface.classList.toggle('is-unpublished-session', unpublished);
+  surface.dataset.sessionPublication = unpublished ? 'unpublished' : 'published';
+}
+
 function renderSessionResultList(rows, { keepListVisible = false } = {}) {
   searchResults.innerHTML = '';
   searchResults.classList.add('visible');
   rows.forEach(row => {
     const item = document.createElement('div');
     item.className = 'search-result-item';
-    item.innerHTML = '<strong>' + escapeHtml(row.title) + '</strong><span>' + escapeHtml(getSessionResultMeta(row)) + '</span>';
+    const publicationLabel = getSessionPublicationLabel(row);
+    item.innerHTML = '<strong>' + escapeHtml(row.title) + '</strong><span>' + escapeHtml(getSessionResultMeta(row)) + '</span>'
+      + (publicationLabel ? '<em class="session-publication-badge">' + publicationLabel + '</em>' : '');
     item.addEventListener('click', async () => {
       Array.from(searchResults.children).forEach(child => child.classList.remove('active'));
       Array.from(searchResults.children).forEach(child => child.classList.remove('loading'));
@@ -7450,6 +7522,8 @@ function resetSearchState(message = 'Enter text in the search box to load a sess
   searchToken++;
   indicationLogoToken++;
   currentIndicationLogo = null;
+  surface.classList.remove('is-unpublished-session');
+  delete surface.dataset.sessionPublication;
   currentSessionRow = null;
   setSide('front');
   clearTimeout(debounce);
@@ -7527,13 +7601,14 @@ async function runSearch() {
   setStatus('Searching…'); clearResults();
   btnSearch.disabled = true;
   try {
-    const res  = await fetch(`${SEARCH_API}?q=${encodeURIComponent(q)}`, { headers: { Accept: 'application/json' } });
+    const searchUrl = getSessionApiUrl(SEARCH_API, { q, status: 'all', base64: 'no', view: 'summary' });
+    const res  = await fetch(searchUrl, { headers: { Accept: 'application/json' } });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const json = await res.json();
     if (token !== searchToken) return;   // a newer request already claimed the slot — discard
     const rows = json.data || [];
     if (!rows.length) { setStatus('No upcoming sessions found.'); return; }
-    if (rows.length === 1) { populateCard(rows[0]); setStatus('Session loaded.'); return; }
+    if (rows.length === 1) { setStatus('1 session found - click it to load.'); renderSessionResultList(rows, { keepListVisible: true }); return; }
     setStatus(rows.length + ' sessions found - click one to load.');
     renderSessionResultList(rows);
   } catch(e) {
@@ -7572,7 +7647,7 @@ async function getEnrichedSessionRow(row) {
 
   const detailUrl = row.uuid
     ? getSessionAssetApiUrl(row.uuid)
-    : `${SEARCH_API}?q=${encodeURIComponent(query)}`;
+    : getSessionApiUrl(SEARCH_API, { q: query, status: 'all', base64: 'yes', view: 'full' });
   const res = await fetch(detailUrl, { headers: { Accept: 'application/json' } });
   if (!res.ok) throw new Error('HTTP ' + res.status);
 
@@ -7813,6 +7888,7 @@ function fitSessionPromoLayout() {
    ══════════════════════════════════════════════════ */
 function populateCard(row) {
   currentSessionRow = row;
+  syncSessionPublicationNotice(row);
   const logoToken = ++indicationLogoToken;
   currentIndicationLogo = null;
   updateHeaderLogos();
