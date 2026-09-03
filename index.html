@@ -3895,87 +3895,6 @@ const PARTNER_CONFIG_FALLBACK = {
 let partnerConfigs = normalizePartnerConfig(PARTNER_CONFIG_FALLBACK);
 let activePartnerKey = loadSelectedPartnerKey();
 let activePartnerConfig = partnerConfigs.partners[activePartnerKey] || partnerConfigs.partners.uoc;
-const COMING_SOON_CONFIGS = {
-  vamp: {
-    date: 'August 2026',
-    featureName: 'Vanderbilt Amyloidosis<br>Multidisciplinary Program',
-    logo: 'vamp-logo.png',
-    logoAlt: 'Vanderbilt Amyloidosis Multidisciplinary Program',
-    qr: 'vamp_microsite_qr.png',
-    qrAlt: 'Scan to visit vanderbilt.oneamyloidosisvoice.com',
-    link: 'vanderbilt.oneamyloidosisvoice.com',
-    fullLink: 'https://vanderbilt.oneamyloidosisvoice.com/',
-    primaryHtml: '<strong>Visit the Vanderbilt Amyloidosis Multidisciplinary Program microsite</strong> for program details, care team updates, session information, and registration links for the Amyloidosis Program Spotlight Series.',
-    secondaryText: 'Keep this card for the latest Vanderbilt Amyloidosis Multidisciplinary Program spotlight information and registration access.',
-    backPrimaryHtml: '<strong>Subscribe to SomeBodyToTalkTo</strong> to receive session registration links, Vanderbilt Amyloidosis Multidisciplinary Program updates, and free weekly amyloidosis session reminders directly to your inbox.',
-    colors: {
-      primary: '#1C1C1C',
-      accent: '#FFE8A3',
-      label: '#FFE8A3',
-      softBg: '#F8EFCF',
-      badgeText: '#fff',
-      badgeBg: '#FFE8A3',
-      bandBg: '#000000',
-      backBandBg: '#000000'
-    }
-  },
-  uoc: {
-    date: 'June 2026',
-    featureName: 'University of Chicago<br>Amyloidosis Program',
-    logo: 'ucm-logo-horizontal.png',
-    logoAlt: 'UChicago Medicine',
-    qr: 'uoc_microsite_qr.png',
-    qrAlt: 'Scan to visit uchicago.oneamyloidosisvoice.com',
-    link: 'uchicago.oneamyloidosisvoice.com',
-    fullLink: 'https://uchicago.oneamyloidosisvoice.com/',
-    primaryHtml: '<strong>Visit the University of Chicago microsite</strong> for program details, speaker updates, session information, and registration links for the Amyloidosis Program Spotlight Series.',
-    secondaryText: 'Keep this card for the latest University of Chicago spotlight information and registration access.',
-    backPrimaryHtml: '<strong>Subscribe to SomeBodyToTalkTo</strong> to receive session registration links, University of Chicago program updates, and free weekly amyloidosis session reminders directly to your inbox.',
-    colors: {
-      primary: '#8B1F2D',
-      accent: '#FFE8A3',
-      label: '#FFE8A3',
-      softBg: '#F5EAEC',
-      badgeText: '#fff',
-      bandBg: '#8B1F2D',
-      backBandBg: '#8B1F2D'
-    }
-  },
-  coh: {
-    date: 'July 2026',
-    featureName: 'City of Hope<br>Amyloidosis Program',
-    logo: 'coh_logo.svg',
-    logoAlt: 'City of Hope',
-    qr: 'coh_microsite_qr.png',
-    qrAlt: 'Scan to visit cityofhope.oneamyloidosisvoice.com',
-    link: 'cityofhope.oneamyloidosisvoice.com',
-    fullLink: 'https://cityofhope.oneamyloidosisvoice.com/',
-    primaryHtml: '<strong>Visit the City of Hope microsite</strong> for program details, speaker updates, session information, and registration links for the Amyloidosis Program Spotlight Series.',
-    secondaryText: 'Keep this card for the latest City of Hope spotlight information and registration access.',
-    backPrimaryHtml: '<strong>Visit the City of Hope microsite</strong> for the July session calendar, program details, care team information, and registration links for the Amyloidosis Program Spotlight Series.',
-    backBadge: 'Calendar',
-    backProgramName: 'City of Hope',
-    backProgramDate: 'July 2026 Spotlight Series',
-    backLabel: 'July Sessions',
-    backFeatureName: 'City of Hope July Spotlight Session Calendar',
-    backCtaText: 'Visit the microsite or scan the QR code',
-    backLink: 'cityofhope.oneamyloidosisvoice.com',
-    backQr: 'coh_microsite_qr.png',
-    backQrAlt: 'Scan to visit cityofhope.oneamyloidosisvoice.com',
-    backQrLabelHtml: 'scan to<br>visit',
-    backSecondaryText: 'Review the July calendar before sharing the card so patients and caregivers have the current City of Hope session details.',
-    backFinePrint: 'Registering is free and your information will not be shared with third parties.',
-    colors: {
-      primary: '#006E8E',
-      accent: '#F58220',
-      label: '#FFE8A3',
-      softBg: '#E7F5F8',
-      badgeText: '#fff',
-      bandBg: 'linear-gradient(135deg, #006E8E 0%, #004F66 74%, #F58220 160%)',
-      backBandBg: 'linear-gradient(135deg, #006E8E 0%, #004F66 74%, #F58220 160%)'
-    }
-  }
-};
 const TIMEZONE_STORAGE_KEY = 'facebook_promo_card_timezone';
 const TIMEZONE_OPTIONS = {
   ET: { short: 'ET', iana: 'America/New_York', apiKey: 'ET' },
@@ -5072,50 +4991,81 @@ function applyPartnerTheme() {
 
 function getGeneratedComingSoonConfig() {
   const partner = activePartnerConfig || {};
-  const sessionBack = partner.sessionBack || {};
-  const calendar = partner.calendar || {};
   const label = partner.label || 'Partner';
-  const featureName = sessionBack.featureTitle || calendar.programTitle || label;
-  const link = sessionBack.linkText || calendar.micrositeUrl || '';
+  const featureName = label + ' Amyloidosis Program';
+  const link = partner.micrositeUrl || '';
   const fullLink = /^https?:\/\//i.test(link) ? link : (link ? 'https://' + link : '');
   const displayLink = link.replace(/^https?:\/\//i, '').replace(/\/$/, '');
-  const colors = partner.colors || {};
-  const month = calendar.monthLabel || '';
 
   return {
-    date: sessionBack.seriesDate || (month ? month + ' 2026' : ''),
+    // This card is a single approved template. Only the selected partner's
+    // program name and microsite URL are allowed to vary.
+    date: 'September 2026',
     featureName: escapeHtml(featureName),
     logo: partner.partnerLogo || '',
     logoAlt: partner.partnerLogoAlt || featureName,
-    qr: sessionBack.qrSrc || calendar.qrSrc || '',
-    qrAlt: sessionBack.qrAlt || calendar.qrAlt || (displayLink ? 'Scan to visit ' + displayLink : 'Scan to visit microsite'),
+    qr: displayLink ? getSessionBackGeneratedQrSrc(fullLink) : '',
+    qrAlt: displayLink ? 'Scan to visit ' + displayLink : 'Scan to visit microsite',
     link: displayLink,
     fullLink,
     primaryHtml: '<strong>Visit the ' + escapeHtml(featureName) + ' microsite</strong> for program details, speaker updates, session information, and registration links for the Amyloidosis Program Spotlight Series.',
     secondaryText: 'Keep this card for the latest ' + featureName + ' spotlight information and registration access.',
     backPrimaryHtml: '<strong>Subscribe to SomeBodyToTalkTo</strong> to receive session registration links, ' + escapeHtml(featureName) + ' updates, and free weekly amyloidosis session reminders directly to your inbox.',
     colors: {
-      primary: colors.primary || '#8B1F2D',
-      accent: colors.accent || '#FFE8A3',
-      label: colors.accent || '#FFE8A3',
-      divider: colors.borderAccent || colors.accent || '#FFE8A3',
-      softBg: colors.softBg || '#F5EAEC',
+      primary: '#0057B8',
+      accent: '#FFE8A3',
+      label: '#FFE8A3',
+      divider: '#B8D4EC',
+      softBg: '#EAF3FA',
       badgeText: '#fff',
-      badgeBg: colors.accent || '#FFE8A3',
-      bandBg: colors.sessionBandBg || colors.primary || '#8B1F2D',
-      backBandBg: colors.sessionBandBg || colors.primary || '#8B1F2D'
+      badgeBg: '#C6A6AA',
+      bandBg: '#0057B8',
+      backBandBg: '#0057B8'
     }
   };
 }
 
 function getComingSoonConfig() {
-  const generated = getGeneratedComingSoonConfig();
-  const override = COMING_SOON_CONFIGS[activePartnerKey] || {};
-  return {
-    ...generated,
-    ...override,
-    colors: { ...generated.colors, ...(override.colors || {}) }
-  };
+  return getGeneratedComingSoonConfig();
+}
+
+function syncComingSoonMicrosite(partnerKey) {
+  if (!partnerKey) return;
+
+  getPartnerBackEmployerData(partnerKey).then(data => {
+    if (partnerKey !== activePartnerKey) return;
+
+    if (data.micrositeUrl) {
+      const link = data.micrositeUrl.replace(/^https?:\/\//i, '').replace(/\/$/, '');
+      const url = /^https?:\/\//i.test(data.micrositeUrl) ? data.micrositeUrl : 'https://' + data.micrositeUrl;
+      const qrAlt = 'Scan to visit ' + link;
+      const linkElement = document.getElementById('coming-link');
+      const qrElement = document.getElementById('coming-qr-img');
+      if (linkElement) linkElement.textContent = link;
+      if (qrElement) {
+        qrElement.src = getSessionBackGeneratedQrSrc(url);
+        qrElement.alt = qrAlt;
+      }
+    }
+
+    if (data.logoSrc) {
+      getDisplayLogoSrc(data.logoSrc).then(src => {
+        if (partnerKey !== activePartnerKey) return;
+        const logo = document.getElementById('coming-partner-logo');
+        if (!logo) return;
+        logo.src = src;
+        logo.alt = data.logoAlt || activePartnerConfig.label || 'Partner logo';
+        logo.dataset.logoKey = getLogoKeyForSrcAlt(data.logoSrc, logo.alt);
+      }).catch(() => {
+        // The original public image remains a display fallback; exports use
+        // the data URL when the CORS-enabled image path is available.
+        const logo = document.getElementById('coming-partner-logo');
+        if (!logo || partnerKey !== activePartnerKey) return;
+        logo.src = data.logoSrc;
+        logo.alt = data.logoAlt || activePartnerConfig.label || 'Partner logo';
+      });
+    }
+  });
 }
 
 function syncComingSoonCard() {
@@ -5154,11 +5104,7 @@ function syncComingSoonCard() {
   applySelectedLogoToImage(1, document.getElementById('coming-back-logo-af'));
   applySelectedLogoToImage(2, document.getElementById('coming-back-logo-oav'));
   applySelectedLogoToImage(3, document.getElementById('coming-back-logo-sttt'));
-  if (getSelectedSlotLogoOption(4)) {
-    applySelectedLogoToImage(4, document.getElementById('coming-partner-logo'));
-  } else {
-    setImg('coming-partner-logo', cfg.logo, cfg.logoAlt);
-  }
+  setImg('coming-partner-logo', cfg.logo, cfg.logoAlt);
   setImg('coming-qr-img', cfg.qr, cfg.qrAlt);
   setImg('coming-back-qr-img', cfg.backQr || 'sttt_subscribe_qr.png', cfg.backQrAlt || 'Scan to subscribe at somebodytotalkto.com/subscribe');
 
@@ -5180,6 +5126,7 @@ function syncComingSoonCard() {
   setText('coming-back-fine-print', cfg.backFinePrint || '* Subscribing is free and your information is never shared with third parties.');
   setText('coming-fine-print', cfg.finePrint || 'Subscribing is free and your information will not be shared with third parties.');
   applyHeaderLogoSizes();
+  syncComingSoonMicrosite(activePartnerKey);
 }
 
 function calendarNormalizeSpaces(value) {
@@ -6259,7 +6206,7 @@ function getPartnerBackEmployerData(partnerKey) {
   const partner = getPartnerConfig(partnerKey);
   const employerName = normalizeEmployerTermName(partner.employerTermName || partner.label);
   const request = employerName
-    ? fetch('https://somebodytotalkto.com/jsonapi/taxonomy_term/employer?page%5Blimit%5D=50', {
+    ? fetch('https://somebodytotalkto.com/jsonapi/taxonomy_term/employer?page%5Blimit%5D=100', {
       mode: 'cors',
       headers: { Accept: 'application/vnd.api+json' }
     })
