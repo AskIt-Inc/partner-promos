@@ -5337,8 +5337,15 @@ function getAllCalendarSessionsApiUrl(url) {
   return value + (value.includes('?') ? '&' : '?') + 'status=all';
 }
 
+function getCalendarSessionApiUrl(url) {
+  return getSessionApiUrl(getAllCalendarSessionsApiUrl(url), {
+    base64: 'no',
+    view: 'summary'
+  });
+}
+
 function getCalendarSourceKey(cfg = getCalendarConfig()) {
-  return [activePartnerKey, getAllCalendarSessionsApiUrl(cfg.sessionsApiUrl), cfg.profilesApiUrl].join('|');
+  return [activePartnerKey, getCalendarSessionApiUrl(cfg.sessionsApiUrl), cfg.profilesApiUrl].join('|');
 }
 
 function resetCalendarSessionState() {
@@ -5661,7 +5668,7 @@ async function loadCalendarSessions() {
   startCalendarLoadProgress();
 
   calendarSessionsPromise = Promise.all([
-    fetchCalendarJson(getAllCalendarSessionsApiUrl(cfg.sessionsApiUrl), 'Sessions'),
+    fetchCalendarJson(getCalendarSessionApiUrl(cfg.sessionsApiUrl), 'Sessions'),
     fetchCalendarJson(cfg.profilesApiUrl, 'Profiles')
   ])
     .then(async ([sessionsJson, profilesJson]) => {
