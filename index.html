@@ -1208,6 +1208,7 @@ body[data-partner="vamp"] .band-series-label {
   width: 100%; height: 100%;
   object-fit: cover; border-radius: 50%; display: none;
 }
+.headshot-wrap.is-empty { display: none; }
 .headshot-fallback {
   font-size: 9px; color: #aaa;
   text-align: center; padding: 4px; line-height: 1.3;
@@ -7847,6 +7848,29 @@ function getPresenterHeadshotSrc(row = {}, presenterIndex = 0) {
   return '';
 }
 
+function setPresenterHeadshot(img, fallback, src) {
+  const wrap = img.closest('.headshot-wrap');
+  const hideHeadshot = () => {
+    img.onerror = null;
+    img.removeAttribute('src');
+    img.style.display = 'none';
+    fallback.style.display = 'none';
+    wrap.classList.add('is-empty');
+  };
+
+  if (!src) {
+    hideHeadshot();
+    return;
+  }
+
+  wrap.classList.remove('is-empty');
+  img.removeAttribute('crossorigin');
+  img.onerror = hideHeadshot;
+  img.src = src;
+  img.style.display = 'block';
+  fallback.style.display = 'none';
+}
+
 function getPresenterEmployer(presenter) {
   const employerCandidates = [
     presenter.employer,
@@ -7901,16 +7925,7 @@ function populateMultiPresenter(row, index) {
   name.textContent = display.name || 'Presenter TBA';
   cred.textContent = presenter.name_suffix || '';
   role.textContent = getPresenterEmployer(presenter);
-  if (src) {
-    img.removeAttribute('crossorigin');
-    img.src = src;
-    img.style.display = 'block';
-    fallback.style.display = 'none';
-  } else {
-    img.removeAttribute('src');
-    img.style.display = 'none';
-    fallback.style.display = 'block';
-  }
+  setPresenterHeadshot(img, fallback, src);
 }
 
 function populateMultiPresenters(row) {
@@ -8088,16 +8103,7 @@ function populateCard(row) {
   const headshotImg = document.getElementById('headshot-img');
   const headshotFb  = document.getElementById('headshot-fallback');
   const headshotSrc = getPresenterHeadshotSrc(row);
-  if (headshotSrc) {
-    headshotImg.removeAttribute('crossorigin');
-    headshotImg.src          = headshotSrc;
-    headshotImg.style.display = 'block';
-    headshotFb.style.display  = 'none';
-  } else {
-    headshotImg.style.display = 'none';
-    headshotFb.style.display  = 'block';
-    headshotFb.textContent    = 'No photo';
-  }
+  setPresenterHeadshot(headshotImg, headshotFb, headshotSrc);
 
   if (isMultiPresenterFacebookPromo()) {
     populateMultiPresenters(row);
