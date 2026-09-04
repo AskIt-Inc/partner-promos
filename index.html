@@ -5340,7 +5340,7 @@ function getAllCalendarSessionsApiUrl(url) {
 function getCalendarSessionApiUrl(url) {
   return getSessionApiUrl(getAllCalendarSessionsApiUrl(url), {
     base64: 'no',
-    view: 'summary'
+    view: 'full'
   });
 }
 
