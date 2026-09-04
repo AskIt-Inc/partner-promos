@@ -469,6 +469,17 @@ body[data-partner="vamp"] .calendar-chip-month {
   font-weight: 800;
   margin-bottom: 6px;
 }
+.calendar-retry-button {
+  margin-top: 6px;
+  padding: 4px 8px;
+  border: 1px solid var(--calendar-primary);
+  border-radius: 3px;
+  background: #fff;
+  color: var(--calendar-primary);
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 800;
+}
 .calendar-load-track {
   background: #e7edf3;
   border-radius: 999px;
@@ -4094,6 +4105,7 @@ let calendarLoadProgressTimer = null;
 let calendarLoadProgressValue = 10;
 let selectedCalendarFilters = new Set(['Mon', 'Wed', 'Thu']);
 let selectedCalendarRange = 'all';
+const CALENDAR_REQUEST_TIMEOUT_MS = 10000;
 const partnerBackSeriesMonthRequests = new Map();
 const partnerBackEmployerRequests = new Map();
 
@@ -4189,7 +4201,7 @@ async function loadPromoEmployers() {
           ...(current.colors || {}),
           primary: employerColor,
           primaryDark: (current.colors && current.colors.primaryDark) || employerColor,
-          accent: attributes.field_spotlight_highlight_color || (current.colors && current.colors.accent) || '#FFE8A3',
+          accent: '#FFE8A3',
           sessionBandBg: employerColor
         }
       };
@@ -5310,6 +5322,7 @@ function getCalendarConfig() {
   return {
     ...CALENDAR_DEFAULT_CONFIG,
     ...calendar,
+    programTitle: (activePartnerConfig.label || 'Partner') + ' Amyloidosis Program',
     sessionsApiUrl,
     profilesApiUrl: calendar.profilesApiUrl || getProfilesApiUrlForSessions(sessionsApiUrl)
   };
@@ -5352,6 +5365,51 @@ function setCalendarLoadProgress(percent) {
   }
   state.querySelector('.calendar-load-label').textContent = 'Loading calendar data · ' + value + '%';
   state.querySelector('.calendar-load-bar').style.width = value + '%';
+}
+
+async function fetchCalendarJson(url, label) {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), CALENDAR_REQUEST_TIMEOUT_MS);
+  try {
+    const response = await fetch(url, {
+      mode: 'cors',
+      headers: { Accept: 'application/json' },
+      signal: controller.signal
+    });
+    if (!response.ok) throw new Error(label + ' service returned HTTP ' + response.status);
+    return await response.json();
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      throw new Error(label + ' service timed out after ' + (CALENDAR_REQUEST_TIMEOUT_MS / 1000) + ' seconds');
+    }
+    throw error;
+  } finally {
+    window.clearTimeout(timeout);
+  }
+}
+
+function renderCalendarLoadError(message) {
+  const list = document.getElementById('calendar-sessions-list');
+  if (!list) return;
+  list.replaceChildren();
+  const row = document.createElement('div');
+  row.className = 'calendar-session-row';
+  const content = document.createElement('div');
+  content.style.gridColumn = '1 / -1';
+  const title = document.createElement('p');
+  title.className = 'calendar-session-title';
+  title.textContent = 'Calendar data is temporarily unavailable.';
+  const detail = document.createElement('p');
+  detail.className = 'calendar-session-presenter';
+  detail.textContent = message + ' Please try again.';
+  const retry = document.createElement('button');
+  retry.type = 'button';
+  retry.className = 'calendar-retry-button';
+  retry.textContent = 'Try again';
+  retry.addEventListener('click', () => loadCalendarSessions());
+  content.append(title, detail, retry);
+  row.append(content);
+  list.appendChild(row);
 }
 
 function startCalendarLoadProgress() {
@@ -5603,13 +5661,10 @@ async function loadCalendarSessions() {
   startCalendarLoadProgress();
 
   calendarSessionsPromise = Promise.all([
-    fetch(getAllCalendarSessionsApiUrl(cfg.sessionsApiUrl), { mode: 'cors', headers: { Accept: 'application/json' } }),
-    fetch(cfg.profilesApiUrl, { mode: 'cors', headers: { Accept: 'application/json' } })
+    fetchCalendarJson(getAllCalendarSessionsApiUrl(cfg.sessionsApiUrl), 'Sessions'),
+    fetchCalendarJson(cfg.profilesApiUrl, 'Profiles')
   ])
-    .then(async ([sessionsRes, profilesRes]) => {
-      if (!sessionsRes.ok || !profilesRes.ok) throw new Error('API request failed');
-      const sessionsJson = await sessionsRes.json();
-      const profilesJson = await profilesRes.json();
+    .then(async ([sessionsJson, profilesJson]) => {
       if (calendarSessionsSourceKey !== sourceKey) return;
       await finishCalendarLoadProgress(sourceKey);
       if (calendarSessionsSourceKey !== sourceKey) return;
@@ -5618,8 +5673,8 @@ async function loadCalendarSessions() {
     .catch(e => {
       window.clearInterval(calendarLoadProgressTimer);
       calendarLoadProgressTimer = null;
-      console.warn('[calendar card] API unavailable; using current card content.', e);
-      if (calendarSessionsSourceKey === sourceKey) renderCalendarSessionsFromApi([], []);
+      console.warn('[calendar card] API unavailable.', e);
+      if (calendarSessionsSourceKey === sourceKey) renderCalendarLoadError(e.message);
     })
     .finally(() => {
       calendarSessionsPromise = null;

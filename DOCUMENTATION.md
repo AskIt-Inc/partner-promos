@@ -175,6 +175,10 @@ The Coming Soon card uses one approved front/back template for every partner. It
 
 The partner selector is populated from the employer taxonomy API rather than a hand-maintained list. It includes only employers where `field_promo_card_enabled` is enabled. Each employer supplies its label, term name, ID-based sessions endpoint, timezone, microsite URL, highlight color, and banner color. Existing local configuration remains available only for card-specific settings that the employer taxonomy does not own.
 
+### Monthly Calendar Card rule
+
+For every enabled employer, the Monthly Calendar Card title is generated as `[PARTNER_NAME] Amyloidosis Program`. The Spotlight Series eyebrow and date-chip accent use the fixed gold `#FFE8A3`, independent of the employer's `field_spotlight_highlight_color` value.
+
 ---
 
 ## 5. JavaScript Modules
