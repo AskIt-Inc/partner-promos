@@ -2736,6 +2736,10 @@ body[data-partner="vamp"] .session-back-title {
         <span>Monday</span>
       </label>
       <label class="calendar-day-option">
+        <input class="calendar-day-checkbox" type="checkbox" value="Tue" checked>
+        <span>Tuesday</span>
+      </label>
+      <label class="calendar-day-option">
         <input class="calendar-day-checkbox" type="checkbox" value="Wed" checked>
         <span>Wednesday</span>
       </label>
@@ -4104,7 +4108,7 @@ let calendarSessionsData = { sessions: [], profiles: [] };
 let calendarSessionsSourceKey = '';
 let calendarLoadProgressTimer = null;
 let calendarLoadProgressValue = 10;
-let selectedCalendarFilters = new Set(['Mon', 'Wed', 'Thu']);
+let selectedCalendarFilters = new Set(['Mon', 'Tue', 'Wed', 'Thu']);
 let selectedCalendarRange = 'all';
 const CALENDAR_REQUEST_TIMEOUT_MS = 10000;
 const partnerBackSeriesMonthRequests = new Map();
@@ -5526,8 +5530,8 @@ function updateCalendarTimezoneDisplay() {
   const el = document.getElementById('calendar-footer-timezone');
   if (!el) return;
   const cfg = getCalendarConfig();
-  const dayLabels = { Mon: 'Mondays', Wed: 'Wednesdays', Thu: 'Thursdays' };
-  const selectedDays = ['Mon', 'Wed', 'Thu']
+  const dayLabels = { Mon: 'Mondays', Tue: 'Tuesdays', Wed: 'Wednesdays', Thu: 'Thursdays' };
+  const selectedDays = ['Mon', 'Tue', 'Wed', 'Thu']
     .filter(day => selectedCalendarFilters.has(day))
     .map(day => dayLabels[day]);
   const daysLabel = selectedDays.length > 1
@@ -5633,7 +5637,7 @@ function renderCalendarSessionsFromApi(sessions, profiles) {
 }
 
 function setCalendarFilter(filter, checked) {
-  if (!['Mon', 'Wed', 'Thu'].includes(filter)) return;
+  if (!['Mon', 'Tue', 'Wed', 'Thu'].includes(filter)) return;
   if (checked) {
     selectedCalendarFilters.add(filter);
   } else if (selectedCalendarFilters.size > 1) {
