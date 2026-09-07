@@ -5537,7 +5537,52 @@ function updateCalendarTimezoneDisplay() {
   const daysLabel = selectedDays.length > 1
     ? selectedDays.slice(0, -1).join(', ') + ' & ' + selectedDays.at(-1)
     : selectedDays[0] || cfg.daysLabel || 'Session days';
-  el.textContent = daysLabel + ' in ' + (cfg.monthLabel || 'Upcoming') + ' · ' + getCalendarProgramTime();
+  const sessions = calendarGetFilteredSessions(calendarSessionsData.sessions);
+  el.textContent = calendarGetTimeSummary(sessions) || (daysLabel + ' in ' + (cfg.monthLabel || 'Upcoming'));
+}
+
+function calendarGetFilteredSessions(sessions) {
+  return (Array.isArray(sessions) ? sessions : [])
+    .slice()
+    .sort((a, b) => Number(a.timestamp || 0) - Number(b.timestamp || 0))
+    .filter(session =>
+      selectedCalendarFilters.has(calendarParseApiDate(session.date).weekday)
+      && calendarMatchesSelectedRange(session)
+    );
+}
+
+function calendarFormatDate(session) {
+  const { month, day } = calendarParseApiDate(session.date);
+  return month && day ? month + '. ' + day : '';
+}
+
+function calendarGetTimeSummary(sessions) {
+  const timedSessions = sessions
+    .map(session => ({
+      date: calendarFormatDate(session),
+      exceptionLabel: /welcome session/i.test(calendarNormalizeSpaces(session.title)) ? 'Welcome Session' : '',
+      time: getZoneTime(session)
+    }))
+    .filter(session => session.date && session.time);
+  if (!timedSessions.length) return '';
+
+  const groups = new Map();
+  timedSessions.forEach(session => {
+    const entries = groups.get(session.time) || [];
+    entries.push(session);
+    groups.set(session.time, entries);
+  });
+  const [primaryTime] = [...groups.entries()]
+    .sort((a, b) => b[1].length - a[1].length)[0];
+  const exceptions = [...groups.entries()]
+    .filter(([time]) => time !== primaryTime)
+    .map(([time, entries]) => entries
+      .map(({ date, exceptionLabel }) => date + (exceptionLabel ? ' ' + exceptionLabel : ''))
+      .join(' & ') + ': ' + time);
+
+  return exceptions.length
+    ? 'Most sessions: ' + primaryTime + ' · ' + exceptions.join(' · ')
+    : 'All sessions: ' + primaryTime;
 }
 
 function renderCalendarSessionsFromApi(sessions, profiles) {
@@ -5549,13 +5594,7 @@ function renderCalendarSessionsFromApi(sessions, profiles) {
     profiles: Array.isArray(profiles) ? profiles : []
   };
   const profileMap = calendarBuildProfileMap(Array.isArray(profiles) ? profiles : []);
-  const sorted = (Array.isArray(sessions) ? sessions : [])
-    .slice()
-    .sort((a, b) => Number(a.timestamp || 0) - Number(b.timestamp || 0));
-  const filtered = sorted.filter(session =>
-    selectedCalendarFilters.has(calendarParseApiDate(session.date).weekday)
-    && calendarMatchesSelectedRange(session)
-  );
+  const filtered = calendarGetFilteredSessions(sessions);
 
   list.replaceChildren();
   list.classList.toggle('calendar-sessions-filtered', selectedCalendarFilters.size < 3);
@@ -5634,6 +5673,7 @@ function renderCalendarSessionsFromApi(sessions, profiles) {
   });
 
   calendarSessionsLoaded = true;
+  updateCalendarTimezoneDisplay();
 }
 
 function setCalendarFilter(filter, checked) {
