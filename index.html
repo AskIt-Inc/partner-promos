@@ -6737,7 +6737,7 @@ function updateControlAvailability() {
     el.style.display = showFeatureCanvasControls ? '' : 'none';
   });
   document.querySelectorAll('.timezone-control').forEach(el => {
-    el.style.display = ready && (sessionLookupVisible || calendarCard) ? '' : 'none';
+    el.style.display = ready && (sessionLookupVisible || calendarCard || isMultiPresenterFacebookPromo()) ? '' : 'none';
   });
   document.querySelectorAll('.search-input-row, .search-action-row').forEach(el => {
     el.style.display = sessionLookupVisible ? '' : 'none';
