@@ -341,6 +341,39 @@ Expected shape from `GET /api/spotlight/microsite/session/search?q=`:
 - Session workspaces use four ordered columns: dropdown and logo controls, **Font Size & Card Adjustments**, the session list/search panel, and the promo-card preview. Selecting a configured partner on the multi-presenter card automatically loads its upcoming sessions into the third column; manual title search is not required for this card type.
 - Presenter naming is consistent across cards: when `name_suffix` is present, the title is omitted from the displayed profile name and the suffix is shown separately.
 
+### Phase 1D QR tracking pilot
+
+`partner-configs.json.registrationTrackingPilot` is the deliberately narrow
+pilot override. It matches one session UUID and replaces only that session's
+registration QR payload and visible registration URL. The override is applied
+only when the API's direct `reg_link.url` equals `fallbackUrl`; any mismatch
+falls back to the normal API URL/QR path. The card template, partner branding,
+copy, logo, colors, and layout remain shared and unchanged.
+
+The current pilot is Houston Methodist's **Navigating the Emotional Ups and
+Downs of Your Care Journey** session on October 1, 2026. Its metadata is:
+
+| Field | Value |
+|-------|-------|
+| Source | `Promo Card` |
+| Medium | `qr` |
+| Campaign | `facebook-promo-houston-methodist-2026-10-01-emotional-care` |
+| Placement | `facebook-promo-registration-qr` |
+
+The checked-in pilot URL currently points to the local STTT DDEV host for
+verification. Before publishing the card, re-provision the same metadata in
+the approved target environment and replace only `trackedUrl` with that
+environment's STTT URL.
+
+To add a future card, first provision one exact-destination link through the
+STTT `TrackingLinkService` (the Phase 1D Drush wrapper is
+`sttt-registration-attribution:provision-facebook-promo-qr-pilot`), verify its
+302 and one-click record, then add one session-scoped override with the
+unchanged direct Zoom URL as `fallbackUrl`. Do not remove the fallback or copy
+the override to other sessions until the pilot has passed runtime verification.
+GA4, dashboards, Zoom-registration correlation, and bulk card migration are
+outside this pilot.
+
 ---
 
 ## 7. Known Quirks and Debt

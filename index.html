@@ -7978,7 +7978,33 @@ function populateMultiPresenters(row) {
   applyMultiPresenterAdjustments();
 }
 
-function syncSessionRegistrationPromo(row, displayUrl, displayText) {
+function getSessionRegistrationTrackingPilot(row = {}) {
+  const pilot = partnerConfigs.registrationTrackingPilot;
+  if (!pilot
+    || (pilot.partnerKey && String(activePartnerKey || '') !== String(pilot.partnerKey))
+    || String(row.uuid || '') !== String(pilot.sessionUuid || '')
+    || !pilot.trackedUrl) {
+    return null;
+  }
+
+  const directUrl = String(row.reg_link && row.reg_link.url || '').trim();
+  if (pilot.fallbackUrl && directUrl !== String(pilot.fallbackUrl).trim()) {
+    return null;
+  }
+
+  return {
+    trackedUrl: String(pilot.trackedUrl).trim(),
+    fallbackUrl: directUrl || String(pilot.fallbackUrl || '').trim(),
+  };
+}
+
+function getSessionRegistrationQrSrc(row, registrationUrl) {
+  return getSessionRegistrationTrackingPilot(row)
+    ? getSessionBackGeneratedQrSrc(registrationUrl)
+    : String(row.qr_base64 || '').trim();
+}
+
+function syncSessionRegistrationPromo(row, displayUrl, displayText, qrSrc) {
   const promoTitle = document.getElementById('session-promo-title');
   if (!promoTitle) return;
 
@@ -8012,8 +8038,8 @@ function syncSessionRegistrationPromo(row, displayUrl, displayText) {
 
   const promoQrImg = document.getElementById('session-promo-qr-img');
   const promoQrPlaceholder = document.getElementById('session-promo-qr-placeholder');
-  if (row.qr_base64) {
-    promoQrImg.src = row.qr_base64;
+  if (qrSrc) {
+    promoQrImg.src = qrSrc;
     promoQrImg.style.display = 'block';
     promoQrPlaceholder.style.display = 'none';
   } else {
@@ -8146,11 +8172,17 @@ function populateCard(row) {
     applySponsorLogos();
   }
 
+  const trackingPilot = getSessionRegistrationTrackingPilot(row);
+  const registrationUrl = trackingPilot
+    ? trackingPilot.trackedUrl
+    : ((row.short_url || '').trim() || (row.reg_link && row.reg_link.url) || '');
+  const registrationQrSrc = getSessionRegistrationQrSrc(row, registrationUrl);
+
   // QR code
   const qrImg = document.getElementById('qr-img');
   const qrFb  = document.getElementById('qr-placeholder');
-  if (row.qr_base64) {
-    qrImg.src          = row.qr_base64;
+  if (registrationQrSrc) {
+    qrImg.src          = registrationQrSrc;
     qrImg.style.display = 'block';
     qrFb.style.display  = 'none';
   } else {
@@ -8163,14 +8195,14 @@ function populateCard(row) {
   const regUrlEl = document.getElementById('register-url');
   const shortUrl = (row.short_url || '').trim();
   const rawUrl   = (row.reg_link && row.reg_link.url) ? row.reg_link.url.trim() : '';
-  const displayUrl = shortUrl || rawUrl || 'somebodytotalkto.com/register';
+  const displayUrl = trackingPilot ? trackingPilot.trackedUrl : (shortUrl || rawUrl || 'somebodytotalkto.com/register');
   let displayText = displayUrl.replace(/^https?:\/\//, '');
   // If no short URL and raw Zoom URL, truncate for readability on card
-  if (!shortUrl && displayText.length > 36) {
+  if (!trackingPilot && !shortUrl && displayText.length > 36) {
     displayText = displayText.substring(0, 33) + '…';
   }
   regUrlEl.textContent = displayText;
-  syncSessionRegistrationPromo(row, displayUrl, displayText);
+  syncSessionRegistrationPromo(row, displayUrl, displayText, registrationQrSrc);
 
   // Reveal the card and controls on first load.
   document.getElementById('controls-bar').style.display = '';

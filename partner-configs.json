@@ -1,5 +1,15 @@
 {
   "defaultPartner": "uoc",
+  "registrationTrackingPilot": {
+    "sessionUuid": "075d0ed1-293d-43ae-9ab7-7402a7ca1696",
+    "partnerKey": "houston-methodist",
+    "trackedUrl": "https://local-sttt.somebodytotalkto.com:8443/r/2E18XK0pHn59lh37G-lf4P5wCzbYBMQY9RWJK0Uk2Ak",
+    "fallbackUrl": "https://us06web.zoom.us/meeting/register/CylOj10UQoevNcpEXgBzYg",
+    "source": "Promo Card",
+    "medium": "qr",
+    "campaign": "facebook-promo-houston-methodist-2026-10-01-emotional-care",
+    "placement": "facebook-promo-registration-qr"
+  },
   "partners": {
     "vamp": {
       "label": "Vanderbilt (VAMP)",
