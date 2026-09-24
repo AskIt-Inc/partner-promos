@@ -33,7 +33,7 @@ headers="$(mktemp)"
 trap 'rm -f "$headers"' EXIT
 curl -fsS -k -D "$headers" -o /dev/null "$tracked_url"
 status="$(awk 'NR == 1 {print $2}' "$headers")"
-location="$(awk 'tolower($1) == "location:" {$1=""; sub(/^[[:space:]]+/, ""); print; exit}' "$headers")"
+location="$(awk 'tolower($1) == "location:" {$1=""; sub(/^[[:space:]]+/, ""); sub(/[[:space:]]+$/, ""); print; exit}' "$headers")"
 [[ "$status" == "302" ]] || { echo "Expected HTTP 302, got $status." >&2; exit 1; }
 [[ "$location" == "$fallback_url" ]] || { echo "Redirect destination mismatch: $location" >&2; exit 1; }
 
