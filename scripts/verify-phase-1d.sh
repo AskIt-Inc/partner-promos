@@ -42,7 +42,8 @@ grep -Fq 'const displayUrl = registrationUrl' "${INDEX_FILE}"
 
 runtime_dir="$(mktemp -d)"
 trap 'rm -rf "${runtime_dir}"' EXIT
-node "${GENERATOR}" --environment=local --output="${runtime_dir}/local.js" >/dev/null
+STTT_PUBLIC_BASE_URL="${LOCAL_BASE_URL}" \
+  node "${GENERATOR}" --environment=local --output="${runtime_dir}/local.js" >/dev/null
 node "${GENERATOR}" --check="${runtime_dir}/local.js" >/dev/null
 STTT_PUBLIC_BASE_URL="${PRODUCTION_BASE_URL}" \
   node "${GENERATOR}" --environment=production --output="${runtime_dir}/production.js" >/dev/null
