@@ -30,15 +30,15 @@ if jq -e '.registrationTrackingPilot.trackedUrl' "${CONFIG_FILE}" >/dev/null; th
   echo "Shared configuration must not store an environment-specific tracked URL." >&2
   exit 1
 fi
-if rg -n 'local-sttt\.somebodytotalkto\.com|\.ddev\.site' "${CONFIG_FILE}" >/dev/null; then
+if grep -En 'local-sttt\.somebodytotalkto\.com|\.ddev\.site' "${CONFIG_FILE}" >/dev/null; then
   echo "Shared partner configuration contains a local-only hostname." >&2
   exit 1
 fi
 
-rg -q '<script src="runtime-config.js"></script>' "${INDEX_FILE}"
-rg -q 'getSessionRegistrationTrackedUrl' "${INDEX_FILE}"
-rg -q 'getSessionRegistrationQrSrc\(row, registrationUrl\)' "${INDEX_FILE}"
-rg -q 'const displayUrl = registrationUrl' "${INDEX_FILE}"
+grep -Fq '<script src="runtime-config.js"></script>' "${INDEX_FILE}"
+grep -Fq 'getSessionRegistrationTrackedUrl' "${INDEX_FILE}"
+grep -Fq 'getSessionRegistrationQrSrc(row, registrationUrl)' "${INDEX_FILE}"
+grep -Fq 'const displayUrl = registrationUrl' "${INDEX_FILE}"
 
 runtime_dir="$(mktemp -d)"
 trap 'rm -rf "${runtime_dir}"' EXIT
