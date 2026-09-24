@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/dom-to-image-more@3.4.5/dist/dom-to-image-more.min.js"></script>
+<script src="runtime-config.js"></script>
 <style>
 /* ══════════════════════════════════════════════════
    CARD SIZE CONFIG
@@ -3897,6 +3898,7 @@ const PARTNER_CONFIG_FALLBACK = {
 let partnerConfigs = normalizePartnerConfig(PARTNER_CONFIG_FALLBACK);
 let activePartnerKey = loadSelectedPartnerKey();
 let activePartnerConfig = partnerConfigs.partners[activePartnerKey] || partnerConfigs.partners.uoc;
+const promoRuntimeConfig = window.STTT_PROMO_RUNTIME_CONFIG || {};
 const TIMEZONE_STORAGE_KEY = 'facebook_promo_card_timezone';
 const TIMEZONE_OPTIONS = {
   ET: { short: 'ET', iana: 'America/New_York', apiKey: 'ET' },
@@ -7978,14 +7980,60 @@ function populateMultiPresenters(row) {
   applyMultiPresenterAdjustments();
 }
 
+function getPromoTrackingBaseUrl() {
+  const environment = String(promoRuntimeConfig.environment || '').trim().toLowerCase();
+  const rawBaseUrl = String(promoRuntimeConfig.stttPublicBaseUrl || '').trim();
+  if (!['local', 'production'].includes(environment) || !rawBaseUrl) return '';
+
+  let parsed;
+  try {
+    parsed = new URL(rawBaseUrl);
+  } catch (error) {
+    return '';
+  }
+
+  if (parsed.protocol !== 'https:' || parsed.username || parsed.password
+    || (parsed.pathname !== '/' && parsed.pathname !== '')
+    || parsed.search || parsed.hash) {
+    return '';
+  }
+
+  const hostname = parsed.hostname.toLowerCase();
+  const localOnly = hostname === 'localhost'
+    || hostname === '::1'
+    || hostname === '0.0.0.0'
+    || hostname.startsWith('127.')
+    || hostname.startsWith('local-')
+    || hostname.endsWith('.localhost')
+    || hostname.endsWith('.local')
+    || hostname.endsWith('.test')
+    || hostname.endsWith('.ddev.site');
+  if (environment === 'production'
+    && (localOnly || parsed.origin !== 'https://somebodytotalkto.com')) {
+    return '';
+  }
+
+  return parsed.origin;
+}
+
+function getSessionRegistrationTrackedUrl(pilot = {}) {
+  const trackingKey = String(pilot.trackingKey || '').trim();
+  const baseUrl = getPromoTrackingBaseUrl();
+  if (!baseUrl || !/^[A-Za-z0-9_-]{43}$/.test(trackingKey)) return '';
+  return new URL('/r/' + trackingKey, baseUrl).toString();
+}
+
 function getSessionRegistrationTrackingPilot(row = {}) {
   const pilot = partnerConfigs.registrationTrackingPilot;
   if (!pilot
     || (pilot.partnerKey && String(activePartnerKey || '') !== String(pilot.partnerKey))
     || String(row.uuid || '') !== String(pilot.sessionUuid || '')
-    || !pilot.trackedUrl) {
+    || !pilot.trackingKey) {
     return null;
   }
+
+  const trackedUrl = getSessionRegistrationTrackedUrl(pilot);
+  if (!trackedUrl) return null;
 
   const directUrl = String(row.reg_link && row.reg_link.url || '').trim();
   if (pilot.fallbackUrl && directUrl !== String(pilot.fallbackUrl).trim()) {
@@ -7993,7 +8041,7 @@ function getSessionRegistrationTrackingPilot(row = {}) {
   }
 
   return {
-    trackedUrl: String(pilot.trackedUrl).trim(),
+    trackedUrl,
     fallbackUrl: directUrl || String(pilot.fallbackUrl || '').trim(),
   };
 }
@@ -8173,9 +8221,11 @@ function populateCard(row) {
   }
 
   const trackingPilot = getSessionRegistrationTrackingPilot(row);
+  const shortUrl = (row.short_url || '').trim();
+  const rawUrl = (row.reg_link && row.reg_link.url) ? row.reg_link.url.trim() : '';
   const registrationUrl = trackingPilot
     ? trackingPilot.trackedUrl
-    : ((row.short_url || '').trim() || (row.reg_link && row.reg_link.url) || '');
+    : (shortUrl || rawUrl || '');
   const registrationQrSrc = getSessionRegistrationQrSrc(row, registrationUrl);
 
   // QR code
@@ -8193,9 +8243,7 @@ function populateCard(row) {
   // Register URL — prefer Bitly short URL, fall back to raw Zoom URL.
   // Display strips the protocol for readability (bit.ly/xxxx).
   const regUrlEl = document.getElementById('register-url');
-  const shortUrl = (row.short_url || '').trim();
-  const rawUrl   = (row.reg_link && row.reg_link.url) ? row.reg_link.url.trim() : '';
-  const displayUrl = trackingPilot ? trackingPilot.trackedUrl : (shortUrl || rawUrl || 'somebodytotalkto.com/register');
+  const displayUrl = registrationUrl || 'somebodytotalkto.com/register';
   let displayText = displayUrl.replace(/^https?:\/\//, '');
   // If no short URL and raw Zoom URL, truncate for readability on card
   if (!trackingPilot && !shortUrl && displayText.length > 36) {
