@@ -1225,7 +1225,7 @@ body[data-partner="vamp"] .band-series-label {
 }
 .register-row {
   display: flex; align-items: center;
-  gap: 7px; margin-top: -2px;
+  gap: 7px; margin-top: -2px; min-width: 0;
 }
 .register-cta-label,
 .microsite-cta-label {
@@ -1240,6 +1240,13 @@ body[data-partner="vamp"] .band-series-label {
   font-family: monospace; letter-spacing: 0.02em;
   text-decoration: none;
   white-space: nowrap;
+}
+.register-url {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .microsite-row {
   display: flex; align-items: center;
@@ -3291,7 +3298,7 @@ body[data-partner="vamp"] .session-back-title {
 
         <div class="register-row">
           <span class="register-cta-label">Register free:</span>
-          <span class="register-url" id="register-url">somebodytotalkto.com/register</span>
+          <a class="register-url" id="register-url" href="" rel="noopener">somebodytotalkto.com/register</a>
         </div>
 
       </div>
@@ -6986,7 +6993,8 @@ async function downloadPNG() {
 /* ══════════════════════════════════════════════════
    SEARCH
    ══════════════════════════════════════════════════ */
-const SEARCH_API  = 'https://www.somebodytotalkto.com/api/spotlight/microsite/session/search';
+const SEARCH_API  = 'https://somebodytotalkto.com/api/spotlight/microsite/session/search';
+const SOURCE_CARD_TYPES = new Set(['facebook-promo', 'facebook-promo-multi', 'foundation']);
 const searchInput   = document.getElementById('session-search-input');
 const btnSearch     = document.getElementById('btn-search');
 const btnClear      = document.getElementById('btn-clear');
@@ -7050,9 +7058,28 @@ function clearResults() {
 }
 
 function getPartnerSessionsApiUrl() {
-  return activePartnerConfig.sessionsApiUrl
+  return addSourceCardType(activePartnerConfig.sessionsApiUrl
     || (activePartnerConfig.calendar && activePartnerConfig.calendar.sessionsApiUrl)
-    || '';
+    || '');
+}
+
+function getSourceCardType() {
+  const value = cardTypeSelect ? cardTypeSelect.value : '';
+  return SOURCE_CARD_TYPES.has(value) ? value : '';
+}
+
+function addSourceCardType(url) {
+  const sourceCardType = getSourceCardType();
+  if (!sourceCardType || !url) return url;
+
+  try {
+    const apiUrl = new URL(url, window.location.href);
+    apiUrl.searchParams.set('card_type', sourceCardType);
+    return apiUrl.toString();
+  } catch (error) {
+    const separator = url.includes('?') ? '&' : '?';
+    return url + separator + 'card_type=' + encodeURIComponent(sourceCardType);
+  }
 }
 
 function getSessionSortValue(row) {
@@ -7300,7 +7327,7 @@ async function runSearch() {
   setStatus('Searching…'); clearResults();
   btnSearch.disabled = true;
   try {
-    const res  = await fetch(`${SEARCH_API}?q=${encodeURIComponent(q)}`, { headers: { Accept: 'application/json' } });
+    const res  = await fetch(addSourceCardType(`${SEARCH_API}?q=${encodeURIComponent(q)}`), { headers: { Accept: 'application/json' } });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const json = await res.json();
     if (token !== searchToken) return;   // a newer request already claimed the slot — discard
@@ -7338,12 +7365,17 @@ function escapeHtml(str) {
 }
 
 async function getEnrichedSessionRow(row) {
-  if (row.headshot_base64 && row.qr_base64) return row;
+  const sourceCardType = getSourceCardType();
+  if (
+    row.headshot_base64
+    && row.qr_base64
+    && (!sourceCardType || row.card_type === sourceCardType)
+  ) return row;
 
   const query = (row.title || '').trim();
   if (!query) return row;
 
-  const res = await fetch(`${SEARCH_API}?q=${encodeURIComponent(query)}`, { headers: { Accept: 'application/json' } });
+  const res = await fetch(addSourceCardType(`${SEARCH_API}?q=${encodeURIComponent(query)}`), { headers: { Accept: 'application/json' } });
   if (!res.ok) throw new Error('HTTP ' + res.status);
 
   const json = await res.json();
@@ -7541,6 +7573,36 @@ function syncSessionRegistrationPromo(row, displayUrl, displayText) {
 
   const promoUrl = document.getElementById('session-promo-url');
   promoUrl.textContent = displayText || displayUrl.replace(/^https?:\/\//, '') || 'somebodytotalkto.com/register';
+  promoUrl.title = displayUrl;
+}
+
+const MAX_REGISTRATION_DISPLAY_LENGTH = 28;
+
+function isSharedLegacyBitlyUrl(value) {
+  return /^https?:\/\/bit\.ly\/4dUqXRm\/?$/i.test(String(value || '').trim());
+}
+
+function fitRegistrationDisplayText(value) {
+  const text = String(value || '').trim().replace(/^https?:\/\//i, '');
+  if (text.length <= MAX_REGISTRATION_DISPLAY_LENGTH) return text;
+  return text.slice(0, MAX_REGISTRATION_DISPLAY_LENGTH - 1) + '…';
+}
+
+function getRegistrationDisplayText(canonicalUrl) {
+  const value = String(canonicalUrl || '').trim();
+  if (!value) return 'somebodytotalkto.com/register';
+
+  try {
+    const parsed = new URL(value, window.location.href);
+    if (/\/r\/[A-Za-z0-9_-]+$/i.test(parsed.pathname)) {
+      const key = parsed.pathname.split('/').pop() || '';
+      return fitRegistrationDisplayText(parsed.host.replace(/^www\./i, '') + '/r/' + key.slice(0, 4) + '…');
+    }
+  } catch (error) {
+    // Fall through to the deterministic text fit for malformed or relative values.
+  }
+
+  return fitRegistrationDisplayText(value);
 }
 
 function fitSessionPromoLayout() {
@@ -7684,18 +7746,23 @@ function populateCard(row) {
     qrFb.style.display  = 'block';
   }
 
-  // Register URL — prefer Bitly short URL, fall back to raw Zoom URL.
-  // Display strips the protocol for readability (bit.ly/xxxx).
+  // Register URL — use the source-scoped STTT redirect when available.
+  // Keep the complete destination behind a compact display label so the
+  // fixed-size 4x6 and 3x5 outputs cannot clip the URL.
   const regUrlEl = document.getElementById('register-url');
-  const shortUrl = (row.short_url || '').trim();
+  const trackedUrl = (row.tracked_registration_url || '').trim();
+  const shortUrl = isSharedLegacyBitlyUrl(row.short_url) ? '' : (row.short_url || '').trim();
   const rawUrl   = (row.reg_link && row.reg_link.url) ? row.reg_link.url.trim() : '';
-  const displayUrl = shortUrl || rawUrl || 'somebodytotalkto.com/register';
-  let displayText = displayUrl.replace(/^https?:\/\//, '');
-  // If no short URL and raw Zoom URL, truncate for readability on card
-  if (!shortUrl && displayText.length > 36) {
-    displayText = displayText.substring(0, 33) + '…';
-  }
+  const displayUrl = trackedUrl || shortUrl || rawUrl || 'somebodytotalkto.com/register';
+  const displayText = getRegistrationDisplayText(displayUrl);
   regUrlEl.textContent = displayText;
+  regUrlEl.title = displayUrl;
+  regUrlEl.setAttribute('aria-label', displayUrl);
+  if (/^https?:\/\//i.test(displayUrl)) {
+    regUrlEl.href = displayUrl;
+  } else {
+    regUrlEl.removeAttribute('href');
+  }
   syncSessionRegistrationPromo(row, displayUrl, displayText);
 
   // Reveal the card and controls on first load.
