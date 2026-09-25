@@ -37,6 +37,7 @@ fi
 
 grep -Fq '<script src="runtime-config.js"></script>' "${INDEX_FILE}"
 grep -Fq 'getSessionRegistrationTrackedUrl' "${INDEX_FILE}"
+grep -Fq 'getApprovedRegistrationShortUrl' "${INDEX_FILE}"
 grep -Fq 'getSessionRegistrationQrSrc(row, registrationUrl)' "${INDEX_FILE}"
 grep -Fq 'const displayUrl = registrationUrl' "${INDEX_FILE}"
 

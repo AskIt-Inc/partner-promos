@@ -1279,8 +1279,12 @@ body[data-partner="vamp"] .band-series-label {
   flex: 1 1 auto;
   min-width: 0;
   max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 9px;
+  line-height: 1.15;
+  overflow: visible;
+  overflow-wrap: anywhere;
+  text-overflow: clip;
+  white-space: normal;
 }
 .microsite-row {
   display: flex; align-items: center;
@@ -5981,8 +5985,15 @@ function applySideFontSizes() {
 
 function applyDescriptionFontSize() {
   const descEl = document.getElementById('session-desc');
-  if (descEl) descEl.style.fontSize = selectedDescFontSize + 'px';
+  if (descEl) {
+    const requestedSize = Number(selectedDescFontSize) || Number(DEFAULT_DESC_FONT_SIZE);
+    const appliedSize = surface.classList.contains('size-3x5')
+      ? requestedSize * (9.5 / Number(DEFAULT_DESC_FONT_SIZE))
+      : requestedSize;
+    descEl.style.fontSize = appliedSize + 'px';
+  }
   fitMultiPresenterDescription();
+  fitSinglePresenterDescription();
   applyBackCardFontSizes();
 }
 
@@ -6146,6 +6157,24 @@ function fitMultiPresenterDescription() {
   const sectionBottom = section.getBoundingClientRect().bottom - 2;
   while (content.getBoundingClientRect().bottom > sectionBottom && appliedSize > 8.5) {
     appliedSize -= 0.5;
+    desc.style.fontSize = appliedSize + 'px';
+  }
+  desc.dataset.appliedFontSize = String(appliedSize);
+}
+
+function fitSinglePresenterDescription() {
+  if (surface.classList.contains('layout-facebook-multi')) return;
+  const section = surface.querySelector('.presenter-section');
+  const content = section && section.querySelector('.content-col');
+  const desc = content && content.querySelector('.session-desc');
+  if (!section || !content || !desc) return;
+
+  let appliedSize = Number.parseFloat(desc.style.fontSize) || Number(DEFAULT_DESC_FONT_SIZE);
+  const sectionRect = section.getBoundingClientRect();
+  if (!sectionRect.height) return;
+  const sectionBottom = sectionRect.bottom - 2;
+  while (content.getBoundingClientRect().bottom > sectionBottom && appliedSize > 8.5) {
+    appliedSize = Math.max(8.5, appliedSize - 0.5);
     desc.style.fontSize = appliedSize + 'px';
   }
   desc.dataset.appliedFontSize = String(appliedSize);
@@ -7230,6 +7259,7 @@ function setSize(s) {
   }
   updateControlAvailability();
   updateSizeLabel();
+  applyDescriptionFontSize();
   applyHeadshotSize();
 }
 
@@ -8052,6 +8082,25 @@ function getSessionRegistrationTrackedUrl(pilot = {}) {
   return new URL('/r/' + trackingKey, baseUrl).toString();
 }
 
+function getApprovedRegistrationShortUrl(value) {
+  const rawValue = String(value || '').trim();
+  const baseUrl = getPromoTrackingBaseUrl();
+  if (!rawValue || !baseUrl) return '';
+
+  try {
+    const parsed = new URL(rawValue, window.location.href);
+    if (parsed.origin !== baseUrl || parsed.username || parsed.password
+      || parsed.search || parsed.hash
+      || !/^\/s\/[A-Za-z0-9_-]+\/?$/.test(parsed.pathname)) {
+      return '';
+    }
+    parsed.pathname = parsed.pathname.replace(/\/$/, '');
+    return parsed.toString();
+  } catch (error) {
+    return '';
+  }
+}
+
 function getSessionRegistrationTrackingPilot(row = {}) {
   const pilot = partnerConfigs.registrationTrackingPilot;
   if (!pilot
@@ -8076,6 +8125,8 @@ function getSessionRegistrationTrackingPilot(row = {}) {
 }
 
 function getSessionRegistrationQrSrc(row, registrationUrl) {
+  const approvedShortUrl = getApprovedRegistrationShortUrl(registrationUrl);
+  if (approvedShortUrl) return getSessionBackGeneratedQrSrc(approvedShortUrl);
   const qrBase64 = String(row.qr_base64 || '').trim();
   return qrBase64 || (getSessionRegistrationTrackingPilot(row)
     ? getSessionBackGeneratedQrSrc(registrationUrl)
@@ -8100,6 +8151,9 @@ function getRegistrationDisplayText(canonicalUrl) {
 
   try {
     const parsed = new URL(value, window.location.href);
+    if (/^\/s\/[A-Za-z0-9_-]+\/?$/i.test(parsed.pathname) && !parsed.search && !parsed.hash) {
+      return parsed.host.replace(/^www\./i, '') + parsed.pathname.replace(/\/$/, '');
+    }
     if (/\/r\/[A-Za-z0-9_-]+$/i.test(parsed.pathname)) {
       const key = parsed.pathname.split('/').pop() || '';
       return fitRegistrationDisplayText(parsed.host.replace(/^www\./i, '') + '/r/' + key.slice(0, 4) + '…');
@@ -8194,7 +8248,7 @@ function fitSessionPromoLayout() {
      description     → #session-desc
      headshot_base64 → #headshot-img
      qr_base64       → #qr-img
-     short_url       → #register-url (display only, protocol stripped)
+     short_url       → #register-url and generated QR when it is an approved first-party /s/ alias
    ══════════════════════════════════════════════════ */
 function populateCard(row) {
   currentSessionRow = row;
@@ -8281,11 +8335,13 @@ function populateCard(row) {
 
   const trackingPilot = getSessionRegistrationTrackingPilot(row);
   const trackedUrl = String(row.tracked_registration_url || '').trim();
-  const shortUrl = isSharedLegacyBitlyUrl(row.short_url) ? '' : (row.short_url || '').trim();
+  const shortUrl = isSharedLegacyBitlyUrl(row.short_url)
+    ? ''
+    : getApprovedRegistrationShortUrl(row.short_url);
   const rawUrl = (row.reg_link && row.reg_link.url) ? row.reg_link.url.trim() : '';
-  const registrationUrl = trackedUrl || (trackingPilot
+  const registrationUrl = shortUrl || trackedUrl || (trackingPilot
     ? trackingPilot.trackedUrl
-    : (shortUrl || rawUrl || ''));
+    : (rawUrl || ''));
   const registrationQrSrc = getSessionRegistrationQrSrc(row, registrationUrl);
 
   // QR code
@@ -8300,9 +8356,9 @@ function populateCard(row) {
     qrFb.style.display  = 'block';
   }
 
-  // Register URL — use the source-scoped STTT redirect when available.
-  // Keep the complete destination behind a compact display label so the
-  // fixed-size 4x6 and 3x5 outputs cannot clip the URL.
+  // Register URL — prefer the approved first-party alias. Its /s/ redirect
+  // resolves through the source-scoped /r/ link, preserving click and GA4
+  // attribution while keeping the visible URL and QR compact.
   const regUrlEl = document.getElementById('register-url');
   const displayUrl = registrationUrl || 'somebodytotalkto.com/register';
   const displayText = getRegistrationDisplayText(displayUrl);
@@ -8320,6 +8376,7 @@ function populateCard(row) {
   document.getElementById('controls-bar').style.display = '';
   document.getElementById('preview-wrapper').style.display = '';
   updateControlAvailability();
+  applyDescriptionFontSize();
   fitBandTitle();
   fitSessionPromoLayout();
 }

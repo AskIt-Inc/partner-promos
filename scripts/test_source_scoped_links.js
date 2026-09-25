@@ -4,11 +4,39 @@ const fs = require('fs');
 const source = fs.readFileSync('index.html', 'utf8');
 
 assert(source.includes('id="register-url" href=""'), 'registration output must be a hyperlink');
-assert(source.includes('overflow: hidden;'), 'registration output must constrain overflow');
+assert(source.includes('overflow-wrap: anywhere;'), 'registration output must wrap instead of clipping');
+assert(source.includes('text-overflow: clip;'), 'registration output must not use an ellipsis');
 assert(source.includes("new Set(['facebook-promo', 'facebook-promo-multi', 'foundation'])"));
 assert(source.includes('row.tracked_registration_url'), 'renderer must prefer the source-scoped redirect');
 assert(source.includes('4dUqXRm'), 'the known shared legacy Bitly link must be rejected');
+assert(source.includes('const registrationUrl = shortUrl || trackedUrl || (trackingPilot'), 'renderer must prefer the approved alias');
+assert(source.includes('getApprovedRegistrationShortUrl(registrationUrl)'), 'QR generation must prefer the approved alias');
 assert(source.includes('addSourceCardType(getSessionApiUrl(getAllCalendarSessionsApiUrl'), 'full session detail must include source card type');
+assert(source.includes('fitSinglePresenterDescription();'), 'single-presenter cards must keep the registration row inside the card');
+
+const baseStart = source.indexOf('function getPromoTrackingBaseUrl');
+const baseEnd = source.indexOf('function getSessionRegistrationTrackedUrl', baseStart);
+const shortStart = source.indexOf('function getApprovedRegistrationShortUrl');
+const shortEnd = source.indexOf('function getSessionRegistrationTrackingPilot', shortStart);
+assert(baseStart >= 0 && baseEnd > baseStart, 'tracking base helper must be present');
+assert(shortStart >= 0 && shortEnd > shortStart, 'approved short-link helper must be present');
+
+const getApprovedShortUrl = new Function(
+  'window',
+  'promoRuntimeConfig',
+  `${source.slice(baseStart, baseEnd)}
+   ${source.slice(shortStart, shortEnd)}
+   return getApprovedRegistrationShortUrl;`,
+)(
+  { location: { href: 'https://askit-inc.github.io/partner-promos/' } },
+  { environment: 'production', stttPublicBaseUrl: 'https://somebodytotalkto.com' },
+);
+
+const approvedAlias = 'https://somebodytotalkto.com/s/8592a7f4c6';
+assert.strictEqual(getApprovedShortUrl(approvedAlias), approvedAlias);
+assert.strictEqual(getApprovedShortUrl('https://somebodytotalkto.com/r/PIdPiaUemocJlYbn-kavqTzLdUPFNYI4WNngIVWf0Yo'), '');
+assert.strictEqual(getApprovedShortUrl('https://bit.ly/4dUqXRm'), '');
+assert.strictEqual(getApprovedShortUrl('https://example.com/s/8592a7f4c6'), '');
 
 const fitStart = source.indexOf('function fitRegistrationDisplayText');
 const fitEnd = source.indexOf('function getRegistrationDisplayText', fitStart);
@@ -31,6 +59,7 @@ const foundation = 'https://somebodytotalkto.com/r/91jaNGQt5zgWvl8PGWkQFF_lVuVHu
 const facebookLabel = getDisplay(facebook);
 const foundationLabel = getDisplay(foundation);
 
+assert.strictEqual(getDisplay(approvedAlias), 'somebodytotalkto.com/s/8592a7f4c6');
 assert.strictEqual(facebookLabel, 'somebodytotalkto.com/r/bTsx…');
 assert.strictEqual(foundationLabel, 'somebodytotalkto.com/r/91ja…');
 assert.notStrictEqual(facebookLabel, foundationLabel);
