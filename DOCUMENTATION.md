@@ -284,9 +284,9 @@ Maps API response fields onto DOM elements. Detailed field-by-field mapping:
 | selected timezone value | `#tz-row`             | Displays only the timezone selected in `#timezone-select`; defaults to Eastern Time, persists in `localStorage`, and converts from ET for zones missing from the API response |
 | `row.description`      | `#session-desc`       | HTML-stripped via temp `<div>.textContent`                     |
 | `row.headshot_base64`  | `#headshot-img`       | Set as `src`; toggles img/fallback visibility                  |
-| `row.qr_base64`        | `#qr-img`             | Set as `src`; toggles img/placeholder visibility               |
-| `row.tracked_registration_url` | `#register-url` | Preferred source-scoped STTT redirect; full URL remains in the hyperlink/title and QR, while the visible label is compact and fit to the card |
-| `row.short_url`        | `#register-url`       | Compatibility fallback only; the known shared legacy Bitly link is ignored |
+| `row.qr_base64`        | `#qr-img`             | Fallback asset when no canonical URL is available; tracked promo cards generate the QR from `tracked_registration_url` |
+| `row.tracked_registration_url` | `#register-url` | Canonical source-scoped STTT target used for the hyperlink and generated QR payload; never printed in full |
+| `row.short_url`        | `#register-url`       | Validated first-party `/s/<alias>` display URL; query-string tracking metadata is stripped from the printed label only |
 | Static UChicago link   | `#microsite-url`      | Displays `uchicago.oneamyloidosisvoice.com`; hidden on classic layout |
 | selected partner `sessionBack` config | `.session-back-side` | Updates the Session Registration Promo Card back side with partner-specific series month, feature title, microsite URL, QR image, and feature logo. Missing configuration uses neutral copy and hides the QR area; it never reuses another partner's data. |
 
@@ -328,7 +328,7 @@ Expected shape from `GET /api/spotlight/microsite/session/search?q=&card_type=`:
       "qr_base64":       "data:image/png;base64,…",
       "tracked_registration_url": "https://somebodytotalkto.com/r/source-scoped-key",
       "card_type":      "facebook-promo",
-      "short_url":       "bit.ly/sttt-xyz",
+      "short_url":       "https://somebodytotalkto.com/s/ed27f94327?utm_source=promo-card&sttt_tracking_link_id=278&short_link_alias=ed27f94327",
       "reg_link": {
         "url": "https://zoom.us/webinar/register/…"
       }
@@ -340,8 +340,8 @@ Expected shape from `GET /api/spotlight/microsite/session/search?q=&card_type=`:
 **Notes:**
 - `headshot_base64` and `qr_base64` include the `data:image/…;base64,` prefix — set directly as `src`.
 - `description` may contain HTML markup; the card strips it.
-- `tracked_registration_url` is the source-scoped registration authority for promo cards; `short_url` is optional compatibility data and falls back only when the tracked URL is absent.
-- The visible registration label is capped for fixed-size output; the full source-scoped URL remains the anchor `href`, `title`, and QR destination.
+- `tracked_registration_url` is the source-scoped registration authority for promo cards; `short_url` supplies the readable first-party `/s/<alias>` label when present.
+- The visible registration label is presentation-only and never includes `/r/` paths, UTM parameters, or internal tracking parameters. If the API does not provide a validated short alias, the card prints `Use the QR code to register` while retaining the canonical target in the hyperlink and QR payload.
 - Only `presenters[0]` is used; multi-presenter sessions show only the first presenter.
 - `facebook-promo-multi` keeps the standard Facebook Promo date, description, registration, QR, and export dimensions unchanged. Two-presenter sessions use the left stacked profile column. Three-presenter sessions switch to a full-width horizontal profile rail above the session copy and QR so every profile remains visible without clipping the fixed-height card. Each profile uses `presenters[0]`, `presenters[1]`, or `presenters[2]` and can supply a photo on the presenter record (`headshot_base64`, `headshot_url`, `photo_url`, `image_url`, or equivalent). Set **Show sponsors** to **Yes** to display the Sponsor controls and sponsor strip, or **No** to remove the strip from the card. Sponsor controls use the same live employer-logo taxonomy API as the header-logo controls; they default to Alnylam, BridgeBio, and Immix Biopharma when those records are available. Use **+ Add sponsor** to add further logos at the bottom of the card.
 - The existing **Profile Image Size** control updates both multi-presenter headshots together. The multi-presenter version uses a proportionally smaller size so both portraits remain inside the fixed left column.
