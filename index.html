@@ -334,7 +334,7 @@ body {
   letter-spacing: 0.02em;
 }
 body[data-partner="vamp"] .calendar-band-eyebrow-text {
-  color: #FFD84D;
+  color: #FFE8A3;
 }
 .calendar-band-title {
   font-size: var(--calendar-band-title-size);
@@ -431,7 +431,7 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
   line-height: 1.1;
 }
 body[data-partner="vamp"] .calendar-chip-month {
-  color: #FFD84D;
+  color: #FFE8A3;
 }
 .calendar-chip-day {
   font-size: 16px;
@@ -533,6 +533,8 @@ body[data-partner="vamp"] .calendar-chip-month {
   font-weight: 700;
   color: #333;
   line-height: 1.15;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .calendar-footer-disclaimer {
   font-size: 7px;
@@ -823,6 +825,8 @@ body[data-partner="vamp"] .coming-soon-program-name {
   font-family: monospace;
   font-size: 12px;
   letter-spacing: 0.02em;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .coming-soon-qr-block {
   display: flex;
@@ -1273,7 +1277,9 @@ body[data-partner="vamp"] .band-series-label {
   border-radius: 4px; padding: 2px 9px;
   font-family: monospace; letter-spacing: 0.02em;
   text-decoration: none;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .register-url {
   flex: 1 1 auto;
@@ -1282,9 +1288,7 @@ body[data-partner="vamp"] .band-series-label {
   font-size: 9px;
   line-height: 1.15;
   overflow: visible;
-  overflow-wrap: anywhere;
   text-overflow: clip;
-  white-space: normal;
 }
 .microsite-row {
   display: flex; align-items: center;
@@ -1496,6 +1500,10 @@ body[data-partner="vamp"] .microsite-url {
 .sponsor-logo { display: none; width: 78px; height: 23px; object-fit: contain; }
 .sponsor-logo.visible { display: block; }
 .print-surface.size-3x5.layout-facebook-multi .presenter-section { grid-template-columns: 76px 1fr 68px; }
+.print-surface.size-3x5.layout-facebook-multi.multi-presenter-count-3 .presenter-section {
+  grid-template-columns: minmax(0, 1fr) 68px;
+  grid-template-rows: auto minmax(0, 1fr);
+}
 .print-surface.size-3x5.layout-facebook-multi .multi-presenter-card { grid-template-columns: 42px minmax(0, 1fr); column-gap: 4px; }
 .print-surface.size-3x5.layout-facebook-multi .multi-presenter-card .headshot-wrap { width: 42px; height: 42px; }
 .print-surface.size-3x5.layout-facebook-multi .multi-presenter-card .presenter-name { font-size: 8px; }
@@ -1649,7 +1657,9 @@ body[data-partner="vamp"] .microsite-url {
   border-radius: 4px;
   padding: 3px 10px;
   font-family: monospace;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .program-back-qr {
   display: flex;
@@ -5094,13 +5104,31 @@ function applyPartnerTheme() {
   updateSizeLabel();
 }
 
+function getReadableDisplayUrl(value) {
+  const rawValue = String(value || '').trim();
+  if (!rawValue) return '';
+
+  try {
+    const candidate = /^https?:\/\//i.test(rawValue) ? rawValue : 'https://' + rawValue;
+    const parsed = new URL(candidate, window.location.href);
+    const host = parsed.host.replace(/^www\./i, '');
+    const path = parsed.pathname.replace(/\/+$/, '');
+    return host + (path && path !== '/' ? path : '');
+  } catch (error) {
+    return rawValue
+      .replace(/^https?:\/\//i, '')
+      .split(/[?#]/, 1)[0]
+      .replace(/\/+$/, '');
+  }
+}
+
 function getGeneratedComingSoonConfig() {
   const partner = activePartnerConfig || {};
   const label = partner.label || 'Partner';
   const featureName = label + ' Amyloidosis Program';
   const link = partner.micrositeUrl || '';
   const fullLink = /^https?:\/\//i.test(link) ? link : (link ? 'https://' + link : '');
-  const displayLink = link.replace(/^https?:\/\//i, '').replace(/\/$/, '');
+  const displayLink = getReadableDisplayUrl(link);
 
   return {
     // This card is a single approved template. Only the selected partner's
@@ -5141,7 +5169,7 @@ function syncComingSoonMicrosite(partnerKey) {
     if (partnerKey !== activePartnerKey) return;
 
     if (data.micrositeUrl) {
-      const link = data.micrositeUrl.replace(/^https?:\/\//i, '').replace(/\/$/, '');
+      const link = getReadableDisplayUrl(data.micrositeUrl);
       const url = /^https?:\/\//i.test(data.micrositeUrl) ? data.micrositeUrl : 'https://' + data.micrositeUrl;
       const qrAlt = 'Scan to visit ' + link;
       const linkElement = document.getElementById('coming-link');
@@ -5333,6 +5361,7 @@ function getCalendarConfig() {
     ...CALENDAR_DEFAULT_CONFIG,
     ...calendar,
     programTitle: (activePartnerConfig.label || 'Partner') + ' Amyloidosis Program',
+    micrositeUrl: calendar.micrositeUrl || activePartnerConfig.micrositeUrl || '',
     sessionsApiUrl,
     profilesApiUrl: calendar.profilesApiUrl || getProfilesApiUrlForSessions(sessionsApiUrl)
   };
@@ -5456,7 +5485,7 @@ function syncCalendarCard() {
   const root = document.documentElement;
   root.style.setProperty('--calendar-primary', colors.primary || '#006E8E');
   root.style.setProperty('--calendar-border', colors.borderAccent || '#B9DEE6');
-  root.style.setProperty('--calendar-accent', colors.accent || '#FFE8A3');
+  root.style.setProperty('--calendar-accent', '#FFE8A3');
   root.style.setProperty('--calendar-text-accent', '#0057B8');
   applyCalendarFontSizes();
   const setImg = (id, src, alt) => {
@@ -5500,7 +5529,7 @@ function syncCalendarCard() {
   setImg('calendar-subscribe-qr-code', cfg.qrSrc, cfg.qrAlt);
   setText('calendar-series-label', cfg.seriesLabel);
   setText('calendar-program-title', cfg.programTitle);
-  setText('calendar-microsite-url', cfg.micrositeUrl);
+  setText('calendar-microsite-url', getReadableDisplayUrl(cfg.micrositeUrl));
   updateCalendarTimezoneDisplay();
 
   if (isCalendarCardLayout() && !calendarSessionsLoaded) {
@@ -6511,12 +6540,12 @@ function syncPartnerBackEmployerData() {
   getPartnerBackEmployerData(partnerKey).then(data => {
     if (partnerKey !== activePartnerKey) return;
     if (data.micrositeUrl) {
-      setSessionBackText('session-back-link', data.micrositeUrl.replace(/^https?:\/\//i, '').replace(/\/$/, ''));
+      setSessionBackText('session-back-link', getReadableDisplayUrl(data.micrositeUrl));
       const configuredQr = getSessionBackConfig().qrSrc;
       if (!configuredQr) {
         setSessionBackQr(
           getSessionBackGeneratedQrSrc(data.micrositeUrl),
-          'Scan to visit ' + data.micrositeUrl
+          'Scan to visit ' + getReadableDisplayUrl(data.micrositeUrl)
         );
       }
     }
@@ -6571,7 +6600,7 @@ function syncSessionBackContent() {
   setText('session-back-feature-program', cfg.featureProgram || '');
   setText('session-back-eyebrow', cfg.eyebrow);
   renderSessionBackSeriesMonth(cfg, cfg.seriesDate);
-  setText('session-back-link', cfg.linkText);
+  setText('session-back-link', getReadableDisplayUrl(cfg.linkText));
   syncPartnerBackSeriesMonth(cfg);
   syncPartnerBackEmployerData();
 
@@ -8082,23 +8111,50 @@ function getSessionRegistrationTrackedUrl(pilot = {}) {
   return new URL('/r/' + trackingKey, baseUrl).toString();
 }
 
-function getApprovedRegistrationShortUrl(value) {
+function getApprovedRegistrationShortUrl(value, canonicalUrl = '') {
   const rawValue = String(value || '').trim();
-  const baseUrl = getPromoTrackingBaseUrl();
-  if (!rawValue || !baseUrl) return '';
+  if (!rawValue) return '';
+
+  const allowedOrigins = new Set(['https://somebodytotalkto.com']);
+  const configuredOrigin = getPromoTrackingBaseUrl();
+  if (configuredOrigin) allowedOrigins.add(configuredOrigin);
+
+  let canonicalOrigin = '';
+  try {
+    canonicalOrigin = new URL(String(canonicalUrl || '').trim(), window.location.href).origin;
+  } catch (error) {
+    canonicalOrigin = '';
+  }
 
   try {
     const parsed = new URL(rawValue, window.location.href);
-    if (parsed.origin !== baseUrl || parsed.username || parsed.password
-      || parsed.search || parsed.hash
+    if ((!allowedOrigins.has(parsed.origin) && parsed.origin !== canonicalOrigin)
+      || parsed.username || parsed.password
       || !/^\/s\/[A-Za-z0-9_-]+\/?$/.test(parsed.pathname)) {
       return '';
     }
     parsed.pathname = parsed.pathname.replace(/\/$/, '');
+    parsed.search = '';
+    parsed.hash = '';
     return parsed.toString();
   } catch (error) {
     return '';
   }
+}
+
+function getRegistrationShortUrl(row = {}, canonicalUrl = '') {
+  const candidates = [
+    row.short_url,
+    row.display_url,
+    row.displayUrl,
+    row.registration_short_url,
+    row.registration_display_url
+  ];
+  for (const candidate of candidates) {
+    const approved = getApprovedRegistrationShortUrl(candidate, canonicalUrl);
+    if (approved) return approved;
+  }
+  return '';
 }
 
 function getSessionRegistrationTrackingPilot(row = {}) {
@@ -8124,45 +8180,33 @@ function getSessionRegistrationTrackingPilot(row = {}) {
   };
 }
 
-function getSessionRegistrationQrSrc(row, registrationUrl) {
-  const approvedShortUrl = getApprovedRegistrationShortUrl(registrationUrl);
-  if (approvedShortUrl) return getSessionBackGeneratedQrSrc(approvedShortUrl);
-  const qrBase64 = String(row.qr_base64 || '').trim();
-  return qrBase64 || (getSessionRegistrationTrackingPilot(row)
-    ? getSessionBackGeneratedQrSrc(registrationUrl)
-    : '');
-}
-
-const MAX_REGISTRATION_DISPLAY_LENGTH = 28;
-
-function isSharedLegacyBitlyUrl(value) {
-  return /^https?:\/\/bit\.ly\/4dUqXRm\/?$/i.test(String(value || '').trim());
-}
-
-function fitRegistrationDisplayText(value) {
-  const text = String(value || '').trim().replace(/^https?:\/\//i, '');
-  if (text.length <= MAX_REGISTRATION_DISPLAY_LENGTH) return text;
-  return text.slice(0, MAX_REGISTRATION_DISPLAY_LENGTH - 1) + '…';
-}
-
-function getRegistrationDisplayText(canonicalUrl) {
-  const value = String(canonicalUrl || '').trim();
-  if (!value) return 'somebodytotalkto.com/register';
-
-  try {
-    const parsed = new URL(value, window.location.href);
-    if (/^\/s\/[A-Za-z0-9_-]+\/?$/i.test(parsed.pathname) && !parsed.search && !parsed.hash) {
-      return parsed.host.replace(/^www\./i, '') + parsed.pathname.replace(/\/$/, '');
-    }
-    if (/\/r\/[A-Za-z0-9_-]+$/i.test(parsed.pathname)) {
-      const key = parsed.pathname.split('/').pop() || '';
-      return fitRegistrationDisplayText(parsed.host.replace(/^www\./i, '') + '/r/' + key.slice(0, 4) + '…');
-    }
-  } catch (error) {
-    // Fall through to the deterministic text fit for malformed or relative values.
+function getSessionRegistrationQrSrc(row, canonicalUrl) {
+  if (String(canonicalUrl || '').trim()) {
+    return getSessionBackGeneratedQrSrc(canonicalUrl);
   }
+  const qrBase64 = String(row.qr_base64 || '').trim();
+  return qrBase64;
+}
 
-  return fitRegistrationDisplayText(value);
+const SHORT_LINK_UNAVAILABLE = 'Use the QR code to register';
+
+function getRegistrationDisplayText(shortUrl) {
+  const approvedShortUrl = getApprovedRegistrationShortUrl(shortUrl);
+  return approvedShortUrl ? getReadableDisplayUrl(approvedShortUrl) : '';
+}
+
+function renderRegistrationDisplayText(element, displayText) {
+  if (!element) return;
+  element.textContent = '';
+  const text = String(displayText || '');
+  const boundary = text.indexOf('/s/');
+  if (boundary < 0) {
+    element.append(document.createTextNode(text));
+    return;
+  }
+  element.append(document.createTextNode(text.slice(0, boundary)));
+  element.append(document.createElement('wbr'));
+  element.append(document.createTextNode(text.slice(boundary)));
 }
 
 function syncSessionRegistrationPromo(row, displayUrl, displayText, qrSrc) {
@@ -8209,7 +8253,8 @@ function syncSessionRegistrationPromo(row, displayUrl, displayText, qrSrc) {
   }
 
   const promoUrl = document.getElementById('session-promo-url');
-  promoUrl.textContent = displayText || displayUrl.replace(/^https?:\/\//, '') || 'somebodytotalkto.com/register';
+  promoUrl.textContent = displayText || SHORT_LINK_UNAVAILABLE;
+  promoUrl.title = displayUrl || SHORT_LINK_UNAVAILABLE;
 }
 
 function fitSessionPromoLayout() {
@@ -8248,7 +8293,8 @@ function fitSessionPromoLayout() {
      description     → #session-desc
      headshot_base64 → #headshot-img
      qr_base64       → #qr-img
-     short_url       → #register-url and generated QR when it is an approved first-party /s/ alias
+     short_url       → #register-url as a readable /s/ alias
+     tracked_registration_url → the actual click target and QR payload
    ══════════════════════════════════════════════════ */
 function populateCard(row) {
   currentSessionRow = row;
@@ -8291,9 +8337,9 @@ function populateCard(row) {
   if (isPartnerOptionalCard()) {
     updateHeaderLogos();
   } else if (hasSelectedPartner() && activePartnerConfig.partnerLogo) {
-    uocPill.classList.add('visible');
+    if (uocPill) uocPill.classList.add('visible');
     applyHeaderLogoOverrides();
-  } else {
+  } else if (uocPill) {
     uocPill.classList.remove('visible');
   }
 
@@ -8335,14 +8381,12 @@ function populateCard(row) {
 
   const trackingPilot = getSessionRegistrationTrackingPilot(row);
   const trackedUrl = String(row.tracked_registration_url || '').trim();
-  const shortUrl = isSharedLegacyBitlyUrl(row.short_url)
-    ? ''
-    : getApprovedRegistrationShortUrl(row.short_url);
   const rawUrl = (row.reg_link && row.reg_link.url) ? row.reg_link.url.trim() : '';
-  const registrationUrl = shortUrl || trackedUrl || (trackingPilot
+  const canonicalUrl = trackedUrl || (trackingPilot
     ? trackingPilot.trackedUrl
     : (rawUrl || ''));
-  const registrationQrSrc = getSessionRegistrationQrSrc(row, registrationUrl);
+  const shortDisplayUrl = getRegistrationShortUrl(row, canonicalUrl);
+  const registrationQrSrc = getSessionRegistrationQrSrc(row, canonicalUrl);
 
   // QR code
   const qrImg = document.getElementById('qr-img');
@@ -8356,21 +8400,20 @@ function populateCard(row) {
     qrFb.style.display  = 'block';
   }
 
-  // Register URL — prefer the approved first-party alias. Its /s/ redirect
-  // resolves through the source-scoped /r/ link, preserving click and GA4
-  // attribution while keeping the visible URL and QR compact.
+  // Register URL — print only the approved first-party alias. The canonical
+  // tracked URL remains the actual click target and QR payload.
   const regUrlEl = document.getElementById('register-url');
-  const displayUrl = registrationUrl || 'somebodytotalkto.com/register';
-  const displayText = getRegistrationDisplayText(displayUrl);
-  regUrlEl.textContent = displayText;
-  regUrlEl.title = displayUrl;
-  regUrlEl.setAttribute('aria-label', displayUrl);
-  if (/^https?:\/\//i.test(displayUrl)) {
-    regUrlEl.href = displayUrl;
+  const displayText = getRegistrationDisplayText(shortDisplayUrl) || SHORT_LINK_UNAVAILABLE;
+  renderRegistrationDisplayText(regUrlEl, displayText);
+  regUrlEl.classList.toggle('is-unavailable', !shortDisplayUrl);
+  regUrlEl.title = canonicalUrl || 'Registration attribution link unavailable';
+  regUrlEl.setAttribute('aria-label', shortDisplayUrl ? 'Register at ' + getReadableDisplayUrl(shortDisplayUrl) : SHORT_LINK_UNAVAILABLE);
+  if (canonicalUrl) {
+    regUrlEl.href = canonicalUrl;
   } else {
     regUrlEl.removeAttribute('href');
   }
-  syncSessionRegistrationPromo(row, displayUrl, displayText, registrationQrSrc);
+  syncSessionRegistrationPromo(row, canonicalUrl, displayText, registrationQrSrc);
 
   // Reveal the card and controls on first load.
   document.getElementById('controls-bar').style.display = '';
