@@ -38,8 +38,10 @@ fi
 grep -Fq '<script src="runtime-config.js"></script>' "${INDEX_FILE}"
 grep -Fq 'getSessionRegistrationTrackedUrl' "${INDEX_FILE}"
 grep -Fq 'getApprovedRegistrationShortUrl' "${INDEX_FILE}"
-grep -Fq 'getSessionRegistrationQrSrc(row, canonicalUrl)' "${INDEX_FILE}"
-grep -Fq 'const shortDisplayUrl = getRegistrationShortUrl(row, canonicalUrl)' "${INDEX_FILE}"
+grep -Fq 'getSessionRegistrationQrSrc(row, canonicalRegistrationUrl)' "${INDEX_FILE}"
+grep -Fq 'const displayText = getRegistrationDisplayText(row)' "${INDEX_FILE}"
+grep -Fq "regUrlEl.removeAttribute('href')" "${INDEX_FILE}"
+grep -Fq 'regUrlEl.dataset.canonicalUrl = canonicalRegistrationUrl' "${INDEX_FILE}"
 
 runtime_dir="$(mktemp -d)"
 trap 'rm -rf "${runtime_dir}"' EXIT
