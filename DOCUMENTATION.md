@@ -284,9 +284,9 @@ Maps API response fields onto DOM elements. Detailed field-by-field mapping:
 | selected timezone value | `#tz-row`             | Displays only the timezone selected in `#timezone-select`; defaults to Eastern Time, persists in `localStorage`, and converts from ET for zones missing from the API response |
 | `row.description`      | `#session-desc`       | HTML-stripped via temp `<div>.textContent`                     |
 | `row.headshot_base64`  | `#headshot-img`       | Set as `src`; toggles img/fallback visibility                  |
-| `row.qr_base64`        | `#qr-img`             | Fallback asset when no canonical URL is available; tracked promo cards generate the QR from `tracked_registration_url` |
-| `row.tracked_registration_url` | `#register-url` | Canonical source-scoped STTT target used for the hyperlink and generated QR payload; never printed in full |
-| `row.short_url`        | `#register-url`       | Validated first-party `/s/<alias>` display URL; query-string tracking metadata is stripped from the printed label only |
+| `row.qr_base64`        | `#qr-img`             | Set as `src`; toggles img/placeholder visibility               |
+| `row.tracked_registration_url` | QR payload / `data-canonical-url` | Full source-scoped STTT redirect, including attribution query values; never printed or made clickable |
+| `row.short_url`, `row.display_url` | `#register-url` | Short readable print label only; first-party `/s/<alias>` values have query parameters removed, while `/r` paths and long direct URLs are hidden behind the neutral registration label |
 | Static UChicago link   | `#microsite-url`      | Displays `uchicago.oneamyloidosisvoice.com`; hidden on classic layout |
 | selected partner `sessionBack` config | `.session-back-side` | Updates the Session Registration Promo Card back side with partner-specific series month, feature title, microsite URL, QR image, and feature logo. Missing configuration uses neutral copy and hides the QR area; it never reuses another partner's data. |
 
@@ -328,7 +328,7 @@ Expected shape from `GET /api/spotlight/microsite/session/search?q=&card_type=`:
       "qr_base64":       "data:image/png;base64,…",
       "tracked_registration_url": "https://somebodytotalkto.com/r/source-scoped-key",
       "card_type":      "facebook-promo",
-      "short_url":       "https://somebodytotalkto.com/s/ed27f94327?utm_source=promo-card&sttt_tracking_link_id=278&short_link_alias=ed27f94327",
+      "short_url":       "bit.ly/sttt-xyz",
       "reg_link": {
         "url": "https://zoom.us/webinar/register/…"
       }
@@ -340,14 +340,25 @@ Expected shape from `GET /api/spotlight/microsite/session/search?q=&card_type=`:
 **Notes:**
 - `headshot_base64` and `qr_base64` include the `data:image/…;base64,` prefix — set directly as `src`.
 - `description` may contain HTML markup; the card strips it.
-- `tracked_registration_url` is the source-scoped registration authority for promo cards; `short_url` supplies the readable first-party `/s/<alias>` label when present.
-- The visible registration label is presentation-only and never includes `/r/` paths, UTM parameters, or internal tracking parameters. If the API does not provide a validated short alias, the card prints `Use the QR code to register` while retaining the canonical target in the hyperlink and QR payload.
+- `tracked_registration_url` is the source-scoped registration authority for promo cards and remains the canonical QR payload, including its attribution query values.
+- `short_url` is a display-only value. The visible registration label is non-clickable and uses a first-party `/s/<alias>` or other short display value without query parameters; `/r` paths, UTM values, and internal attribution parameters are never printed.
 - Only `presenters[0]` is used; multi-presenter sessions show only the first presenter.
 - `facebook-promo-multi` keeps the standard Facebook Promo date, description, registration, QR, and export dimensions unchanged. Two-presenter sessions use the left stacked profile column. Three-presenter sessions switch to a full-width horizontal profile rail above the session copy and QR so every profile remains visible without clipping the fixed-height card. Each profile uses `presenters[0]`, `presenters[1]`, or `presenters[2]` and can supply a photo on the presenter record (`headshot_base64`, `headshot_url`, `photo_url`, `image_url`, or equivalent). Set **Show sponsors** to **Yes** to display the Sponsor controls and sponsor strip, or **No** to remove the strip from the card. Sponsor controls use the same live employer-logo taxonomy API as the header-logo controls; they default to Alnylam, BridgeBio, and Immix Biopharma when those records are available. Use **+ Add sponsor** to add further logos at the bottom of the card.
 - The existing **Profile Image Size** control updates both multi-presenter headshots together. The multi-presenter version uses a proportionally smaller size so both portraits remain inside the fixed left column.
 - Multi-presenter cards also expose **Date and Time Size**, **QR Code Size**, **Presenter Gap**, **Presenter Name Size**, **Credentials and Employer Size**, **Registration Link Size**, and the **Time Zone** selector. Their values are saved per card layout and update the preview and exported artwork together. Changing the time zone updates the date pill with the selected zone's converted session time. Date-pill padding and icon size scale with its text; registration label, URL text, and URL padding scale together. Three-presenter profiles retain centered visual dividers and readable vertical text spacing, the QR code is constrained so its registration label remains visible, and oversized description text is reduced only as needed to prevent clipping inside the fixed card dimensions.
 - Session workspaces use four ordered columns: dropdown and logo controls, **Font Size & Card Adjustments**, the session list/search panel, and the promo-card preview. Selecting a configured partner on the multi-presenter card automatically loads its upcoming sessions into the third column; manual title search is not required for this card type.
 - Presenter naming is consistent across cards: when `name_suffix` is present, the title is omitted from the displayed profile name and the suffix is shown separately.
+
+### STTT API follow-up
+
+The API owner is STTT, so this repository does not edit the Drupal service.
+In `web/modules/custom/sttt_spotlight/src/Service/SpotlightMicrositeApiService.php`,
+`addPromoAssets()` currently chooses `short_url` for `qr_base64` whenever a
+`card_type` is present. Update that server-side payload to generate
+`qr_base64` from `tracked_registration_url` (the full `/r/<43-character-key>`
+URL, including attribution query values) and keep `short_url` display-only.
+The static renderer already regenerates the QR from the canonical tracked URL,
+so exports remain correct before that STTT deployment is made.
 
 ### Phase 1D/1G-A QR tracking pilot
 
@@ -371,10 +382,10 @@ Downs of Your Care Journey** session on October 1, 2026. Its metadata is:
 The checked-in pilot stores the opaque `trackingKey`, never an environment
 hostname. `runtime-config.js` is generated for each environment from
 `STTT_PUBLIC_BASE_URL`; production accepts only the approved public STTT origin,
-while local development generates the DDEV origin. The visible URL and QR
-payload both use the resulting `/r/{trackingKey}` URL. Missing or invalid
-runtime configuration disables the pilot override and preserves the direct
-Zoom fallback.
+while local development generates the DDEV origin. The QR payload uses the
+full `/r/{trackingKey}` URL; the printed label is the short display value and
+is not clickable. Missing or invalid runtime configuration disables the pilot
+override and preserves the direct Zoom fallback.
 
 To add a future card, first provision one exact-destination link through the
 STTT `TrackingLinkService` (the Phase 1D Drush wrapper is

@@ -533,8 +533,6 @@ body[data-partner="vamp"] .calendar-chip-month {
   font-weight: 700;
   color: #333;
   line-height: 1.15;
-  overflow-wrap: anywhere;
-  word-break: break-word;
 }
 .calendar-footer-disclaimer {
   font-size: 7px;
@@ -825,8 +823,6 @@ body[data-partner="vamp"] .coming-soon-program-name {
   font-family: monospace;
   font-size: 12px;
   letter-spacing: 0.02em;
-  overflow-wrap: anywhere;
-  word-break: break-word;
 }
 .coming-soon-qr-block {
   display: flex;
@@ -896,14 +892,15 @@ body[data-partner="vamp"] .coming-soon-program-name {
 .print-surface.size-3x5 .coming-soon-partner-pill { min-height: 42px; max-width: 116px; padding: 6px 8px; }
 .print-surface.size-3x5 .coming-soon-partner-pill img { width: 102px; max-height: 26px; }
 .print-surface.size-3x5 .coming-soon-body { padding: 8px 14px 6px; column-gap: 10px; grid-template-columns: 1fr 72px; }
-.print-surface.size-3x5 .coming-soon-copy { gap: 4px; }
-.print-surface.size-3x5 .coming-soon-copy p { font-size: 9.5px; line-height: 1.35; }
-.print-surface.size-3x5 .coming-soon-cta { font-size: 11px; }
-.print-surface.size-3x5 .coming-soon-url { font-size: 9px; padding: 2px 6px; }
+.print-surface.size-3x5 .coming-soon-copy { gap: 2px; }
+.print-surface.size-3x5 .coming-soon-copy p { font-size: 8px; line-height: 1.18; }
+.print-surface.size-3x5 .coming-soon-copy p:last-child { display: none; }
+.print-surface.size-3x5 .coming-soon-cta { font-size: 9.5px; }
+.print-surface.size-3x5 .coming-soon-url { font-size: 8px; padding: 2px 6px; letter-spacing: 0; }
 .print-surface.size-3x5 .coming-soon-qr-box { width: 64px; height: 64px; }
 .print-surface.size-3x5 .coming-soon-qr-box img { width: 60px; height: 60px; }
 .print-surface.size-3x5 .coming-soon-qr-label { font-size: 7px; }
-.print-surface.size-3x5 .coming-soon-fine-print { font-size: 8px; padding: 4px 14px 5px; line-height: 1.25; }
+.print-surface.size-3x5 .coming-soon-fine-print { font-size: 7.5px; padding: 4px 14px 5px; line-height: 1.2; }
 
 /* ══════════════════════════════════════════════════
    ZONE 1: LOGO BAR
@@ -1277,18 +1274,19 @@ body[data-partner="vamp"] .band-series-label {
   border-radius: 4px; padding: 2px 9px;
   font-family: monospace; letter-spacing: 0.02em;
   text-decoration: none;
-  white-space: normal;
-  overflow-wrap: anywhere;
-  word-break: break-word;
+  white-space: nowrap;
 }
 .register-url {
+  display: block;
   flex: 1 1 auto;
   min-width: 0;
   max-width: 100%;
   font-size: 9px;
   line-height: 1.15;
   overflow: visible;
+  overflow-wrap: anywhere;
   text-overflow: clip;
+  white-space: normal;
 }
 .microsite-row {
   display: flex; align-items: center;
@@ -1500,10 +1498,6 @@ body[data-partner="vamp"] .microsite-url {
 .sponsor-logo { display: none; width: 78px; height: 23px; object-fit: contain; }
 .sponsor-logo.visible { display: block; }
 .print-surface.size-3x5.layout-facebook-multi .presenter-section { grid-template-columns: 76px 1fr 68px; }
-.print-surface.size-3x5.layout-facebook-multi.multi-presenter-count-3 .presenter-section {
-  grid-template-columns: minmax(0, 1fr) 68px;
-  grid-template-rows: auto minmax(0, 1fr);
-}
 .print-surface.size-3x5.layout-facebook-multi .multi-presenter-card { grid-template-columns: 42px minmax(0, 1fr); column-gap: 4px; }
 .print-surface.size-3x5.layout-facebook-multi .multi-presenter-card .headshot-wrap { width: 42px; height: 42px; }
 .print-surface.size-3x5.layout-facebook-multi .multi-presenter-card .presenter-name { font-size: 8px; }
@@ -1657,9 +1651,7 @@ body[data-partner="vamp"] .microsite-url {
   border-radius: 4px;
   padding: 3px 10px;
   font-family: monospace;
-  white-space: normal;
-  overflow-wrap: anywhere;
-  word-break: break-word;
+  white-space: nowrap;
 }
 .program-back-qr {
   display: flex;
@@ -2243,7 +2235,9 @@ body[data-partner="vamp"] .session-back-title {
 .print-surface.size-3x5 .header-time        { font-size: 11px; }
 .print-surface.size-3x5 .session-band       { padding: 9px 14px 8px; gap: 10px; }
 .print-surface.size-3x5 .band-series-label  { font-size: 11.5px; }
-.print-surface.size-3x5 .band-title         { font-size: 13px; }
+.print-surface.size-3x5 .band-title         { font-size: 11px; }
+.print-surface.size-3x5 .band-title-session-type,
+.print-surface.size-3x5 .band-title-main    { white-space: normal; }
 .print-surface.size-3x5 .uoc-pill img       { width: 7.5rem; max-height: 44px; }
 .print-surface.size-3x5 .presenter-section  { grid-template-columns: 76px 1fr 68px; column-gap: 10px; padding: 8px 14px 6px; }
 .print-surface.size-3x5 .headshot-wrap      { width: 62px; height: 62px; }
@@ -2265,6 +2259,9 @@ body[data-partner="vamp"] .session-back-title {
 .print-surface.size-3x5 .qr-label           { font-size: 7px; }
 .print-surface.size-3x5 .fine-print         { font-size: 9px; padding: 4px 14px 5px; }
 .print-surface.size-3x5.layout-classic .uoc-pill { min-width: auto; max-width: none; }
+.print-surface.size-3x5.layout-classic .header-center,
+.print-surface.size-3x5.layout-classic .header-center + .logo-divider { display: none; }
+.print-surface.size-3x5.layout-classic .register-url { font-size: 8px; }
 .print-surface.size-3x5 .program-back-header { height: 50px; padding: 5px 14px; gap: 10px; }
 .print-surface.size-3x5 .program-back-header img { height: 34px; max-width: none; width: 31%; }
 .print-surface.size-3x5 .program-back-header img[data-logo-key="oav"] { height: 34px; max-width: none; }
@@ -3354,7 +3351,7 @@ body[data-partner="vamp"] .session-back-title {
 
         <div class="register-row">
           <span class="register-cta-label">Register free:</span>
-          <a class="register-url" id="register-url" href="" rel="noopener">somebodytotalkto.com/register</a>
+          <span class="register-url" id="register-url">somebodytotalkto.com/register</span>
         </div>
 
       </div>
@@ -5104,21 +5101,17 @@ function applyPartnerTheme() {
   updateSizeLabel();
 }
 
-function getReadableDisplayUrl(value) {
+function getReadablePublicUrlText(value) {
   const rawValue = String(value || '').trim();
   if (!rawValue) return '';
 
   try {
-    const candidate = /^https?:\/\//i.test(rawValue) ? rawValue : 'https://' + rawValue;
-    const parsed = new URL(candidate, window.location.href);
-    const host = parsed.host.replace(/^www\./i, '');
-    const path = parsed.pathname.replace(/\/+$/, '');
-    return host + (path && path !== '/' ? path : '');
+    const normalized = /^https?:\/\//i.test(rawValue) ? rawValue : 'https://' + rawValue;
+    const parsed = new URL(normalized);
+    if (parsed.username || parsed.password || parsed.search || parsed.hash) return '';
+    return parsed.host.replace(/^www\./i, '') + parsed.pathname.replace(/\/$/, '');
   } catch (error) {
-    return rawValue
-      .replace(/^https?:\/\//i, '')
-      .split(/[?#]/, 1)[0]
-      .replace(/\/+$/, '');
+    return rawValue.replace(/^https?:\/\//i, '').replace(/\/$/, '');
   }
 }
 
@@ -5128,7 +5121,7 @@ function getGeneratedComingSoonConfig() {
   const featureName = label + ' Amyloidosis Program';
   const link = partner.micrositeUrl || '';
   const fullLink = /^https?:\/\//i.test(link) ? link : (link ? 'https://' + link : '');
-  const displayLink = getReadableDisplayUrl(link);
+  const displayLink = getReadablePublicUrlText(link);
 
   return {
     // This card is a single approved template. Only the selected partner's
@@ -5169,7 +5162,7 @@ function syncComingSoonMicrosite(partnerKey) {
     if (partnerKey !== activePartnerKey) return;
 
     if (data.micrositeUrl) {
-      const link = getReadableDisplayUrl(data.micrositeUrl);
+      const link = getReadablePublicUrlText(data.micrositeUrl);
       const url = /^https?:\/\//i.test(data.micrositeUrl) ? data.micrositeUrl : 'https://' + data.micrositeUrl;
       const qrAlt = 'Scan to visit ' + link;
       const linkElement = document.getElementById('coming-link');
@@ -5361,9 +5354,9 @@ function getCalendarConfig() {
     ...CALENDAR_DEFAULT_CONFIG,
     ...calendar,
     programTitle: (activePartnerConfig.label || 'Partner') + ' Amyloidosis Program',
-    micrositeUrl: calendar.micrositeUrl || activePartnerConfig.micrositeUrl || '',
     sessionsApiUrl,
-    profilesApiUrl: calendar.profilesApiUrl || getProfilesApiUrlForSessions(sessionsApiUrl)
+    profilesApiUrl: calendar.profilesApiUrl || getProfilesApiUrlForSessions(sessionsApiUrl),
+    micrositeUrl: calendar.micrositeUrl || activePartnerConfig.micrositeUrl || ''
   };
 }
 
@@ -5529,7 +5522,7 @@ function syncCalendarCard() {
   setImg('calendar-subscribe-qr-code', cfg.qrSrc, cfg.qrAlt);
   setText('calendar-series-label', cfg.seriesLabel);
   setText('calendar-program-title', cfg.programTitle);
-  setText('calendar-microsite-url', getReadableDisplayUrl(cfg.micrositeUrl));
+  setText('calendar-microsite-url', getReadablePublicUrlText(cfg.micrositeUrl));
   updateCalendarTimezoneDisplay();
 
   if (isCalendarCardLayout() && !calendarSessionsLoaded) {
@@ -6115,6 +6108,9 @@ function applyMultiPresenterAdjustments() {
   const presenterNameSize = Number(selectedMultiPresenterNameSize) || Number(DEFAULT_MULTI_PRESENTER_NAME_SIZE);
   const presenterDetailSize = Number(selectedMultiPresenterDetailSize) || Number(DEFAULT_MULTI_PRESENTER_DETAIL_SIZE);
   const registrationSize = Number(selectedMultiRegistrationSize) || Number(DEFAULT_MULTI_REGISTRATION_SIZE);
+  const registrationDisplaySize = surface.classList.contains('size-3x5')
+    ? Math.min(registrationSize, 8.5)
+    : Math.min(registrationSize, 9.5);
   const datePill = document.querySelector('.layout-facebook-multi .date-pill');
   if (datePill) {
     datePill.style.padding = Math.max(2, dateSize * 0.3) + 'px ' + Math.max(5, dateSize * 0.8) + 'px';
@@ -6140,10 +6136,10 @@ function applyMultiPresenterAdjustments() {
   });
   const registerLabel = document.querySelector('.layout-facebook-multi .register-cta-label');
   const registerUrl = document.querySelector('.layout-facebook-multi .register-url');
-  if (registerLabel) registerLabel.style.fontSize = registrationSize + 'px';
+  if (registerLabel) registerLabel.style.fontSize = registrationDisplaySize + 'px';
   if (registerUrl) {
-    registerUrl.style.fontSize = registrationSize + 'px';
-    registerUrl.style.padding = Math.max(1, registrationSize * 0.18) + 'px ' + Math.max(5, registrationSize * 0.8) + 'px';
+    registerUrl.style.fontSize = registrationDisplaySize + 'px';
+    registerUrl.style.padding = Math.max(1, registrationDisplaySize * 0.18) + 'px ' + Math.max(5, registrationDisplaySize * 0.8) + 'px';
   }
   const qrCol = document.querySelector('.layout-facebook-multi.multi-presenter-count-3 .qr-col');
   const qrBox = qrCol && qrCol.querySelector('.qr-box');
@@ -6181,7 +6177,7 @@ function fitMultiPresenterDescription() {
   const content = section && section.querySelector('.content-col');
   const desc = content && content.querySelector('.session-desc');
   if (!section || !content || !desc) return;
-  let appliedSize = Number(selectedDescFontSize) || Number(DEFAULT_DESC_FONT_SIZE);
+  let appliedSize = Number.parseFloat(desc.style.fontSize) || Number(selectedDescFontSize) || Number(DEFAULT_DESC_FONT_SIZE);
   desc.style.fontSize = appliedSize + 'px';
   const sectionBottom = section.getBoundingClientRect().bottom - 2;
   while (content.getBoundingClientRect().bottom > sectionBottom && appliedSize > 8.5) {
@@ -6192,7 +6188,8 @@ function fitMultiPresenterDescription() {
 }
 
 function fitSinglePresenterDescription() {
-  if (surface.classList.contains('layout-facebook-multi')) return;
+  if (surface.classList.contains('layout-facebook-multi')
+    && surface.classList.contains('multi-presenter-count-3')) return;
   const section = surface.querySelector('.presenter-section');
   const content = section && section.querySelector('.content-col');
   const desc = content && content.querySelector('.session-desc');
@@ -6540,12 +6537,12 @@ function syncPartnerBackEmployerData() {
   getPartnerBackEmployerData(partnerKey).then(data => {
     if (partnerKey !== activePartnerKey) return;
     if (data.micrositeUrl) {
-      setSessionBackText('session-back-link', getReadableDisplayUrl(data.micrositeUrl));
+      setSessionBackText('session-back-link', getReadablePublicUrlText(data.micrositeUrl));
       const configuredQr = getSessionBackConfig().qrSrc;
       if (!configuredQr) {
         setSessionBackQr(
           getSessionBackGeneratedQrSrc(data.micrositeUrl),
-          'Scan to visit ' + getReadableDisplayUrl(data.micrositeUrl)
+          'Scan to visit ' + data.micrositeUrl
         );
       }
     }
@@ -6600,7 +6597,7 @@ function syncSessionBackContent() {
   setText('session-back-feature-program', cfg.featureProgram || '');
   setText('session-back-eyebrow', cfg.eyebrow);
   renderSessionBackSeriesMonth(cfg, cfg.seriesDate);
-  setText('session-back-link', getReadableDisplayUrl(cfg.linkText));
+  setText('session-back-link', getReadablePublicUrlText(cfg.linkText));
   syncPartnerBackSeriesMonth(cfg);
   syncPartnerBackEmployerData();
 
@@ -7288,6 +7285,7 @@ function setSize(s) {
   }
   updateControlAvailability();
   updateSizeLabel();
+  fitBandTitle();
   applyDescriptionFontSize();
   applyHeadshotSize();
 }
@@ -8111,24 +8109,19 @@ function getSessionRegistrationTrackedUrl(pilot = {}) {
   return new URL('/r/' + trackingKey, baseUrl).toString();
 }
 
-function getApprovedRegistrationShortUrl(value, canonicalUrl = '') {
+const PROMO_PRODUCTION_BASE_URL = 'https://somebodytotalkto.com';
+
+function getPromoAllowedOrigins() {
+  return new Set([getPromoTrackingBaseUrl(), PROMO_PRODUCTION_BASE_URL].filter(Boolean));
+}
+
+function getApprovedRegistrationShortUrl(value) {
   const rawValue = String(value || '').trim();
   if (!rawValue) return '';
 
-  const allowedOrigins = new Set(['https://somebodytotalkto.com']);
-  const configuredOrigin = getPromoTrackingBaseUrl();
-  if (configuredOrigin) allowedOrigins.add(configuredOrigin);
-
-  let canonicalOrigin = '';
-  try {
-    canonicalOrigin = new URL(String(canonicalUrl || '').trim(), window.location.href).origin;
-  } catch (error) {
-    canonicalOrigin = '';
-  }
-
   try {
     const parsed = new URL(rawValue, window.location.href);
-    if ((!allowedOrigins.has(parsed.origin) && parsed.origin !== canonicalOrigin)
+    if (!getPromoAllowedOrigins().has(parsed.origin)
       || parsed.username || parsed.password
       || !/^\/s\/[A-Za-z0-9_-]+\/?$/.test(parsed.pathname)) {
       return '';
@@ -8136,25 +8129,25 @@ function getApprovedRegistrationShortUrl(value, canonicalUrl = '') {
     parsed.pathname = parsed.pathname.replace(/\/$/, '');
     parsed.search = '';
     parsed.hash = '';
-    return parsed.toString();
+    return parsed.origin + parsed.pathname;
   } catch (error) {
     return '';
   }
 }
 
-function getRegistrationShortUrl(row = {}, canonicalUrl = '') {
-  const candidates = [
-    row.short_url,
-    row.display_url,
-    row.displayUrl,
-    row.registration_short_url,
-    row.registration_display_url
-  ];
-  for (const candidate of candidates) {
-    const approved = getApprovedRegistrationShortUrl(candidate, canonicalUrl);
-    if (approved) return approved;
+function isCanonicalTrackedRegistrationUrl(value) {
+  const rawValue = String(value || '').trim();
+  if (!rawValue) return false;
+
+  try {
+    const parsed = new URL(rawValue, window.location.href);
+    return getPromoAllowedOrigins().has(parsed.origin)
+      && !parsed.username && !parsed.password
+      && !parsed.hash
+      && /^\/r\/[A-Za-z0-9_-]{43}$/.test(parsed.pathname);
+  } catch (error) {
+    return false;
   }
-  return '';
 }
 
 function getSessionRegistrationTrackingPilot(row = {}) {
@@ -8180,33 +8173,51 @@ function getSessionRegistrationTrackingPilot(row = {}) {
   };
 }
 
-function getSessionRegistrationQrSrc(row, canonicalUrl) {
-  if (String(canonicalUrl || '').trim()) {
+function getSessionRegistrationQrSrc(row, registrationUrl) {
+  const canonicalUrl = String(registrationUrl || '').trim();
+  if (isCanonicalTrackedRegistrationUrl(canonicalUrl)) {
     return getSessionBackGeneratedQrSrc(canonicalUrl);
   }
-  const qrBase64 = String(row.qr_base64 || '').trim();
-  return qrBase64;
+  const qrBase64 = String(row.qr_base64 || row.qr_url || '').trim();
+  return qrBase64 || (canonicalUrl ? getSessionBackGeneratedQrSrc(canonicalUrl) : '');
 }
 
-const SHORT_LINK_UNAVAILABLE = 'Use the QR code to register';
+const MAX_REGISTRATION_DISPLAY_LENGTH = 44;
 
-function getRegistrationDisplayText(shortUrl) {
-  const approvedShortUrl = getApprovedRegistrationShortUrl(shortUrl);
-  return approvedShortUrl ? getReadableDisplayUrl(approvedShortUrl) : '';
+function isSharedLegacyBitlyUrl(value) {
+  return /^https?:\/\/bit\.ly\/4dUqXRm\/?$/i.test(String(value || '').trim());
 }
 
-function renderRegistrationDisplayText(element, displayText) {
-  if (!element) return;
-  element.textContent = '';
-  const text = String(displayText || '');
-  const boundary = text.indexOf('/s/');
-  if (boundary < 0) {
-    element.append(document.createTextNode(text));
-    return;
+function getSafeRegistrationDisplayText(value) {
+  const rawValue = String(value || '').trim();
+  if (!rawValue || isSharedLegacyBitlyUrl(rawValue)) return '';
+
+  try {
+    const normalized = /^https?:\/\//i.test(rawValue) ? rawValue : 'https://' + rawValue;
+    const parsed = new URL(normalized);
+    if (parsed.username || parsed.password || parsed.search || parsed.hash
+      || /^\/r\//i.test(parsed.pathname)) return '';
+    const text = parsed.host.replace(/^www\./i, '') + parsed.pathname.replace(/\/$/, '');
+    return text && text.length <= MAX_REGISTRATION_DISPLAY_LENGTH ? text : '';
+  } catch (error) {
+    return '';
   }
-  element.append(document.createTextNode(text.slice(0, boundary)));
-  element.append(document.createElement('wbr'));
-  element.append(document.createTextNode(text.slice(boundary)));
+}
+
+function getRegistrationDisplayText(row = {}) {
+  const candidates = [
+    row.short_url,
+    row.display_url,
+    row.registration_display_url,
+    row.registration_url,
+  ];
+  for (const candidate of candidates) {
+    const approvedAlias = getApprovedRegistrationShortUrl(candidate);
+    if (approvedAlias) return getSafeRegistrationDisplayText(approvedAlias);
+    const displayText = getSafeRegistrationDisplayText(candidate);
+    if (displayText) return displayText;
+  }
+  return 'somebodytotalkto.com/register';
 }
 
 function syncSessionRegistrationPromo(row, displayUrl, displayText, qrSrc) {
@@ -8253,8 +8264,7 @@ function syncSessionRegistrationPromo(row, displayUrl, displayText, qrSrc) {
   }
 
   const promoUrl = document.getElementById('session-promo-url');
-  promoUrl.textContent = displayText || SHORT_LINK_UNAVAILABLE;
-  promoUrl.title = displayUrl || SHORT_LINK_UNAVAILABLE;
+  promoUrl.textContent = displayText || displayUrl.replace(/^https?:\/\//, '') || 'somebodytotalkto.com/register';
 }
 
 function fitSessionPromoLayout() {
@@ -8293,8 +8303,8 @@ function fitSessionPromoLayout() {
      description     → #session-desc
      headshot_base64 → #headshot-img
      qr_base64       → #qr-img
-     short_url       → #register-url as a readable /s/ alias
-     tracked_registration_url → the actual click target and QR payload
+     short_url       → compact printed registration label only
+     tracked_registration_url → canonical QR destination and hidden card metadata
    ══════════════════════════════════════════════════ */
 function populateCard(row) {
   currentSessionRow = row;
@@ -8337,9 +8347,9 @@ function populateCard(row) {
   if (isPartnerOptionalCard()) {
     updateHeaderLogos();
   } else if (hasSelectedPartner() && activePartnerConfig.partnerLogo) {
-    if (uocPill) uocPill.classList.add('visible');
+    uocPill.classList.add('visible');
     applyHeaderLogoOverrides();
-  } else if (uocPill) {
+  } else {
     uocPill.classList.remove('visible');
   }
 
@@ -8382,11 +8392,10 @@ function populateCard(row) {
   const trackingPilot = getSessionRegistrationTrackingPilot(row);
   const trackedUrl = String(row.tracked_registration_url || '').trim();
   const rawUrl = (row.reg_link && row.reg_link.url) ? row.reg_link.url.trim() : '';
-  const canonicalUrl = trackedUrl || (trackingPilot
+  const canonicalRegistrationUrl = trackedUrl || (trackingPilot
     ? trackingPilot.trackedUrl
     : (rawUrl || ''));
-  const shortDisplayUrl = getRegistrationShortUrl(row, canonicalUrl);
-  const registrationQrSrc = getSessionRegistrationQrSrc(row, canonicalUrl);
+  const registrationQrSrc = getSessionRegistrationQrSrc(row, canonicalRegistrationUrl);
 
   // QR code
   const qrImg = document.getElementById('qr-img');
@@ -8400,20 +8409,16 @@ function populateCard(row) {
     qrFb.style.display  = 'block';
   }
 
-  // Register URL — print only the approved first-party alias. The canonical
-  // tracked URL remains the actual click target and QR payload.
+  // Registration text is a non-clickable print label. Keep the canonical
+  // source-scoped URL only in the QR payload and a data attribute; never print
+  // /r paths, UTM values, or internal attribution query parameters.
   const regUrlEl = document.getElementById('register-url');
-  const displayText = getRegistrationDisplayText(shortDisplayUrl) || SHORT_LINK_UNAVAILABLE;
-  renderRegistrationDisplayText(regUrlEl, displayText);
-  regUrlEl.classList.toggle('is-unavailable', !shortDisplayUrl);
-  regUrlEl.title = canonicalUrl || 'Registration attribution link unavailable';
-  regUrlEl.setAttribute('aria-label', shortDisplayUrl ? 'Register at ' + getReadableDisplayUrl(shortDisplayUrl) : SHORT_LINK_UNAVAILABLE);
-  if (canonicalUrl) {
-    regUrlEl.href = canonicalUrl;
-  } else {
-    regUrlEl.removeAttribute('href');
-  }
-  syncSessionRegistrationPromo(row, canonicalUrl, displayText, registrationQrSrc);
+  const displayText = getRegistrationDisplayText(row);
+  regUrlEl.textContent = displayText;
+  regUrlEl.removeAttribute('href');
+  regUrlEl.removeAttribute('title');
+  regUrlEl.dataset.canonicalUrl = canonicalRegistrationUrl;
+  regUrlEl.setAttribute('aria-label', displayText);
 
   // Reveal the card and controls on first load.
   document.getElementById('controls-bar').style.display = '';
