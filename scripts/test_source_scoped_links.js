@@ -11,6 +11,9 @@ assert(source.includes('row.tracked_registration_url'), 'renderer must prefer th
 assert(source.includes('4dUqXRm'), 'the known shared legacy Bitly link must be rejected');
 assert(source.includes('const canonicalRegistrationUrl = trackedUrl || (trackingPilot'), 'renderer must keep the canonical tracked URL separate');
 assert(source.includes('isCanonicalTrackedRegistrationUrl(canonicalUrl)'), 'QR generation must use the canonical tracked URL');
+assert(source.includes('size=250x250&format=png&ecc=M&qzone=4&margin=0&data='), 'generated QR codes must include a quiet zone and explicit error correction');
+assert(source.includes('image-rendering: pixelated;'), 'rendered QR images must preserve hard module edges');
+assert(source.includes('.print-surface.size-3x5 .qr-box             { width: 92px; height: 92px; }'), '3x5 front cards must reserve a scanable QR area');
 assert(source.includes('regUrlEl.removeAttribute(\'href\')'), 'printed registration URL must stay non-clickable');
 assert(source.includes('addSourceCardType(getSessionApiUrl(getAllCalendarSessionsApiUrl'), 'full session detail must include source card type');
 assert(source.includes('fitSinglePresenterDescription();'), 'single-presenter cards must keep the registration row inside the card');

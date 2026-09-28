@@ -28,6 +28,13 @@ jobs:
         with:
           node-version: '24'
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install QR verification dependencies
+        run: python -m pip install --disable-pip-version-check --quiet Pillow zxing-cpp
+
       - name: Generate production runtime configuration
         run: node scripts/generate-runtime-config.js --environment=production
 
@@ -35,6 +42,7 @@ jobs:
         run: |
           node scripts/generate-runtime-config.js --check=runtime-config.js
           node scripts/test_source_scoped_links.js
+          python scripts/test_qr_exports.py
           bash scripts/verify-phase-1d.sh --config-only
 
       - uses: actions/configure-pages@v5

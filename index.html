@@ -846,7 +846,8 @@ body[data-partner="vamp"] .coming-soon-program-name {
   width: 86px;
   height: 86px;
   display: block;
-  border-radius: 4px;
+  border-radius: 0;
+  image-rendering: pixelated;
 }
 .coming-soon-qr-label {
   color: var(--coming-primary, var(--maroon));
@@ -891,14 +892,14 @@ body[data-partner="vamp"] .coming-soon-program-name {
 .print-surface.size-3x5 .coming-soon-feature-name { font-size: 13px; }
 .print-surface.size-3x5 .coming-soon-partner-pill { min-height: 42px; max-width: 116px; padding: 6px 8px; }
 .print-surface.size-3x5 .coming-soon-partner-pill img { width: 102px; max-height: 26px; }
-.print-surface.size-3x5 .coming-soon-body { padding: 8px 14px 6px; column-gap: 10px; grid-template-columns: 1fr 72px; }
+.print-surface.size-3x5 .coming-soon-body { padding: 8px 14px 6px; column-gap: 10px; grid-template-columns: 1fr 88px; }
 .print-surface.size-3x5 .coming-soon-copy { gap: 2px; }
 .print-surface.size-3x5 .coming-soon-copy p { font-size: 8px; line-height: 1.18; }
 .print-surface.size-3x5 .coming-soon-copy p:last-child { display: none; }
 .print-surface.size-3x5 .coming-soon-cta { font-size: 9.5px; }
 .print-surface.size-3x5 .coming-soon-url { font-size: 8px; padding: 2px 6px; letter-spacing: 0; }
-.print-surface.size-3x5 .coming-soon-qr-box { width: 64px; height: 64px; }
-.print-surface.size-3x5 .coming-soon-qr-box img { width: 60px; height: 60px; }
+.print-surface.size-3x5 .coming-soon-qr-box { width: 80px; height: 80px; }
+.print-surface.size-3x5 .coming-soon-qr-box img { width: 76px; height: 76px; }
 .print-surface.size-3x5 .coming-soon-qr-label { font-size: 7px; }
 .print-surface.size-3x5 .coming-soon-fine-print { font-size: 7.5px; padding: 4px 14px 5px; line-height: 1.2; }
 
@@ -1338,9 +1339,10 @@ body[data-partner="vamp"] .microsite-url {
 }
 .qr-box img {
   width: 111px;
-  height: 116px;
+  height: 111px;
   display: none;
-  border-radius: 4px;
+  border-radius: 0;
+  image-rendering: pixelated;
 }
 .qr-placeholder {
   font-size: 8px; color: #bbb; text-align: center;
@@ -1497,7 +1499,7 @@ body[data-partner="vamp"] .microsite-url {
 .sponsor-logos { display: flex; align-items: center; justify-content: center; gap: 15px; }
 .sponsor-logo { display: none; width: 78px; height: 23px; object-fit: contain; }
 .sponsor-logo.visible { display: block; }
-.print-surface.size-3x5.layout-facebook-multi .presenter-section { grid-template-columns: 76px 1fr 68px; }
+.print-surface.size-3x5.layout-facebook-multi .presenter-section { grid-template-columns: 76px 1fr 100px; }
 .print-surface.size-3x5.layout-facebook-multi .multi-presenter-card { grid-template-columns: 42px minmax(0, 1fr); column-gap: 4px; }
 .print-surface.size-3x5.layout-facebook-multi .multi-presenter-card .headshot-wrap { width: 42px; height: 42px; }
 .print-surface.size-3x5.layout-facebook-multi .multi-presenter-card .presenter-name { font-size: 8px; }
@@ -1924,7 +1926,8 @@ body[data-partner="vamp"] .card-back .program-back-qr .qr-box {
   width: 116px;
   height: 116px;
   display: none;
-  border-radius: 4px;
+  border-radius: 0;
+  image-rendering: pixelated;
 }
 .session-promo-qr-placeholder {
   color: #999;
@@ -2210,7 +2213,8 @@ body[data-partner="vamp"] .session-back-title {
   width: 122px;
   height: 122px;
   display: block;
-  border-radius: 4px;
+  border-radius: 0;
+  image-rendering: pixelated;
 }
 .session-back-qr-label {
   color: var(--maroon);
@@ -2239,7 +2243,7 @@ body[data-partner="vamp"] .session-back-title {
 .print-surface.size-3x5 .band-title-session-type,
 .print-surface.size-3x5 .band-title-main    { white-space: normal; }
 .print-surface.size-3x5 .uoc-pill img       { width: 7.5rem; max-height: 44px; }
-.print-surface.size-3x5 .presenter-section  { grid-template-columns: 76px 1fr 68px; column-gap: 10px; padding: 8px 14px 6px; }
+.print-surface.size-3x5 .presenter-section  { grid-template-columns: 76px 1fr 100px; column-gap: 10px; padding: 8px 14px 6px; }
 .print-surface.size-3x5 .headshot-wrap      { width: 62px; height: 62px; }
 .print-surface.size-3x5 .presenter-name     { font-size: 9.5px; }
 .print-surface.size-3x5 .presenter-cred     { font-size: 8.5px; }
@@ -2254,8 +2258,8 @@ body[data-partner="vamp"] .session-back-title {
 .print-surface.size-3x5 .register-url,
 .print-surface.size-3x5 .microsite-url       { font-size: 9px; }
 .print-surface.size-3x5 .content-col        { gap: 5px; }
-.print-surface.size-3x5 .qr-box             { width: 58px; height: 58px; }
-.print-surface.size-3x5 .qr-box img         { width: 54px; height: 54px; }
+.print-surface.size-3x5 .qr-box             { width: 92px; height: 92px; }
+.print-surface.size-3x5 .qr-box img         { width: 88px; height: 88px; }
 .print-surface.size-3x5 .qr-label           { font-size: 7px; }
 .print-surface.size-3x5 .fine-print         { font-size: 9px; padding: 4px 14px 5px; }
 .print-surface.size-3x5.layout-classic .uoc-pill { min-width: auto; max-width: none; }
@@ -2277,7 +2281,7 @@ body[data-partner="vamp"] .session-back-title {
 .print-surface.size-3x5 .program-back-label { font-size: 8px; margin-bottom: 4px; }
 .print-surface.size-3x5 .program-back-title { font-size: 15px; }
 .print-surface.size-3x5 .program-back-content {
-  grid-template-columns: 1fr 64px;
+  grid-template-columns: 1fr 88px;
   column-gap: 8px;
   padding: 8px 14px 4px;
 }
@@ -2285,8 +2289,8 @@ body[data-partner="vamp"] .session-back-title {
 .print-surface.size-3x5 .program-back-text p { font-size: 8.5px; line-height: 1.25; }
 .print-surface.size-3x5 .program-back-cta { font-size: 9.5px; }
 .print-surface.size-3x5 .program-back-link { font-size: 8.5px; padding: 2px 6px; }
-.print-surface.size-3x5 .program-back-qr .qr-box { width: 58px; height: 58px; }
-.print-surface.size-3x5 .program-back-qr .qr-box img { width: 54px; height: 54px; }
+.print-surface.size-3x5 .program-back-qr .qr-box { width: 80px; height: 80px; }
+.print-surface.size-3x5 .program-back-qr .qr-box img { width: 76px; height: 76px; }
 .print-surface.size-3x5 .program-back-fine-print { font-size: 7.5px; line-height: 1.2; padding: 3px 14px 4px; }
 
 /* ══════════════════════════════════════════════════
@@ -6560,7 +6564,7 @@ function syncPartnerBackEmployerData() {
 function getSessionBackGeneratedQrSrc(url) {
   const value = String(url || '').trim();
   return value
-    ? 'https://api.qrserver.com/v1/create-qr-code/?size=128x128&format=png&margin=0&data=' + encodeURIComponent(value)
+    ? 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&format=png&ecc=M&qzone=4&margin=0&data=' + encodeURIComponent(value)
     : '';
 }
 
