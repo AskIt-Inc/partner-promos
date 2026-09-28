@@ -10,7 +10,8 @@ assert(source.includes("new Set(['facebook-promo', 'facebook-promo-multi', 'foun
 assert(source.includes('row.tracked_registration_url'), 'renderer must prefer the source-scoped redirect');
 assert(source.includes('4dUqXRm'), 'the known shared legacy Bitly link must be rejected');
 assert(source.includes('const canonicalRegistrationUrl = trackedUrl || (trackingPilot'), 'renderer must keep the canonical tracked URL separate');
-assert(source.includes('isCanonicalTrackedRegistrationUrl(canonicalUrl)'), 'QR generation must use the canonical tracked URL');
+assert(source.includes('getApprovedRegistrationShortUrl(row.qr_payload_url || row.short_url)'), 'QR generation must prefer the compact first-party short URL');
+assert(source.includes('isCanonicalTrackedRegistrationUrl(canonicalUrl)'), 'QR generation must retain the canonical tracked URL fallback');
 assert(source.includes('size=250x250&format=png&ecc=M&qzone=4&margin=0&data='), 'generated QR codes must include a quiet zone and explicit error correction');
 assert(source.includes('image-rendering: pixelated;'), 'rendered QR images must preserve hard module edges');
 assert(source.includes('.print-surface.size-3x5 .qr-box             { width: 92px; height: 92px; }'), '3x5 front cards must reserve a scanable QR area');
@@ -43,6 +44,29 @@ assert.strictEqual(getApprovedShortUrl(approvedAlias), 'https://somebodytotalkto
 assert.strictEqual(getApprovedShortUrl('https://somebodytotalkto.com/r/PIdPiaUemocJlYbn-kavqTzLdUPFNYI4WNngIVWf0Yo'), '');
 assert.strictEqual(getApprovedShortUrl('https://bit.ly/4dUqXRm'), '');
 assert.strictEqual(getApprovedShortUrl('https://example.com/s/8592a7f4c6'), '');
+
+const qrStart = source.indexOf('function getSessionBackGeneratedQrSrc');
+const qrEnd = source.indexOf('function setSessionBackQr', qrStart);
+const sessionQrStart = source.indexOf('function getSessionRegistrationQrSrc');
+const sessionQrEnd = source.indexOf('const MAX_REGISTRATION_DISPLAY_LENGTH', sessionQrStart);
+assert(qrStart >= 0 && qrEnd > qrStart && sessionQrStart >= 0 && sessionQrEnd > sessionQrStart, 'QR payload helpers must be present');
+const getQrSrc = new Function(
+  'window',
+  'promoRuntimeConfig',
+  `${source.slice(baseStart, shortEnd)}
+   ${source.slice(qrStart, qrEnd)}
+   ${source.slice(sessionQrStart, sessionQrEnd)}
+   return getSessionRegistrationQrSrc;`,
+)({ location: { href: 'https://askit-inc.github.io/partner-promos/' } }, {
+  environment: 'production',
+  stttPublicBaseUrl: 'https://somebodytotalkto.com',
+});
+const generatedCompactQr = getQrSrc(
+  { short_url: approvedAlias },
+  'https://somebodytotalkto.com/r/PIdPiaUemocJlYbn-kavqTzLdUPFNYI4WNngIVWf0Yo?utm_source=promo-card',
+);
+assert(generatedCompactQr.includes(encodeURIComponent('https://somebodytotalkto.com/s/8592a7f4c6')));
+assert(!generatedCompactQr.includes(encodeURIComponent('utm_source=promo-card')));
 
 const displayStart = source.indexOf('function getSafeRegistrationDisplayText');
 const displayEnd = source.indexOf('function fitSessionPromoLayout', displayStart);

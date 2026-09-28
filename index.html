@@ -8179,6 +8179,10 @@ function getSessionRegistrationTrackingPilot(row = {}) {
 
 function getSessionRegistrationQrSrc(row, registrationUrl) {
   const canonicalUrl = String(registrationUrl || '').trim();
+  const compactShortUrl = getApprovedRegistrationShortUrl(row.qr_payload_url || row.short_url);
+  if (compactShortUrl) {
+    return getSessionBackGeneratedQrSrc(compactShortUrl);
+  }
   if (isCanonicalTrackedRegistrationUrl(canonicalUrl)) {
     return getSessionBackGeneratedQrSrc(canonicalUrl);
   }
@@ -8307,6 +8311,7 @@ function fitSessionPromoLayout() {
      description     → #session-desc
      headshot_base64 → #headshot-img
      qr_base64       → #qr-img
+     qr_payload_url  → compact first-party QR payload when available
      short_url       → compact printed registration label only
      tracked_registration_url → canonical QR destination and hidden card metadata
    ══════════════════════════════════════════════════ */

@@ -49,7 +49,10 @@ def verify_source_contract(source):
     assert QR_QUERY in source, "index.html must keep the tested QR generator settings"
     assert "encodeURIComponent(value)" in source, "QR payload must be URL-encoded without changing its value"
     assert "getSessionRegistrationQrSrc(row, canonicalRegistrationUrl)" in source, (
-        "session cards must generate QR codes from the canonical registration URL"
+        "session cards must generate QR codes from the registration payload helper"
+    )
+    assert "getApprovedRegistrationShortUrl(row.qr_payload_url || row.short_url)" in source, (
+        "session cards must prefer a compact first-party short URL for QR payloads"
     )
     assert "isCanonicalTrackedRegistrationUrl(canonicalUrl)" in source, (
         "canonical tracked registration URLs must use the generated QR path"
@@ -66,6 +69,32 @@ def verify_rendered_pngs(png_dir, fixture, Image, ImageOps, zxingcpp):
             assert width > 0 and height > 0, f"invalid exported dimensions: {path}"
             x, y, crop_width, crop_height = crop_box
             crop = image.convert("RGB").crop((x, y, x + crop_width, y + crop_height))
+            dark_pixels = [
+                (px, py)
+                for py in range(crop.height)
+                for px in range(crop.width)
+                if max(crop.getpixel((px, py))) < 40
+            ]
+            assert dark_pixels, f"{path.name} has no QR dark modules"
+            min_x = min(px for px, _ in dark_pixels)
+            max_x = max(px for px, _ in dark_pixels)
+            min_y = min(py for _, py in dark_pixels)
+            max_y = max(py for _, py in dark_pixels)
+            assert min_x >= 8 and min_y >= 8, f"{path.name} is missing a visible quiet zone"
+            assert crop.width - max_x - 1 >= 8 and crop.height - max_y - 1 >= 8, (
+                f"{path.name} is missing a visible quiet zone"
+            )
+            assert min(max_x - min_x + 1, max_y - min_y + 1) >= 200, (
+                f"{path.name} QR modules are too small in the native export"
+            )
+            module_colors = {
+                crop.getpixel((px, py))
+                for py in range(min_y, max_y + 1)
+                for px in range(min_x, max_x + 1)
+            }
+            assert module_colors <= {(0, 0, 0), (255, 255, 255)}, (
+                f"{path.name} QR modules contain antialiased/interpolated colors"
+            )
             padded = ImageOps.expand(crop, border=max(12, crop_width // 20), fill="white")
             decoded = read_qr(padded, zxingcpp)
             if fixture["url"] not in decoded:
@@ -89,6 +118,14 @@ def main():
 
     for fixture in fixtures:
         value = fixture["url"]
+        if "compact first-party" in fixture["name"]:
+            assert len(value) < 100, "compact QR payload must remain short"
+            assert urllib.parse.urlparse(value).path.startswith("/s/"), (
+                "compact QR payload must use the first-party short-link route"
+            )
+            assert urllib.parse.urlparse(value).query == "", (
+                "compact QR payload must not repeat attribution query values"
+            )
         qr_url = QR_ENDPOINT + "?" + QR_QUERY + "&data=" + urllib.parse.quote(value, safe="")
         size, decoded = fetch_qr(qr_url, Image, zxingcpp)
         assert value in decoded, f"{fixture['name']} decoded incorrectly: {decoded}"
