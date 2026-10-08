@@ -1245,6 +1245,8 @@ body[data-partner="vamp"] .band-series-label {
 .headshot-wrap.is-empty { display: none; }
 .headshot-col.no-profile-image {
   align-items: stretch;
+  align-self: stretch;
+  justify-content: center;
 }
 .headshot-col.no-profile-image .session-promo-presenter-label {
   align-self: flex-start;
@@ -1426,6 +1428,14 @@ body[data-partner="vamp"] .microsite-url {
   display: grid;
   grid-template-rows: repeat(2, minmax(0, 1fr));
   align-self: stretch;
+}
+.print-surface.layout-facebook-multi .multi-presenter-grid.presenter-count-1 {
+  grid-template-rows: minmax(0, 1fr);
+  row-gap: 0;
+}
+.print-surface.layout-facebook-multi .multi-presenter-grid.presenter-count-2 {
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  row-gap: var(--profile-gap, 14px);
 }
 .multi-presenter-card {
   display: grid;
@@ -6184,9 +6194,7 @@ function applyMultiPresenterAdjustments() {
   const presenterNameSize = Number(selectedMultiPresenterNameSize) || Number(DEFAULT_MULTI_PRESENTER_NAME_SIZE);
   const presenterDetailSize = Number(selectedMultiPresenterDetailSize) || Number(DEFAULT_MULTI_PRESENTER_DETAIL_SIZE);
   const registrationSize = Number(selectedMultiRegistrationSize) || Number(DEFAULT_MULTI_REGISTRATION_SIZE);
-  const registrationDisplaySize = surface.classList.contains('size-3x5')
-    ? Math.min(registrationSize, 8.5)
-    : Math.min(registrationSize, 9.5);
+  const registrationDisplaySize = registrationSize;
   const datePill = document.querySelector('.layout-facebook-multi .date-pill');
   if (datePill) {
     datePill.style.padding = Math.max(2, dateSize * 0.3) + 'px ' + Math.max(5, dateSize * 0.8) + 'px';
@@ -6204,10 +6212,10 @@ function applyMultiPresenterAdjustments() {
   document.querySelectorAll('.layout-facebook-multi .tz-row').forEach(el => {
     el.style.fontSize = Math.max(7, dateSize * 0.87) + 'px';
   });
-  document.querySelectorAll('.multi-presenter-grid.presenter-count-3 .presenter-name').forEach(el => {
+  document.querySelectorAll('.multi-presenter-grid .presenter-name').forEach(el => {
     el.style.fontSize = presenterNameSize + 'px';
   });
-  document.querySelectorAll('.multi-presenter-grid.presenter-count-3 .presenter-cred, .multi-presenter-grid.presenter-count-3 .presenter-role').forEach(el => {
+  document.querySelectorAll('.multi-presenter-grid .presenter-cred, .multi-presenter-grid .presenter-role').forEach(el => {
     el.style.fontSize = presenterDetailSize + 'px';
   });
   const registerLabel = document.querySelector('.layout-facebook-multi .register-cta-label');
@@ -6217,7 +6225,9 @@ function applyMultiPresenterAdjustments() {
     registerUrl.style.fontSize = registrationDisplaySize + 'px';
     registerUrl.style.padding = Math.max(1, registrationDisplaySize * 0.18) + 'px ' + Math.max(5, registrationDisplaySize * 0.8) + 'px';
   }
-  const qrCol = document.querySelector('.layout-facebook-multi.multi-presenter-count-3 .qr-col');
+  const registrationOutput = document.getElementById('multi-registration-size-output');
+  if (registrationOutput) registrationOutput.textContent = formatFontSizeValue(registrationDisplaySize) + 'px';
+  const qrCol = document.querySelector('.layout-facebook-multi .qr-col');
   const qrBox = qrCol && qrCol.querySelector('.qr-box');
   const qrImage = qrBox && qrBox.querySelector('img');
   let appliedQrSize = qrSize;
@@ -6239,9 +6249,12 @@ function applyMultiPresenterAdjustments() {
   }
   const qrOutput = document.getElementById('multi-qr-size-output');
   if (qrOutput) qrOutput.textContent = formatFontSizeValue(appliedQrSize) + 'px';
-  const presenterGrid = document.querySelector('.multi-presenter-grid.presenter-count-3');
+  const presenterGrid = document.querySelector('.multi-presenter-grid');
   if (presenterGrid) {
-    presenterGrid.style.columnGap = profileGap + 'px';
+    const hasThreePresenters = presenterGrid.classList.contains('presenter-count-3');
+    const hasTwoPresenters = presenterGrid.classList.contains('presenter-count-2');
+    presenterGrid.style.columnGap = hasThreePresenters ? profileGap + 'px' : '0px';
+    presenterGrid.style.rowGap = hasTwoPresenters ? profileGap + 'px' : '0px';
     presenterGrid.style.setProperty('--profile-gap', profileGap + 'px');
   }
   fitMultiPresenterDescription();
@@ -8146,8 +8159,10 @@ function populateMultiPresenter(row, index) {
 function populateMultiPresenters(row) {
   const presenterCount = Math.min((row.presenters || []).length, 3);
   const grid = document.querySelector('.multi-presenter-grid');
-  grid.classList.toggle('presenter-count-3', presenterCount === 3);
-  surface.classList.toggle('multi-presenter-count-3', presenterCount === 3);
+  [1, 2, 3].forEach(count => {
+    grid.classList.toggle('presenter-count-' + count, presenterCount === count);
+    surface.classList.toggle('multi-presenter-count-' + count, presenterCount === count);
+  });
   [0, 1, 2].forEach(index => {
     const card = document.getElementById('multi-presenter-' + (index + 1));
     card.style.display = index < presenterCount ? '' : 'none';
