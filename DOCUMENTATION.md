@@ -178,7 +178,7 @@ Every `sessionBack` field belongs only to the currently selected partner. `syncS
 
 ### Coming Soon card content rule
 
-The Coming Soon card uses one approved front/back template for every partner. Its date, labels, explanatory copy, CTA, and subscription-side content are fixed to the reference artwork. The active partner affects the `[PARTNER_NAME] Amyloidosis Program` text, employer logo, microsite URL/QR code, and feature-banner color. The URL, logo, and color are obtained from the active employer taxonomy term’s `field_spotlight_microsite_url`, `field_image` relationship, and `field_spotlight_bg_color_2`, so Houston Methodist, Tufts Medicine, and future partners cannot inherit another partner’s destination, logo, or brand color.
+The Coming Soon card uses one approved front/back template for every partner. Its labels, explanatory copy, CTA, and subscription-side content remain fixed to the reference artwork, while the displayed reference date is loaded from `GET /api/spotlight/microsite/series?partner={partner_tid}` using that response’s `data.month_label`. If the API does not return a month label, the card shows the neutral `Upcoming` value and never reuses another partner’s date. The active partner affects the `[PARTNER_NAME] Amyloidosis Program` text, employer logo, microsite URL/QR code, feature-banner color, and API-driven month label. The URL, logo, and color are obtained from the active employer taxonomy term’s `field_spotlight_microsite_url`, `field_image` relationship, and `field_spotlight_bg_color_2`, so Houston Methodist, Tufts Medicine, and future partners cannot inherit another partner’s destination, logo, brand color, or date.
 
 ### Partner selector rule
 

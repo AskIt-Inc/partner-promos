@@ -4216,6 +4216,9 @@ function normalizePartnerConfig(config) {
 }
 
 const EMPLOYERS_API_URL = 'https://somebodytotalkto.com/jsonapi/taxonomy_term/employer?page%5Blimit%5D=100';
+const SPOTLIGHT_SERIES_API_URL = 'https://somebodytotalkto.com/api/spotlight/microsite/series';
+const comingSoonSeriesMonthLabels = new Map();
+const comingSoonSeriesMonthRequests = new Map();
 
 function getEmployerPartnerKey(term) {
   const employerId = String(term && term.attributes && term.attributes.drupal_internal__tid || '');
@@ -4284,6 +4287,7 @@ async function loadPromoEmployers() {
         ...current,
         label: attributes.name,
         employerTermName: attributes.name,
+        partnerTid: Number(attributes.drupal_internal__tid) || 0,
         exportSlug: current.exportSlug || key,
         promoCardEnabled: true,
         micrositeUrl: attributes.field_spotlight_microsite_url || '',
@@ -4312,6 +4316,59 @@ function getPartnerConfig(key = activePartnerKey) {
   return (partnerConfigs.partners && partnerConfigs.partners[key])
     || partnerConfigs.partners[partnerConfigs.defaultPartner]
     || PARTNER_CONFIG_FALLBACK.partners.uoc;
+}
+
+function getPartnerTaxonomyId(partner = activePartnerConfig) {
+  const configuredId = Number(partner && partner.partnerTid);
+  if (Number.isInteger(configuredId) && configuredId > 0) return configuredId;
+
+  try {
+    const configuredUrl = new URL(partner && partner.sessionsApiUrl || '');
+    const queryId = Number(configuredUrl.searchParams.get('partner'));
+    return Number.isInteger(queryId) && queryId > 0 ? queryId : 0;
+  } catch (error) {
+    return 0;
+  }
+}
+
+function getPartnerSeriesApiUrl(partnerKey = activePartnerKey) {
+  const partner = getPartnerConfig(partnerKey);
+  const partnerTid = getPartnerTaxonomyId(partner);
+  return partnerTid
+    ? getSessionApiUrl(SPOTLIGHT_SERIES_API_URL, { partner: partnerTid })
+    : '';
+}
+
+function getComingSoonSeriesMonthLabel(partnerKey) {
+  if (comingSoonSeriesMonthLabels.has(partnerKey)) {
+    return Promise.resolve(comingSoonSeriesMonthLabels.get(partnerKey));
+  }
+  if (comingSoonSeriesMonthRequests.has(partnerKey)) {
+    return comingSoonSeriesMonthRequests.get(partnerKey);
+  }
+
+  const url = getPartnerSeriesApiUrl(partnerKey);
+  if (!url) return Promise.resolve('');
+
+  const request = fetch(url, {
+    mode: 'cors',
+    headers: { Accept: 'application/json' }
+  })
+    .then(response => response.ok ? response.json() : null)
+    .then(payload => {
+      const monthLabel = String(payload && payload.data && payload.data.month_label || '').trim();
+      if (monthLabel) comingSoonSeriesMonthLabels.set(partnerKey, monthLabel);
+      return monthLabel;
+    })
+    .catch(() => '')
+    .finally(() => {
+      if (comingSoonSeriesMonthRequests.get(partnerKey) === request) {
+        comingSoonSeriesMonthRequests.delete(partnerKey);
+      }
+    });
+
+  comingSoonSeriesMonthRequests.set(partnerKey, request);
+  return request;
 }
 
 function hasSelectedPartner() {
@@ -5206,11 +5263,12 @@ function getGeneratedComingSoonConfig() {
   const link = partner.micrositeUrl || '';
   const fullLink = /^https?:\/\//i.test(link) ? link : (link ? 'https://' + link : '');
   const displayLink = getReadablePublicUrlText(link);
+  const monthLabel = comingSoonSeriesMonthLabels.get(activePartnerKey) || 'Upcoming';
 
   return {
     // This card is a single approved template. Only the selected partner's
-    // program name and microsite URL are allowed to vary.
-    date: 'September 2026',
+    // program name, microsite URL, and API-driven month label vary.
+    date: monthLabel,
     featureName: escapeHtml(featureName),
     logo: partner.partnerLogo || '',
     logoAlt: partner.partnerLogoAlt || featureName,
@@ -5283,6 +5341,16 @@ function syncComingSoonMicrosite(partnerKey) {
   });
 }
 
+function syncComingSoonSeriesMonth(partnerKey) {
+  if (!partnerKey) return;
+
+  getComingSoonSeriesMonthLabel(partnerKey).then(monthLabel => {
+    if (partnerKey !== activePartnerKey) return;
+    const dateElement = document.getElementById('coming-program-date');
+    if (dateElement) dateElement.textContent = monthLabel || 'Upcoming';
+  });
+}
+
 function syncComingSoonCard() {
   const cfg = getComingSoonConfig();
   const colors = cfg.colors || {};
@@ -5341,6 +5409,7 @@ function syncComingSoonCard() {
   setText('coming-back-fine-print', cfg.backFinePrint || '* Subscribing is free and your information is never shared with third parties.');
   setText('coming-fine-print', cfg.finePrint || 'Subscribing is free and your information will not be shared with third parties.');
   applyHeaderLogoSizes();
+  if (isComingSoonLayout()) syncComingSoonSeriesMonth(activePartnerKey);
   syncComingSoonMicrosite(activePartnerKey);
 }
 
