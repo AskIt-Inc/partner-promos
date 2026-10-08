@@ -99,6 +99,14 @@ The `.print-surface` is a vertical flex column. Zones 1, 2, and 4 are `flex-shri
 
 The center date/time block still exists for the classic layout. In the new `foundation` layout it is hidden, and date/time display lives in Zone 3.
 
+For `facebook-promo`, `facebook-promo-multi`, `foundation`, and `classic`, the
+**Header logos** controls select one to three logos, their left-to-right order,
+individual size, and X/Y position. The selected count rebuilds the logo bar
+with matching dividers, and the settings are saved per card layout. Logo
+choices combine the built-in assets with employer logos loaded from the live
+partner-logo API; selected logos are also reused by the related card surfaces
+and export preparation.
+
 ### Zone 2 — Session Band (`.session-band`)
 
 `background: var(--maroon); display: flex; justify-content: space-between`
@@ -189,8 +197,8 @@ Switches between the three card types selected in `#session-card-type`.
 
 | Dropdown label | Internal value | Surface class | Behaviour |
 |----------------|----------------|---------------|-----------|
-| Medical Amyloidosis Session - Spotlight | `foundation` | `.layout-foundation` | New 3-logo header layout; partner logo moves to Zone 1; right logo defaults to OAV, then switches to matched indication logo when available |
-| Medical Amyloidosis Session - Non Spotlight | `classic` | `.layout-classic` | Original layout; partner logo moves back to the maroon band; right logo stays STTT; left logo switches to matched indication logo when available |
+| Medical Amyloidosis Session - Spotlight | `foundation` | `.layout-foundation` | 1–3-logo configurable header; partner logo can move into the ordered Zone 1 header; right logo defaults to OAV, then switches to matched indication logo when available |
+| Medical Amyloidosis Session - Non Spotlight | `classic` | `.layout-classic` | 1–3-logo configurable header; retains the classic card styling while allowing the ordered Zone 1 header; right logo defaults to STTT and left logo switches to matched indication logo when available |
 | Session Registration Promo Card | `session-front` | `.layout-session-front` | Separate 4×6 card mode; Front uses session registration/privacy copy and Back promotes the selected partner Spotlight microsite with a microsite QR |
 
 The dropdown `change` handler calls `resetSearchState()` after switching layout, so stale session data is never reused across card types.

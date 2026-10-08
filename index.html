@@ -1176,6 +1176,37 @@ body[data-partner="vamp"] .band-series-label {
   width: 10.75rem;
   max-height: none;
 }
+/* Spotlight and Non Spotlight can use the same optional ordered header. */
+.print-surface.layout-classic .logo-bar[data-header-logo-count] {
+  justify-content: center;
+  gap: 14px;
+}
+.print-surface.layout-classic .logo-bar[data-header-logo-count="1"] { gap: 0; }
+.print-surface.layout-classic .logo-bar[data-header-logo-count="2"] { gap: 42px; }
+.print-surface.layout-classic .logo-bar[data-header-logo-count="3"] { gap: 14px; }
+.print-surface.layout-classic .logo-bar[data-header-logo-count] > * { order: initial; }
+.print-surface.layout-classic .logo-bar[data-header-logo-count] .uoc-pill,
+.print-surface.layout-classic .logo-bar[data-header-logo-count] .logo-left,
+.print-surface.layout-classic .logo-bar[data-header-logo-count] .logo-right {
+  flex: 0 1 210px;
+  min-width: 0;
+  max-width: none;
+}
+.print-surface.layout-classic .logo-bar[data-header-logo-count] .uoc-pill {
+  height: 56px;
+  overflow: hidden;
+  border-radius: 0;
+  padding: 0 10px;
+}
+.print-surface.layout-classic .logo-bar[data-header-logo-count] .uoc-pill img,
+.print-surface.layout-classic .logo-bar[data-header-logo-count] .logo-left,
+.print-surface.layout-classic .logo-bar[data-header-logo-count] .logo-right {
+  width: 100%;
+  height: 56px;
+  max-height: 56px;
+  max-width: 100%;
+  object-fit: contain;
+}
 
 /* ══════════════════════════════════════════════════
    ZONE 3: PRESENTER SECTION
@@ -4255,6 +4286,15 @@ function isPartnerOptionalCard() {
   return Boolean(cardTypeSelect && ['facebook-promo', 'facebook-promo-multi'].includes(cardTypeSelect.value));
 }
 
+function isHeaderLogoConfigurableCard() {
+  return Boolean(cardTypeSelect && [
+    'facebook-promo',
+    'facebook-promo-multi',
+    'foundation',
+    'classic'
+  ].includes(cardTypeSelect.value));
+}
+
 function isMultiPresenterFacebookPromo() {
   return Boolean(cardTypeSelect && cardTypeSelect.value === 'facebook-promo-multi');
 }
@@ -4861,7 +4901,7 @@ function updateHeaderLogoCountControl() {
 }
 
 function updateHeaderLogoLayout() {
-  if (!logoBar || !isPartnerOptionalCard()) return;
+  if (!logoBar || !isHeaderLogoConfigurableCard()) return;
 
   const count = normalizeHeaderLogoCount(selectedHeaderLogoCount);
   logoBar.dataset.headerLogoCount = String(count);
@@ -6750,7 +6790,7 @@ function updateControlAvailability() {
   const imageSizeControlVisible = sessionFontControlsVisible || (ready && currentSide === 'partner-back');
   const sessionLookupVisible = ready && !immediatePreview && !autoSessionList;
   const headerLogoControlsVisible = hasSelectedCard();
-  const headerLogoCountVisible = isPartnerOptionalCard();
+  const headerLogoCountVisible = isHeaderLogoConfigurableCard();
   const btnBack = document.getElementById('btn-back');
   const btnPartnerBack = document.getElementById('btn-partner-back');
   const btn3x5 = document.getElementById('btn-3x5');
@@ -7172,7 +7212,7 @@ async function resolveIndicationLogo(row) {
 function updateHeaderLogos() {
   const isClassic = surface.classList.contains('layout-classic');
 
-  if (isPartnerOptionalCard()) {
+  if (isHeaderLogoConfigurableCard()) {
     applyHeaderLogoOverrides();
     updateHeaderLogoLayout();
     syncBackLogos();
@@ -8353,7 +8393,7 @@ function populateCard(row) {
 
   // Partner logo follows the selected partner, but Facebook Promo can run without one.
   const uocPill = document.getElementById('uoc-pill');
-  if (isPartnerOptionalCard()) {
+  if (isHeaderLogoConfigurableCard()) {
     updateHeaderLogos();
   } else if (hasSelectedPartner() && activePartnerConfig.partnerLogo) {
     uocPill.classList.add('visible');
