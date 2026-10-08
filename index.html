@@ -1243,6 +1243,18 @@ body[data-partner="vamp"] .band-series-label {
   object-fit: cover; border-radius: 50%; display: none;
 }
 .headshot-wrap.is-empty { display: none; }
+.headshot-col.no-profile-image {
+  align-items: stretch;
+}
+.headshot-col.no-profile-image .session-promo-presenter-label {
+  align-self: flex-start;
+}
+.headshot-col.no-profile-image .presenter-name,
+.headshot-col.no-profile-image .presenter-cred,
+.headshot-col.no-profile-image .presenter-role {
+  width: 100%;
+  text-align: left;
+}
 .headshot-fallback {
   font-size: 9px; color: #aaa;
   text-align: center; padding: 4px; line-height: 1.3;
@@ -1441,6 +1453,14 @@ body[data-partner="vamp"] .microsite-url {
 .multi-presenter-card .presenter-cred,
 .multi-presenter-card .presenter-role { font-size: 8.5px; }
 .multi-presenter-card.is-empty { opacity: .55; }
+.multi-presenter-card.no-profile-image {
+  grid-template-columns: minmax(0, 1fr);
+  column-gap: 0;
+}
+.multi-presenter-card.no-profile-image .headshot-wrap { display: none; }
+.multi-presenter-card.no-profile-image .multi-presenter-copy {
+  grid-column: 1;
+}
 /* Three speakers become a full-width profile rail. This protects the fixed
    card height and gives the session copy and QR their own unclipped row. */
 .print-surface.layout-facebook-multi.multi-presenter-count-3 .presenter-section {
@@ -1852,6 +1872,16 @@ body[data-partner="vamp"] .card-back .program-back-qr .qr-box {
   column-gap: 10px;
   align-items: center;
   min-height: 52px;
+}
+.session-promo-presenter.no-profile-image {
+  grid-template-columns: minmax(0, 1fr);
+  min-height: 0;
+}
+.session-promo-presenter.no-profile-image .session-promo-headshot {
+  display: none;
+}
+.session-promo-presenter.no-profile-image .session-promo-presenter-copy {
+  grid-column: 1;
 }
 .session-promo-headshot {
   width: 52px;
@@ -6114,7 +6144,9 @@ function applyHeadshotSize() {
   const calculatedMultiSize = Math.round(baseSize * 0.55 * (isSmallCard ? 0.66 : 1));
   const multiSize = hasThreePresenters ? Math.min(calculatedMultiSize, isSmallCard ? 42 : 58) : calculatedMultiSize;
   document.querySelectorAll('.multi-presenter-card').forEach(card => {
-    card.style.gridTemplateColumns = multiSize + 'px minmax(0, 1fr)';
+    card.style.gridTemplateColumns = card.classList.contains('no-profile-image')
+      ? 'minmax(0, 1fr)'
+      : multiSize + 'px minmax(0, 1fr)';
     const headshot = card.querySelector('.headshot-wrap');
     if (headshot) {
       headshot.style.width = multiSize + 'px';
@@ -8017,13 +8049,27 @@ function getPresenterHeadshotSrc(row = {}, presenterIndex = 0) {
 }
 
 function setPresenterHeadshot(img, fallback, src) {
-  const wrap = img.closest('.headshot-wrap');
+  const wrap = img.closest('.headshot-wrap, .session-promo-headshot');
+  const updateProfileImageLayoutState = hasImage => {
+    const headshotCol = wrap.closest('.headshot-col');
+    if (headshotCol) headshotCol.classList.toggle('no-profile-image', !hasImage);
+
+    const multiCard = wrap.closest('.multi-presenter-card');
+    if (multiCard) {
+      multiCard.classList.toggle('no-profile-image', !hasImage);
+      if (typeof applyHeadshotSize === 'function') applyHeadshotSize();
+    }
+
+    const sessionPromoPresenter = wrap.closest('.session-promo-presenter');
+    if (sessionPromoPresenter) sessionPromoPresenter.classList.toggle('no-profile-image', !hasImage);
+  };
   const hideHeadshot = () => {
     img.onerror = null;
     img.removeAttribute('src');
     img.style.display = 'none';
     fallback.style.display = 'none';
     wrap.classList.add('is-empty');
+    updateProfileImageLayoutState(false);
   };
 
   if (!src) {
@@ -8032,6 +8078,7 @@ function setPresenterHeadshot(img, fallback, src) {
   }
 
   wrap.classList.remove('is-empty');
+  updateProfileImageLayoutState(true);
   img.removeAttribute('crossorigin');
   img.onerror = hideHeadshot;
   img.src = src;
@@ -8283,18 +8330,7 @@ function syncSessionRegistrationPromo(row, displayUrl, displayText, qrSrc) {
 
   const promoHeadshotImg = document.getElementById('session-promo-headshot-img');
   const promoHeadshotFallback = document.getElementById('session-promo-headshot-fallback');
-  const promoHeadshotSrc = getPresenterHeadshotSrc(row);
-  if (promoHeadshotSrc) {
-    promoHeadshotImg.removeAttribute('crossorigin');
-    promoHeadshotImg.src = promoHeadshotSrc;
-    promoHeadshotImg.style.display = 'block';
-    promoHeadshotFallback.style.display = 'none';
-  } else {
-    promoHeadshotImg.removeAttribute('src');
-    promoHeadshotImg.style.display = 'none';
-    promoHeadshotFallback.style.display = 'block';
-    promoHeadshotFallback.innerHTML = 'No<br>photo';
-  }
+  setPresenterHeadshot(promoHeadshotImg, promoHeadshotFallback, getPresenterHeadshotSrc(row));
 
   const tmp = document.createElement('div');
   tmp.innerHTML = row.description || '';
