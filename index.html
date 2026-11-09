@@ -6886,7 +6886,7 @@ function updateControlAvailability() {
   const calendarCard = isCalendarCardLayout();
   const immediatePreview = isImmediatePreviewLayout();
   const ready = hasReadySelection();
-  const autoSessionList = ready && (isSpotlightSessionListLayout() || isMultiPresenterFacebookPromo());
+  const autoSessionList = ready && isSpotlightSessionListLayout();
   updateAppLayoutMode();
   const sessionLayoutReady = ready && (
     surface.classList.contains('layout-foundation')
@@ -7944,7 +7944,7 @@ function resetSearchState(message = 'Enter text in the search box to load a sess
   applyHeadshotSize();
   updateControlAvailability();
   setStatus(message);
-  if (ready && (isSpotlightSessionListLayout() || isMultiPresenterFacebookPromo())) {
+  if (ready && isSpotlightSessionListLayout()) {
     loadPartnerSessionList();
   } else if (ready && !isImmediatePreviewLayout()) {
     searchInput.focus();
