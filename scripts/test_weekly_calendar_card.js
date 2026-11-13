@@ -2,6 +2,96 @@ const assert = require('assert');
 const fs = require('fs');
 
 const source = fs.readFileSync('index.html', 'utf8');
+const partnerHelperStart = source.indexOf('function normalizeWeeklyCalendarPartnerTids');
+const partnerHelperEnd = source.indexOf('function getEmployerPartnerKey', partnerHelperStart);
+assert(partnerHelperStart >= 0 && partnerHelperEnd > partnerHelperStart, 'weekly partner-list helpers must be present');
+const weeklyPartnerHelpers = new Function(
+  `${source.slice(partnerHelperStart, partnerHelperEnd)}
+   return {
+     normalizeWeeklyCalendarPartnerTids,
+     resolveWeeklyCalendarPartnerTids,
+     getWeeklyPartnerAvailabilityMessage,
+     getWeeklyCalendarSessionsApiEndpoint,
+     buildWeeklyCalendarSessionsApiUrl
+   };`
+)();
+assert.deepStrictEqual(
+  weeklyPartnerHelpers.normalizeWeeklyCalendarPartnerTids([101, '202', 202, 0, -1, true, '303x', ' 303 ']),
+  [101, 202, 303],
+  'partner IDs must be positive safe integers, deduplicated, and ordered by the live term list',
+);
+assert.deepStrictEqual(
+  weeklyPartnerHelpers.resolveWeeklyCalendarPartnerTids(0, [101, 202, 202, 'bad'], true),
+  [101, 202],
+  'partnerless weekly mode must use every eligible ID returned by the term API',
+);
+assert.deepStrictEqual(
+  weeklyPartnerHelpers.resolveWeeklyCalendarPartnerTids(202, [101, 202], true),
+  [202],
+  'selected-partner weekly mode must be isolated to the selected eligible ID',
+);
+assert.deepStrictEqual(
+  weeklyPartnerHelpers.resolveWeeklyCalendarPartnerTids(999, [101, 202], true),
+  [],
+  'selected partner IDs outside the live eligible list must not fall back to aggregate mode',
+);
+assert.deepStrictEqual(
+  weeklyPartnerHelpers.resolveWeeklyCalendarPartnerTids(0, [101, 202], false),
+  [],
+  'partner IDs must not be used before the live term list is ready',
+);
+const aggregateEndpoint = weeklyPartnerHelpers.getWeeklyCalendarSessionsApiEndpoint('https://local-sttt.somebodytotalkto.com:8443');
+assert.strictEqual(aggregateEndpoint, 'https://local-sttt.somebodytotalkto.com:8443/api/spotlight/microsite/sessions');
+const aggregateRequest = new URL(weeklyPartnerHelpers.buildWeeklyCalendarSessionsApiUrl(aggregateEndpoint, [101, '202', 202, -1]));
+assert.strictEqual(aggregateRequest.searchParams.get('partner'), '101,202', 'aggregate requests must use the complete sanitized live term ID list');
+assert.strictEqual(aggregateRequest.searchParams.get('status'), 'all');
+const selectedRequest = new URL(weeklyPartnerHelpers.buildWeeklyCalendarSessionsApiUrl(
+  'https://somebodytotalkto.com/api/spotlight/microsite/sessions?partner=101,202&status=active',
+  [202],
+));
+assert.strictEqual(selectedRequest.searchParams.get('partner'), '202', 'selected requests must replace any configured partner list with the selected ID only');
+assert.strictEqual(selectedRequest.searchParams.get('status'), 'all');
+assert.strictEqual(weeklyPartnerHelpers.buildWeeklyCalendarSessionsApiUrl(aggregateEndpoint, []), '', 'empty partner lists must never produce an unfiltered request');
+assert.strictEqual(weeklyPartnerHelpers.getWeeklyPartnerAvailabilityMessage('loading', [], false), 'Loading the current promo-card-enabled partner list…');
+assert.match(weeklyPartnerHelpers.getWeeklyPartnerAvailabilityMessage('error', [], false), /could not be loaded/);
+assert.match(weeklyPartnerHelpers.getWeeklyPartnerAvailabilityMessage('ready', [], false), /No promo-card-enabled partners/);
+assert.match(weeklyPartnerHelpers.getWeeklyPartnerAvailabilityMessage('ready', [], true), /selected partner is not currently promo-card enabled/);
+
+const calendarConfigStart = source.indexOf('function getCalendarConfig()');
+const calendarConfigEnd = source.indexOf('function getAllCalendarSessionsApiUrl', calendarConfigStart);
+assert(calendarConfigStart >= 0 && calendarConfigEnd > calendarConfigStart, 'weekly and monthly calendar API config must be present');
+const createCalendarConfig = (partner, weekly, aggregate) => new Function(
+  'activePartnerConfig',
+  'CALENDAR_DEFAULT_CONFIG',
+  'isWeeklyCalendarAggregateMode',
+  'isWeeklyCalendarCardLayout',
+  'getWeeklyCalendarSessionsApiUrl',
+  'getProfilesApiUrlForSessions',
+  `${source.slice(calendarConfigStart, calendarConfigEnd)} return getCalendarConfig;`
+)(partner, { programTitle: 'Calendar', sessionsApiUrl: '', profilesApiUrl: '', micrositeUrl: '' },
+  () => aggregate, () => weekly,
+  () => 'https://somebodytotalkto.com/api/spotlight/microsite/sessions?partner=101,202&status=all',
+  () => 'https://somebodytotalkto.com/api/spotlight/microsite/profiles?partner=101,202');
+const monthlyConfig = createCalendarConfig({
+  label: 'Monthly Partner',
+  sessionsApiUrl: 'https://somebodytotalkto.com/api/spotlight/microsite/sessions?partner=303&status=all',
+  micrositeUrl: 'monthly.example',
+  calendar: { profilesApiUrl: 'https://somebodytotalkto.com/api/spotlight/microsite/profiles?partner=303' }
+}, false, false)();
+assert.strictEqual(monthlyConfig.sessionsApiUrl, 'https://somebodytotalkto.com/api/spotlight/microsite/sessions?partner=303&status=all', 'monthly cards must retain their configured partner sessions URL');
+assert.strictEqual(monthlyConfig.profilesApiUrl, 'https://somebodytotalkto.com/api/spotlight/microsite/profiles?partner=303');
+assert.strictEqual(monthlyConfig.micrositeUrl, 'monthly.example');
+const aggregateConfig = createCalendarConfig({
+  label: 'University of Chicago',
+  sessionsApiUrl: 'https://somebodytotalkto.com/api/spotlight/microsite/sessions?partner=404',
+  micrositeUrl: 'uchicago.example',
+  calendar: { profilesApiUrl: 'https://somebodytotalkto.com/api/spotlight/microsite/profiles?partner=404' }
+}, true, true)();
+assert.strictEqual(aggregateConfig.programTitle, 'All Eligible Partners Amyloidosis Program');
+assert.strictEqual(aggregateConfig.sessionsApiUrl, 'https://somebodytotalkto.com/api/spotlight/microsite/sessions?partner=101,202&status=all', 'aggregate weekly config must use only the live eligible partner list');
+assert.strictEqual(aggregateConfig.profilesApiUrl, 'https://somebodytotalkto.com/api/spotlight/microsite/profiles?partner=101,202');
+assert.strictEqual(aggregateConfig.micrositeUrl, '', 'aggregate weekly config must not reuse the fallback partner microsite');
+
 const dateStart = source.indexOf('function calendarParseApiDate');
 const dateEnd = source.indexOf('function calendarMatchesSelectedRange', dateStart);
 assert(dateStart >= 0 && dateEnd > dateStart, 'weekly date helpers must be present');
@@ -43,12 +133,20 @@ assert.strictEqual(weeklyHelpers.calendarFormatWeeklyRange(2020, 53), 'Dec 28, 2
 assert.strictEqual(weeklyHelpers.calendarGetWeeklyLabel(2026, 47), 'Week 47 · Nov 16–22, 2026');
 
 const matchingSessions = weeklyHelpers.calendarGetWeeklySessions([
-  { uuid: 'sun', date: 'Nov 22, 2026', timestamp: 6 },
-  { uuid: 'outside', date: 'Nov 23, 2026', timestamp: 7 },
-  { uuid: 'wed', date: 'Nov 18, 2026', timestamp: 2 },
-  { uuid: 'mon', date: 'Nov 16, 2026', timestamp: 0 },
+  { uuid: 'sun', partner: 'Partner Two', date: 'Nov 22, 2026', timestamp: 6 },
+  { uuid: 'outside', partner: 'Partner One', date: 'Nov 23, 2026', timestamp: 7 },
+  { uuid: 'tue', partner: 'Partner One', date: 'Nov 17, 2026', timestamp: 1 },
+  { uuid: 'wed', partner: 'Partner Two', date: 'Nov 18, 2026', timestamp: 2 },
+  { uuid: 'mon', partner: 'Partner One', date: 'Nov 16, 2026', timestamp: 0 },
 ]);
 assert.deepStrictEqual(matchingSessions.map(session => session.uuid), ['mon', 'sun']);
+assert.deepStrictEqual(matchingSessions.map(session => session.partner), ['Partner One', 'Partner Two'], 'weekly day filters must retain matching sessions from multiple partner IDs');
+assert.deepStrictEqual(
+  weeklyHelpers.calendarGetWeeklySessions([{ uuid: 'tue-only', partner: 'Partner One', date: 'Nov 17, 2026', timestamp: 1 }]),
+  [],
+  'a selected ISO week with no matching selected weekdays must return no sessions',
+);
+assert(source.includes("weeklyCalendarStatus('No calendar sessions match the selected ISO week and days.')"), 'empty weekly filters must show the no-results state');
 
 const timezoneStart = source.indexOf('function getWeeklyTimezoneLabel');
 const timezoneEnd = source.indexOf('function getWeeklyPostPageKey', timezoneStart);
@@ -66,6 +164,7 @@ const weeklyTimeHelpers = new Function(
   'calendarNormalizeSpaces',
   'cleanTimeValue',
   'calendarFormatWeeklySessionDate',
+  'isWeeklyCalendarAggregateMode',
   'window',
   `${source.slice(timezoneStart, timezoneEnd)}
    return {
@@ -80,12 +179,14 @@ const weeklyTimeHelpers = new Function(
 }, 'PT', 'abbreviation', normalizeSpaces,
 value => String(value || '').trim().replace(/\s+(ET|CT|MT|PT)$/i, '').trim(),
 session => session.date,
+() => false,
 { CSS: { supports: (property, value) => property === 'color' && /^#[\da-f]{3,8}$/i.test(value) } });
 assert.strictEqual(weeklyTimeHelpers.getWeeklyTimezoneLabel('PT'), 'PT');
 assert.strictEqual(weeklyTimeHelpers.getWeeklyTimezoneLabel('PT', 'location'), 'PT · Los Angeles');
 const fourZoneSession = {
   uuid: 'four-zones',
   title: 'Example session',
+  partner: 'Partner Two',
   date: 'Monday, November 16, 2026',
   times_by_zone: { ET: '11:00 AM', CT: '10:00 AM', MT: '9:00 AM', PT: '8:00 AM' },
   weekly_short_url: 'https://somebodytotalkto.com/s/abc123def0'
@@ -125,11 +226,13 @@ const locationModeHelpers = new Function(
   'calendarNormalizeSpaces',
   'cleanTimeValue',
   'calendarFormatWeeklySessionDate',
+  'isWeeklyCalendarAggregateMode',
   'window',
   `${source.slice(timezoneStart, timezoneEnd)} return { getWeeklySessionTimes, getWeeklyTimezonePresentation };`
 )({ ...weeklyTimeZones }, 'ET', 'location', normalizeSpaces,
   value => String(value || '').trim().replace(/\s+(ET|CT|MT|PT)$/i, '').trim(),
   session => session.date,
+  () => false,
   { CSS: { supports: () => true } });
 assert.deepStrictEqual(
   locationModeHelpers.getWeeklyTimezonePresentation([['ET', 'CT', 'MT', 'PT'], ['ET', 'CT', 'MT', 'PT']]).legendLabels,
@@ -156,6 +259,20 @@ assert.deepStrictEqual(
     ''
   ],
   'caption output must include the date, all zone times, and the QR-linked alias',
+);
+const captionStart = source.indexOf('function getWeeklySessionCaptionLines');
+const captionEnd = source.indexOf('function updateWeeklyTimezoneLegend', captionStart);
+const getAggregateCaptionLines = new Function(
+  'calendarNormalizeSpaces',
+  'calendarFormatWeeklySessionDate',
+  'getWeeklySessionTimes',
+  'isWeeklyCalendarAggregateMode',
+  `${source.slice(captionStart, captionEnd)} return getWeeklySessionCaptionLines;`
+)(normalizeSpaces, session => session.date, () => [], () => true);
+assert.deepStrictEqual(
+  getAggregateCaptionLines({ title: 'Cross-partner session', partner: 'Partner Two', date: 'Monday, November 16, 2026' }),
+  ['• Cross-partner session — Monday, November 16, 2026', '  Partner: Partner Two', '  Time TBA', '  Register: ', ''],
+  'aggregate weekly post captions must identify each session partner',
 );
 assert.strictEqual(weeklyTimeHelpers.getWeeklySessionCardColor({ card_color: '#173F5F' }), '#173F5F');
 assert.deepStrictEqual(
@@ -271,6 +388,8 @@ assert(source.includes('cta.textContent = `REGISTER · ${registrationDate}`;'));
 assert(source.includes('shortUrl.textContent = session.weekly_short_url;'));
 assert(source.includes('link.textContent = shortUrl;'));
 assert(source.includes('postLines.push(...getWeeklySessionCaptionLines(session));'));
+assert(source.includes("className = 'weekly-calendar-session-partner'"), 'aggregate cards must visibly label each session partner');
+assert(source.includes("className = 'weekly-post-session-partner'"), 'aggregate post rows must visibly label each session partner');
 assert(source.includes("row.style.setProperty('--weekly-session-card-color', cardColor)"));
 assert(source.includes('selectedWeeklyPage * WEEKLY_CALENDAR_PAGE_SIZE + index'));
 assert(source.includes('background: var(--weekly-session-card-color, #93c47d);'));

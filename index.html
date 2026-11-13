@@ -436,6 +436,14 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
   margin: 0;
   overflow-wrap: anywhere;
 }
+.weekly-calendar-session-partner {
+  color: rgba(255,255,255,.94);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 5px 0 0;
+  overflow-wrap: anywhere;
+}
 .weekly-calendar-session-timezone {
   color: #fff;
   font-size: 12px;
@@ -703,6 +711,7 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
   padding: 10px 12px;
 }
 .weekly-post-session-title { color: #172b3a; font-size: 12px; font-weight: 800; line-height: 1.3; }
+.weekly-post-session-partner { color: #405563; font-size: 11px; font-weight: 700; }
 .weekly-post-session-meta { color: #586974; font-size: 11px; }
 .weekly-post-session-link-row { align-items: center; display: flex; gap: 8px; min-width: 0; }
 .weekly-post-session-link { color: #0057b8; font-size: 11px; overflow-wrap: anywhere; }
@@ -4721,8 +4730,71 @@ function normalizePartnerConfig(config) {
 
 const EMPLOYERS_API_URL = 'https://somebodytotalkto.com/jsonapi/taxonomy_term/employer?page%5Blimit%5D=100';
 const SPOTLIGHT_SERIES_API_URL = 'https://somebodytotalkto.com/api/spotlight/microsite/series';
+let livePromoPartnerTids = [];
+let promoPartnerTermsStatus = 'loading';
 const comingSoonSeriesMonthLabels = new Map();
 const comingSoonSeriesMonthRequests = new Map();
+
+function normalizeWeeklyCalendarPartnerTids(values) {
+  const tids = [];
+  const seen = new Set();
+  (Array.isArray(values) ? values : []).forEach(value => {
+    if (typeof value !== 'number' && typeof value !== 'string') return;
+    const rawValue = String(value).trim();
+    if (!/^\d+$/.test(rawValue)) return;
+    const tid = Number(rawValue);
+    if (!Number.isSafeInteger(tid) || tid < 1 || seen.has(tid)) return;
+    seen.add(tid);
+    tids.push(tid);
+  });
+  return tids;
+}
+
+function resolveWeeklyCalendarPartnerTids(selectedPartnerTid, eligiblePartnerTids, termsReady) {
+  if (termsReady !== true) return [];
+  const eligibleTids = normalizeWeeklyCalendarPartnerTids(eligiblePartnerTids);
+  const selectedValue = selectedPartnerTid === null || selectedPartnerTid === undefined
+    ? ''
+    : String(selectedPartnerTid).trim();
+  if (selectedValue && selectedValue !== '0') {
+    const selectedTid = normalizeWeeklyCalendarPartnerTids([selectedPartnerTid])[0];
+    return selectedTid && eligibleTids.includes(selectedTid) ? [selectedTid] : [];
+  }
+  return eligibleTids;
+}
+
+function getWeeklyPartnerAvailabilityMessage(termsStatus, partnerTids, partnerSelected) {
+  if (termsStatus === 'loading') return 'Loading the current promo-card-enabled partner list…';
+  if (termsStatus === 'error') return 'The current partner list could not be loaded. Retry the partner list to continue.';
+  if (partnerSelected && !partnerTids.length) return 'The selected partner is not currently promo-card enabled.';
+  if (!partnerTids.length) return 'No promo-card-enabled partners are currently available.';
+  return '';
+}
+
+function getWeeklyCalendarSessionsApiEndpoint(publicBaseUrl) {
+  try {
+    const base = new URL(String(publicBaseUrl || ''));
+    if (base.protocol !== 'https:' || base.username || base.password
+      || (base.pathname !== '/' && base.pathname !== '') || base.search || base.hash) return '';
+    return new URL('/api/spotlight/microsite/sessions', base.origin).href;
+  } catch (error) {
+    return '';
+  }
+}
+
+function buildWeeklyCalendarSessionsApiUrl(endpointUrl, partnerTids) {
+  const tids = normalizeWeeklyCalendarPartnerTids(partnerTids);
+  if (!endpointUrl || !tids.length) return '';
+  try {
+    const url = new URL(String(endpointUrl));
+    if (!url.pathname.endsWith('/sessions')) return '';
+    url.searchParams.set('partner', tids.join(','));
+    url.searchParams.set('status', 'all');
+    return url.href;
+  } catch (error) {
+    return '';
+  }
+}
 
 function getEmployerPartnerKey(term) {
   const employerId = String(term && term.attributes && term.attributes.drupal_internal__tid || '');
@@ -4773,43 +4845,58 @@ function populatePartnerSelect() {
 }
 
 async function loadPromoEmployers() {
+  promoPartnerTermsStatus = 'loading';
+  livePromoPartnerTids = [];
   const response = await fetch(EMPLOYERS_API_URL, {
     mode: 'cors', headers: { Accept: 'application/vnd.api+json' }
   });
   if (!response.ok) throw new Error('Employer API request failed');
 
   const payload = await response.json();
+  if (!payload || !Array.isArray(payload.data)) {
+    throw new Error('Employer API response did not include a term list.');
+  }
+  const eligibleTerms = payload.data.filter(term =>
+    term && term.attributes && term.attributes.field_promo_card_enabled === true
+  );
   const apiKeys = new Set();
-  (payload.data || []).filter(term => term && term.attributes && term.attributes.field_promo_card_enabled === true)
-    .forEach(term => {
-      const attributes = term.attributes;
-      const key = getEmployerPartnerKey(term);
-      const current = partnerConfigs.partners[key] || {};
-      const employerColor = attributes.field_spotlight_bg_color_2 || (current.colors && current.colors.primary) || '#0057B8';
-      apiKeys.add(key);
-      partnerConfigs.partners[key] = {
-        ...current,
-        label: attributes.name,
-        employerTermName: attributes.name,
-        partnerTid: Number(attributes.drupal_internal__tid) || 0,
-        exportSlug: current.exportSlug || key,
-        promoCardEnabled: true,
-        micrositeUrl: attributes.field_spotlight_microsite_url || '',
-        defaultTimezone: getTimezoneCode(attributes.field_timezone),
-        sessionsApiUrl: current.sessionsApiUrl || ('https://somebodytotalkto.com/api/spotlight/microsite/sessions?partner=' + attributes.drupal_internal__tid + '&status=all'),
-        colors: {
-          ...(current.colors || {}),
-          primary: employerColor,
-          primaryDark: (current.colors && current.colors.primaryDark) || employerColor,
-          accent: '#FFE8A3',
-          sessionBandBg: employerColor
-        }
-      };
-    });
+  const apiPartnerTids = [];
+  eligibleTerms.forEach(term => {
+    const attributes = term.attributes;
+    const termId = Number(attributes.drupal_internal__tid);
+    if (!Number.isSafeInteger(termId) || termId < 1) {
+      throw new Error('Employer API returned an invalid promo-enabled partner ID.');
+    }
+    const key = getEmployerPartnerKey(term);
+    const current = partnerConfigs.partners[key] || {};
+    const employerColor = attributes.field_spotlight_bg_color_2 || (current.colors && current.colors.primary) || '#0057B8';
+    apiKeys.add(key);
+    apiPartnerTids.push(termId);
+    partnerConfigs.partners[key] = {
+      ...current,
+      label: attributes.name,
+      employerTermName: attributes.name,
+      partnerTid: termId,
+      exportSlug: current.exportSlug || key,
+      promoCardEnabled: true,
+      micrositeUrl: attributes.field_spotlight_microsite_url || '',
+      defaultTimezone: getTimezoneCode(attributes.field_timezone),
+      sessionsApiUrl: current.sessionsApiUrl || ('https://somebodytotalkto.com/api/spotlight/microsite/sessions?partner=' + termId + '&status=all'),
+      colors: {
+        ...(current.colors || {}),
+        primary: employerColor,
+        primaryDark: (current.colors && current.colors.primaryDark) || employerColor,
+        accent: '#FFE8A3',
+        sessionBandBg: employerColor
+      }
+    };
+  });
 
   Object.entries(partnerConfigs.partners).forEach(([key, partner]) => {
     partner.promoCardEnabled = apiKeys.has(key);
   });
+  livePromoPartnerTids = normalizeWeeklyCalendarPartnerTids(apiPartnerTids);
+  promoPartnerTermsStatus = 'ready';
 }
 
 function loadSelectedPartnerKey() {
@@ -4901,7 +4988,7 @@ function isMultiPresenterFacebookPromo() {
 }
 
 function hasReadySelection() {
-  return hasSelectedCard() && (hasSelectedPartner() || isPartnerOptionalCard());
+  return hasSelectedCard() && (hasSelectedPartner() || isPartnerOptionalCard() || isWeeklyCalendarCardLayout());
 }
 
 function getHeaderLogoOption(key) {
@@ -6064,16 +6151,42 @@ function getProfilesApiUrlForSessions(sessionsApiUrl) {
   }
 }
 
+function getWeeklyCalendarPartnerTids() {
+  const selectedPartnerTid = hasSelectedPartner()
+    ? (getPartnerTaxonomyId(activePartnerConfig) || -1)
+    : 0;
+  return resolveWeeklyCalendarPartnerTids(
+    selectedPartnerTid,
+    livePromoPartnerTids,
+    promoPartnerTermsStatus === 'ready'
+  );
+}
+
+function getWeeklyCalendarSessionsApiUrl(configuredUrl = '') {
+  const partnerTids = getWeeklyCalendarPartnerTids();
+  if (!partnerTids.length) return '';
+  const endpointUrl = isWeeklyCalendarAggregateMode()
+    ? getWeeklyCalendarSessionsApiEndpoint(promoRuntimeConfig.stttPublicBaseUrl)
+    : configuredUrl;
+  return buildWeeklyCalendarSessionsApiUrl(endpointUrl, partnerTids);
+}
+
 function getCalendarConfig() {
-  const calendar = activePartnerConfig.calendar || {};
-  const sessionsApiUrl = calendar.sessionsApiUrl || activePartnerConfig.sessionsApiUrl || '';
+  const aggregateMode = isWeeklyCalendarAggregateMode();
+  const calendar = aggregateMode ? {} : (activePartnerConfig.calendar || {});
+  const configuredSessionsApiUrl = calendar.sessionsApiUrl || activePartnerConfig.sessionsApiUrl || '';
+  const sessionsApiUrl = isWeeklyCalendarCardLayout()
+    ? getWeeklyCalendarSessionsApiUrl(configuredSessionsApiUrl)
+    : configuredSessionsApiUrl;
   return {
     ...CALENDAR_DEFAULT_CONFIG,
     ...calendar,
-    programTitle: (activePartnerConfig.label || 'Partner') + ' Amyloidosis Program',
+    programTitle: aggregateMode
+      ? 'All Eligible Partners Amyloidosis Program'
+      : (activePartnerConfig.label || 'Partner') + ' Amyloidosis Program',
     sessionsApiUrl,
     profilesApiUrl: calendar.profilesApiUrl || getProfilesApiUrlForSessions(sessionsApiUrl),
-    micrositeUrl: calendar.micrositeUrl || activePartnerConfig.micrositeUrl || ''
+    micrositeUrl: aggregateMode ? '' : (calendar.micrositeUrl || activePartnerConfig.micrositeUrl || '')
   };
 }
 
@@ -6191,7 +6304,9 @@ async function finishCalendarLoadProgress(sourceKey) {
 
 function syncCalendarCard() {
   const cfg = getCalendarConfig();
-  const colors = activePartnerConfig.colors || {};
+  const colors = isWeeklyCalendarAggregateMode()
+    ? { primary: '#173F5F', borderAccent: '#B9DEE6' }
+    : (activePartnerConfig.colors || {});
   const root = document.documentElement;
   root.style.setProperty('--calendar-primary', colors.primary || '#006E8E');
   root.style.setProperty('--calendar-border', colors.borderAccent || '#B9DEE6');
@@ -6234,6 +6349,12 @@ function syncCalendarCard() {
     if (placeholder) placeholder.classList.add('visible');
   };
   setCalendarLogo(1, 'calendar-logo-partner');
+  const partnerLogoSlot = document.getElementById('calendar-logo-partner')?.closest('.calendar-logo-slot');
+  const partnerLogoDivider = partnerLogoSlot?.nextElementSibling;
+  if (partnerLogoSlot) partnerLogoSlot.style.display = isWeeklyCalendarAggregateMode() ? 'none' : '';
+  if (partnerLogoDivider?.classList.contains('logo-divider')) {
+    partnerLogoDivider.style.display = isWeeklyCalendarAggregateMode() ? 'none' : '';
+  }
   setCalendarLogo(2, 'calendar-logo-af');
   setCalendarLogo(3, 'calendar-logo-oav');
   setImg('calendar-subscribe-qr-code', cfg.qrSrc, cfg.qrAlt);
@@ -6453,7 +6574,7 @@ function updateWeeklyPagination(sessionCount) {
   if (control) control.style.display = isWeeklyCalendarCardLayout() && hasReadySelection() ? 'flex' : 'none';
 }
 
-function weeklyCalendarStatus(message, canRetry = false) {
+function weeklyCalendarStatus(message, canRetry = false, retryAction, retryLabel = 'Retry registration links') {
   const list = document.getElementById('calendar-sessions-list');
   if (!list) return;
   list.replaceChildren();
@@ -6463,8 +6584,11 @@ function weeklyCalendarStatus(message, canRetry = false) {
   if (canRetry) {
     const retry = document.createElement('button');
     retry.type = 'button';
-    retry.textContent = 'Retry registration links';
-    retry.addEventListener('click', () => renderWeeklyCalendarSessions());
+    retry.textContent = retryLabel;
+    retry.addEventListener('click', () => {
+      if (typeof retryAction === 'function') retryAction();
+      else renderWeeklyCalendarSessions();
+    });
     status.appendChild(retry);
   }
   list.appendChild(status);
@@ -6597,6 +6721,9 @@ function getWeeklySessionCaptionLines(session) {
   const title = calendarNormalizeSpaces(session?.title) || 'Untitled session';
   const date = calendarFormatWeeklySessionDate(session);
   const lines = [`• ${title} — ${date}`];
+  if (isWeeklyCalendarAggregateMode()) {
+    lines.push(`  Partner: ${calendarNormalizeSpaces(session?.partner) || 'Partner details unavailable'}`);
+  }
   const times = getWeeklySessionTimes(session);
   if (times.length) {
     lines.push(...times.map(({ label, time }) => `  ${label}: ${time}`));
@@ -6669,7 +6796,10 @@ function updateWeeklyPostPanel(sessions) {
     return;
   }
 
-  const postLines = [`${activePartnerConfig.label || 'Partner'} Amyloidosis Program · ${calendarGetWeeklyLabel()}`, ''];
+  const postTitle = isWeeklyCalendarAggregateMode()
+    ? 'All Eligible Partners Amyloidosis Program'
+    : `${activePartnerConfig.label || 'Partner'} Amyloidosis Program`;
+  const postLines = [`${postTitle} · ${calendarGetWeeklyLabel()}`, ''];
   if (timezonePresentation.placement === 'legend' && timezonePresentation.legendLabels.length) {
     postLines.push(`Time lines follow this order: ${timezonePresentation.legendLabels.join(' | ')}.`, '');
   }
@@ -6687,6 +6817,9 @@ function updateWeeklyPostPanel(sessions) {
     const titleEl = document.createElement('div');
     titleEl.className = 'weekly-post-session-title';
     titleEl.textContent = title;
+    const partnerEl = document.createElement('div');
+    partnerEl.className = 'weekly-post-session-partner';
+    partnerEl.textContent = `Partner: ${calendarNormalizeSpaces(session.partner) || 'Partner details unavailable'}`;
     const meta = document.createElement('div');
     meta.className = 'weekly-post-session-meta';
     meta.textContent = `${date} · ${displayTime}`;
@@ -6722,7 +6855,8 @@ function updateWeeklyPostPanel(sessions) {
       }
     });
     linkRow.append(link, copy);
-    item.append(titleEl, meta, linkRow);
+    if (isWeeklyCalendarAggregateMode()) item.append(titleEl, partnerEl, meta, linkRow);
+    else item.append(titleEl, meta, linkRow);
     list.appendChild(item);
   });
   setWeeklyPostDraft(pageKey, postLines.join('\n').trim());
@@ -6788,6 +6922,14 @@ async function renderWeeklyCalendarSessions() {
       const title = document.createElement('h2');
       title.className = 'weekly-calendar-session-title';
       title.textContent = calendarNormalizeSpaces(session.title) || 'Untitled session';
+      if (isWeeklyCalendarAggregateMode()) {
+        const partnerLabel = document.createElement('p');
+        partnerLabel.className = 'weekly-calendar-session-partner';
+        partnerLabel.textContent = `Partner: ${calendarNormalizeSpaces(session.partner) || 'Partner details unavailable'}`;
+        heading.append(condition, title, partnerLabel);
+      } else {
+        heading.append(condition, title);
+      }
       const timezone = document.createElement('p');
       timezone.className = 'weekly-calendar-session-timezone';
       const sessionLabels = timezonePresentation.sessionLabels[index] || [];
@@ -6795,7 +6937,7 @@ async function renderWeeklyCalendarSessions() {
       timezone.hidden = !timezone.textContent;
       const divider = document.createElement('hr');
       divider.className = 'weekly-calendar-session-divider';
-      heading.append(condition, title, timezone, divider);
+      heading.append(timezone, divider);
 
       const dateTime = document.createElement('div');
       dateTime.className = 'weekly-calendar-session-date-time';
@@ -6858,7 +7000,7 @@ async function renderWeeklyCalendarSessions() {
           copy.appendChild(credentials);
         }
         const employer = calendarNormalizeSpaces(presenter.employer);
-        const partner = calendarNormalizeSpaces(session.partner || activePartnerConfig.label);
+        const partner = calendarNormalizeSpaces(session.partner || (hasSelectedPartner() ? activePartnerConfig.label : ''));
         const affiliation = employer && partner && employer !== partner ? `${employer} · ${partner}` : (employer || partner);
         if (affiliation) {
           const partnerLine = document.createElement('span');
@@ -7044,9 +7186,30 @@ function setCalendarRange(range) {
 }
 
 async function loadCalendarSessions() {
+  if (isWeeklyCalendarCardLayout()) {
+    const partnerTids = getWeeklyCalendarPartnerTids();
+    const availabilityMessage = getWeeklyPartnerAvailabilityMessage(
+      promoPartnerTermsStatus,
+      partnerTids,
+      hasSelectedPartner()
+    );
+    if (availabilityMessage) {
+      if (calendarSessionsLoaded || calendarSessionsPromise) resetCalendarSessionState();
+      if (promoPartnerTermsStatus === 'error') {
+        weeklyCalendarStatus(availabilityMessage, true, () => loadPartnerConfigs(), 'Retry partner list');
+      } else {
+        weeklyCalendarStatus(availabilityMessage);
+      }
+      return Promise.resolve();
+    }
+  }
   if (calendarSessionsPromise) return calendarSessionsPromise;
   const cfg = getCalendarConfig();
   if (!cfg.sessionsApiUrl || !cfg.profilesApiUrl) {
+    if (isWeeklyCalendarCardLayout()) {
+      weeklyCalendarStatus('The sessions API endpoint is not configured for this environment.');
+      return Promise.resolve();
+    }
     renderCalendarSessionsFromApi([], []);
     return Promise.resolve();
   }
@@ -7077,6 +7240,10 @@ async function loadCalendarSessions() {
 }
 
 async function loadPartnerConfigs() {
+  promoPartnerTermsStatus = 'loading';
+  livePromoPartnerTids = [];
+  if (isWeeklyCalendarCardLayout()) syncCalendarCard();
+
   try {
     const response = await fetch('partner-configs.json', { cache: 'no-store' });
     if (response.ok) {
@@ -7093,6 +7260,8 @@ async function loadPartnerConfigs() {
   } catch(e) {
     // The API is the authority for eligibility. Do not surface a stale local
     // partner list if its enabled state cannot be verified.
+    promoPartnerTermsStatus = 'error';
+    livePromoPartnerTids = [];
     partnerConfigs = { ...partnerConfigs, partners: {} };
   }
 
@@ -7124,6 +7293,10 @@ function isCalendarCardLayout() {
 
 function isWeeklyCalendarCardLayout() {
   return surface.classList.contains('layout-weekly-calendar-card');
+}
+
+function isWeeklyCalendarAggregateMode() {
+  return isWeeklyCalendarCardLayout() && !hasSelectedPartner();
 }
 
 function isAnyCalendarCardLayout() {
@@ -8036,7 +8209,9 @@ function getExportTimestamp() {
 }
 
 function getCalendarReadyMessage(prefix = '') {
-  const label = activePartnerConfig.label || 'selected partner';
+  const label = isWeeklyCalendarAggregateMode()
+    ? 'all promo-card-enabled partners'
+    : (activePartnerConfig.label || 'selected partner');
   const card = isWeeklyCalendarCardLayout() ? 'Weekly Calendar Card' : 'Monthly Calendar Card';
   return prefix + card + ' loaded for ' + label + '. Use Front and Back to preview both sides.';
 }
