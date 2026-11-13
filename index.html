@@ -4901,10 +4901,12 @@ let weeklyCardPageReady = false;
 const weeklySessionAliasCache = new Map();
 const weeklySessionAliasPromises = new Map();
 const weeklyQrDataUrlCache = new Map();
+let weeklyRegistrationRetrySessionUuids = null;
 const weeklyPostDraftCache = new Map();
 let weeklyPostDraftPageKey = '';
 let weeklyPostDraftDirty = false;
 const CALENDAR_REQUEST_TIMEOUT_MS = 10000;
+const REGISTRATION_LINK_REQUEST_TIMEOUT_MS = 30000;
 const partnerBackSeriesMonthRequests = new Map();
 const partnerBackEmployerRequests = new Map();
 
@@ -6602,9 +6604,9 @@ function setCalendarLoadProgress(percent) {
   state.querySelector('.calendar-load-bar').style.width = value + '%';
 }
 
-async function fetchCalendarJson(url, label, cacheMode = 'default') {
+async function fetchCalendarJson(url, label, cacheMode = 'default', timeoutMs = CALENDAR_REQUEST_TIMEOUT_MS) {
   const controller = new AbortController();
-  const timeout = window.setTimeout(() => controller.abort(), CALENDAR_REQUEST_TIMEOUT_MS);
+  const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
   try {
     const response = await fetch(url, {
       mode: 'cors',
@@ -6616,7 +6618,7 @@ async function fetchCalendarJson(url, label, cacheMode = 'default') {
     return await response.json();
   } catch (error) {
     if (error.name === 'AbortError') {
-      throw new Error(label + ' service timed out after ' + (CALENDAR_REQUEST_TIMEOUT_MS / 1000) + ' seconds');
+      throw new Error(label + ' service timed out after ' + (timeoutMs / 1000) + ' seconds');
     }
     throw error;
   } finally {
@@ -7030,7 +7032,8 @@ async function getWeeklySessionWithAlias(session) {
     const detailJson = await fetchCalendarJson(
       getWeeklySessionAliasApiUrl(session),
       'Registration link',
-      'no-store'
+      'no-store',
+      REGISTRATION_LINK_REQUEST_TIMEOUT_MS
     );
     const rows = Array.isArray(detailJson.data) ? detailJson.data : (detailJson.data ? [detailJson.data] : []);
     const detail = rows.find(row => String(row.uuid || '') === uuid);
@@ -7065,9 +7068,13 @@ function retryWeeklyCalendarRegistrationLinks() {
     selectedWeeklyPage * WEEKLY_CALENDAR_PAGE_SIZE,
     (selectedWeeklyPage + 1) * WEEKLY_CALENDAR_PAGE_SIZE
   );
+  const retryUuids = weeklyRegistrationRetrySessionUuids instanceof Set
+    && weeklyRegistrationRetrySessionUuids.size
+    ? weeklyRegistrationRetrySessionUuids
+    : new Set(pageRows.map(session => String(session.uuid || '').trim()).filter(Boolean));
   pageRows.forEach(session => {
     const uuid = String(session.uuid || '').trim();
-    if (!uuid) return;
+    if (!uuid || !retryUuids.has(uuid)) return;
     const cached = weeklySessionAliasCache.get(uuid);
     const shortUrl = getApprovedRegistrationShortUrl(
       cached?.weekly_short_url || cached?.qr_payload_url || cached?.short_url
@@ -7300,6 +7307,7 @@ async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
   const list = document.getElementById('calendar-sessions-list');
   if (!list || !isWeeklyCalendarCardLayout()) return;
   const token = ++weeklyPageLoadToken;
+  weeklyRegistrationRetrySessionUuids = null;
   const sessions = calendarGetWeeklySessions(calendarSessionsData.sessions);
   const pageCount = Math.ceil(sessions.length / WEEKLY_CALENDAR_PAGE_SIZE);
   if (pageCount && selectedWeeklyPage >= pageCount) selectedWeeklyPage = pageCount - 1;
@@ -7327,7 +7335,28 @@ async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
     : 'Preparing first-party registration links for this card…');
   updateWeeklyPostPanel([]);
   try {
-    const rows = await Promise.all(pageRows.map(session => getWeeklySessionWithAlias(session)));
+    const sessionResults = await Promise.allSettled(pageRows.map(async session => {
+      try {
+        return await getWeeklySessionWithAlias(session);
+      } catch (error) {
+        const sessionError = new Error(error?.message || 'A registration link could not be prepared.');
+        sessionError.sessionUuid = String(session.uuid || '').trim();
+        throw sessionError;
+      }
+    }));
+    const sessionFailures = sessionResults
+      .map((result, index) => ({ result, session: pageRows[index] }))
+      .filter(({ result }) => result.status === 'rejected');
+    if (sessionFailures.length) {
+      const failedUuids = sessionFailures
+        .map(({ session }) => String(session.uuid || '').trim())
+        .filter(Boolean);
+      weeklyRegistrationRetrySessionUuids = new Set(failedUuids);
+      const primaryError = sessionFailures[0].result.reason;
+      primaryError.failedSessionUuids = failedUuids;
+      throw primaryError;
+    }
+    const rows = sessionResults.map(result => result.value);
     if (token !== weeklyPageLoadToken || !isWeeklyCalendarCardLayout()) return;
     const timezonePresentation = getWeeklyTimezonePresentation(
       rows.map(session => getWeeklySessionTimes(session).map(({ zone }) => zone))
@@ -7463,6 +7492,7 @@ async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
       const qr = document.createElement('img');
       qr.src = session.weekly_qr_src;
       qr.dataset.weeklyPayloadUrl = session.weekly_short_url;
+      qr.dataset.weeklySessionUuid = String(session.uuid || '').trim();
       qr.alt = `Registration QR code for ${calendarNormalizeSpaces(session.title)}`;
       qr.width = 124;
       qr.height = 124;
@@ -7476,7 +7506,7 @@ async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
       list.appendChild(row);
       qrImages.push(qr);
     });
-    await Promise.all(qrImages.map(async image => {
+    const qrResults = await Promise.allSettled(qrImages.map(async image => {
       const payloadUrl = image.dataset.weeklyPayloadUrl;
       const dataUrl = weeklyQrDataUrlCache.get(payloadUrl) || '';
       if (!/^data:image\/[^;]+;base64,/i.test(dataUrl)) {
@@ -7489,12 +7519,26 @@ async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
       }
       image.src = dataUrl;
     }));
+    const qrFailures = qrResults
+      .map((result, index) => ({ result, image: qrImages[index] }))
+      .filter(({ result }) => result.status === 'rejected');
+    if (qrFailures.length) {
+      weeklyRegistrationRetrySessionUuids = new Set(qrFailures
+        .map(({ image }) => image.dataset.weeklySessionUuid)
+        .filter(Boolean));
+      throw qrFailures[0].result.reason;
+    }
     if (token !== weeklyPageLoadToken || !isWeeklyCalendarCardLayout()) return;
     weeklyCardPageReady = rows.length > 0;
     updateWeeklyPostPanel(rows);
     updateControlAvailability();
   } catch (error) {
     if (token !== weeklyPageLoadToken) return;
+    if (Array.isArray(error?.failedSessionUuids)) {
+      weeklyRegistrationRetrySessionUuids = new Set(error.failedSessionUuids);
+    } else if (error?.sessionUuid) {
+      weeklyRegistrationRetrySessionUuids = new Set([error.sessionUuid]);
+    }
     updateWeeklyTimezoneLegend(null);
     weeklyCalendarStatus(
       `Registration links could not be prepared. ${error.message}`,
