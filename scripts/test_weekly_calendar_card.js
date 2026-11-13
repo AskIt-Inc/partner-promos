@@ -369,17 +369,28 @@ assert.strictEqual(weeklyHelpers.calendarFormatWeeklyWeekOption(2026, 44), 'Oct 
 assert.strictEqual(weeklyHelpers.calendarFormatWeeklyWeekOption(2026, 46), 'Nov 9–15 (Week 46)');
 assert.strictEqual(weeklyHelpers.calendarFormatWeeklyWeekOption(2020, 53), 'Dec 28–Jan 3 (Week 53)');
 assert.deepStrictEqual(
-  weeklyHelpers.getWeeklyCalendarWeekOptions(2026, 'nov 9').map(option => option.week),
+  weeklyHelpers.getWeeklyCalendarWeekOptions(2026, 'nov 9', { year: 2026, week: 46 }).map(option => option.week),
   [46],
   'searching by date text must find the matching ISO week'
 );
 assert.deepStrictEqual(
-  weeklyHelpers.getWeeklyCalendarWeekOptions(2026, '2026').map(option => option.week),
-  Array.from({ length: weeklyHelpers.calendarGetIsoWeeksInYear(2026) }, (_, index) => index + 1),
-  'week search must include the selected ISO year and only weeks valid in that year'
+  weeklyHelpers.getWeeklyCalendarWeekOptions(2026, '2026', { year: 2026, week: 46 }).map(option => option.week),
+  Array.from({ length: weeklyHelpers.calendarGetIsoWeeksInYear(2026) - 45 }, (_, index) => index + 46),
+  'week search must include only upcoming weeks in the selected ISO year'
 );
-assert.strictEqual(weeklyHelpers.getWeeklyCalendarWeekOptions(2020).length, 53);
-assert.strictEqual(weeklyHelpers.getWeeklyCalendarWeekOptions(2021).length, 52);
+assert.deepStrictEqual(
+  weeklyHelpers.getWeeklyCalendarWeekOptions(2026, 'week 45', { year: 2026, week: 46 }),
+  [],
+  'past weeks in the current ISO year must not be searchable'
+);
+assert.deepStrictEqual(
+  weeklyHelpers.getWeeklyCalendarWeekOptions(2025, '', { year: 2026, week: 46 }),
+  [],
+  'past ISO years must not expose week options'
+);
+assert.strictEqual(weeklyHelpers.getWeeklyCalendarWeekOptions(2020, '', { year: 2020, week: 53 })[0].week, 53);
+assert.strictEqual(weeklyHelpers.getWeeklyCalendarWeekOptions(2021, '', { year: 2021, week: 52 })[0].week, 52);
+assert.strictEqual(weeklyHelpers.getWeeklyCalendarWeekOptions(2027, '', { year: 2026, week: 46 }).length, 52);
 assert(source.includes('id="weekly-calendar-week-search" class="weekly-calendar-week-search" type="search"'));
 assert(source.includes('role="listbox" aria-label="Weekly date ranges"'));
 assert(source.includes("weeklyCalendarWeekSearch?.addEventListener('input', refreshWeeklyCalendarWeekPicker)"));
@@ -399,14 +410,17 @@ const pickerRefresh = new Function(
   'weeklyCalendarWeekOptions',
   'weeklyCalendarWeekSearch',
   'weeklyCalendarWeekEmpty',
+  'weeklyCalendarYearInput',
+  'calendarGetCurrentIsoWeek',
   'calendarFormatWeeklyWeekOption',
   'getWeeklyCalendarWeekOptions',
   'selectedWeeklyYear',
   'selectedWeeklyWeek',
   'document',
   `${source.slice(pickerRefreshStart, pickerRefreshEnd)} return refreshWeeklyCalendarWeekPicker;`
-)(pickerValue, pickerOptionList, pickerSearch, pickerEmpty,
-  weeklyHelpers.calendarFormatWeeklyWeekOption, weeklyHelpers.getWeeklyCalendarWeekOptions,
+)(pickerValue, pickerOptionList, pickerSearch, pickerEmpty, { value: '', min: '' }, () => ({ year: 2026, week: 46 }),
+  weeklyHelpers.calendarFormatWeeklyWeekOption,
+  (year, query) => weeklyHelpers.getWeeklyCalendarWeekOptions(year, query, { year: 2026, week: 46 }),
   2026, 46, {
     createElement: () => ({
       dataset: {},
@@ -416,7 +430,7 @@ const pickerRefresh = new Function(
   });
 pickerRefresh();
 assert.strictEqual(pickerValue.textContent, 'Nov 9–15 (Week 46)');
-assert.strictEqual(pickerOptionList.items.length, weeklyHelpers.calendarGetIsoWeeksInYear(2026));
+assert.strictEqual(pickerOptionList.items.length, weeklyHelpers.calendarGetIsoWeeksInYear(2026) - 45);
 assert.strictEqual(pickerOptionList.items.find(option => option.dataset.week === '46').attributes['aria-selected'], 'true');
 pickerSearch.value = 'Nov 9';
 pickerRefresh();
@@ -471,6 +485,7 @@ assert(weekPageStart >= 0 && weekPageEnd > weekPageStart, 'weekly period and pag
 let weeklyRenders = 0;
 const weekPageHarness = new Function(
   'calendarGetIsoWeeksInYear',
+  'calendarGetCurrentIsoWeek',
   'calendarGetWeeklySessions',
   'WEEKLY_CALENDAR_PAGE_SIZE',
   'updateWeeklyCalendarRangeLabel',
@@ -488,18 +503,31 @@ const weekPageHarness = new Function(
    return {
      setWeeklyCalendarPeriod,
      setWeeklyCalendarPage,
-     getState: () => ({ year: selectedWeeklyYear, week: selectedWeeklyWeek, page: selectedWeeklyPage, banner: weeklyAggregateBannerSettings })
+     getState: () => ({ year: selectedWeeklyYear, week: selectedWeeklyWeek, page: selectedWeeklyPage, yearMin: weeklyCalendarYearInput.min, banner: weeklyAggregateBannerSettings })
    };`
-)(() => 52, sessions => sessions, 2, () => {}, () => {}, () => { weeklyRenders++; });
+)(year => year === 2026 ? 53 : 52, () => ({ year: 2026, week: 46 }), sessions => sessions, 2, () => {}, () => {}, () => { weeklyRenders++; });
 weekPageHarness.setWeeklyCalendarPeriod(2027, 4);
 weekPageHarness.setWeeklyCalendarPage(1);
 assert.deepStrictEqual(weekPageHarness.getState(), {
   year: 2027,
   week: 4,
   page: 1,
+  yearMin: '2026',
   banner: editedBannerSettings
 }, 'banner edits must survive ISO week changes and pagination within the editing session');
 assert.strictEqual(weeklyRenders, 2);
+weekPageHarness.setWeeklyCalendarPeriod(2026, 45);
+assert.strictEqual(weekPageHarness.getState().week, 46, 'selecting a past week in the current ISO year must clamp to the current week');
+assert.strictEqual(weeklyRenders, 3);
+weekPageHarness.setWeeklyCalendarPeriod(2025, 10);
+assert.deepStrictEqual(weekPageHarness.getState(), {
+  year: 2026,
+  week: 46,
+  page: 0,
+  yearMin: '2026',
+  banner: editedBannerSettings
+}, 'changing to a past year must clamp to the current upcoming ISO week');
+assert.strictEqual(weeklyRenders, 4);
 
 const timezoneStart = source.indexOf('function getWeeklyTimezoneLabel');
 const timezoneEnd = source.indexOf('function getWeeklyPostPageKey', timezoneStart);
@@ -771,7 +799,7 @@ assert(source.includes("return { pxW: 1440, pxH: 1800, wIn: 4.8, hIn: 6, tag: '4
 assert(source.includes("return { pxW: 1200, pxH: 1800, wIn: 4, hIn: 6, tag: '4x6', orientation: 'portrait' }"), 'monthly export dimensions must remain unchanged');
 
 promoTermsChecks().then(() => {
-  console.log('weekly date-range picker, aggregate banner controls, partner loading, ISO-week filters, drafts, captions, API alias/QR source, and export checks passed');
+  console.log('upcoming weekly date-range picker, aggregate banner controls, partner loading, ISO-week filters, drafts, captions, API alias/QR source, and export checks passed');
 }).catch(error => {
   console.error(error);
   process.exitCode = 1;

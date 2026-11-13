@@ -6361,11 +6361,13 @@ function calendarFormatWeeklyWeekOption(year, week) {
   return `${startLabel}–${endLabel} (Week ${week})`;
 }
 
-function getWeeklyCalendarWeekOptions(year = selectedWeeklyYear, query = '') {
+function getWeeklyCalendarWeekOptions(year = selectedWeeklyYear, query = '', currentIsoWeek = calendarGetCurrentIsoWeek()) {
   const safeYear = Math.max(2000, Math.min(2100, Number(year) || selectedWeeklyYear));
+  if (safeYear < currentIsoWeek.year) return [];
+  const firstWeek = safeYear === currentIsoWeek.year ? currentIsoWeek.week : 1;
   const normalizedQuery = String(query || '').trim().toLocaleLowerCase();
-  return Array.from({ length: calendarGetIsoWeeksInYear(safeYear) }, (_, index) => {
-    const week = index + 1;
+  return Array.from({ length: calendarGetIsoWeeksInYear(safeYear) - firstWeek + 1 }, (_, index) => {
+    const week = firstWeek + index;
     const label = calendarFormatWeeklyWeekOption(safeYear, week);
     const searchText = `${label} ${safeYear} ${week} ${String(week).padStart(2, '0')}`.toLocaleLowerCase();
     return { week, label, searchText };
@@ -7412,6 +7414,16 @@ function setWeeklyCalendarDay(filter, checked) {
 }
 
 function refreshWeeklyCalendarWeekPicker() {
+  const currentIsoWeek = calendarGetCurrentIsoWeek();
+  if (selectedWeeklyYear < currentIsoWeek.year || (selectedWeeklyYear === currentIsoWeek.year && selectedWeeklyWeek < currentIsoWeek.week)) {
+    selectedWeeklyYear = currentIsoWeek.year;
+    selectedWeeklyWeek = currentIsoWeek.week;
+    selectedWeeklyPage = 0;
+    if (weeklyCalendarYearInput) weeklyCalendarYearInput.value = String(currentIsoWeek.year);
+    updateWeeklyCalendarRangeLabel();
+    if (calendarSessionsLoaded && isWeeklyCalendarCardLayout()) renderWeeklyCalendarSessions();
+  }
+  if (weeklyCalendarYearInput) weeklyCalendarYearInput.min = String(currentIsoWeek.year);
   if (weeklyCalendarWeekValue) {
     weeklyCalendarWeekValue.textContent = calendarFormatWeeklyWeekOption(selectedWeeklyYear, selectedWeeklyWeek);
   }
@@ -7448,12 +7460,17 @@ function setWeeklyCalendarWeekPickerOpen(open, focusSearch = false) {
 }
 
 function setWeeklyCalendarPeriod(year, week) {
-  const safeYear = Math.max(2000, Math.min(2100, Number(year) || selectedWeeklyYear));
+  const currentIsoWeek = calendarGetCurrentIsoWeek();
+  const safeYear = Math.max(currentIsoWeek.year, Math.min(2100, Number(year) || selectedWeeklyYear));
   const maxWeek = calendarGetIsoWeeksInYear(safeYear);
-  const safeWeek = Math.max(1, Math.min(maxWeek, Number(week) || 1));
+  const minWeek = safeYear === currentIsoWeek.year ? currentIsoWeek.week : 1;
+  const safeWeek = Math.max(minWeek, Math.min(maxWeek, Number(week) || minWeek));
   selectedWeeklyYear = safeYear;
   selectedWeeklyWeek = safeWeek;
-  if (weeklyCalendarYearInput) weeklyCalendarYearInput.value = String(safeYear);
+  if (weeklyCalendarYearInput) {
+    weeklyCalendarYearInput.min = String(currentIsoWeek.year);
+    weeklyCalendarYearInput.value = String(safeYear);
+  }
   refreshWeeklyCalendarWeekPicker();
   selectedWeeklyPage = 0;
   updateWeeklyCalendarRangeLabel();
