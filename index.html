@@ -629,6 +629,45 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
   display: grid;
   gap: 10px;
 }
+.weekly-aggregate-banner-controls {
+  border: 1px solid var(--border-rose);
+  border-radius: 8px;
+  display: none;
+  gap: 10px;
+  grid-template-columns: 1fr;
+  margin: 0;
+  padding: 12px;
+  width: 100%;
+}
+.weekly-aggregate-banner-controls legend {
+  color: #44525d;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 0 4px;
+  text-transform: uppercase;
+}
+.weekly-aggregate-banner-controls input[type="text"] {
+  background: #fff;
+  border: 1px solid #c8d1d8;
+  border-radius: 4px;
+  box-sizing: border-box;
+  color: #263747;
+  font: inherit;
+  min-height: 34px;
+  padding: 6px 8px;
+  width: 100%;
+}
+.weekly-aggregate-banner-controls input[type="color"] {
+  background: #fff;
+  border: 1px solid #c8d1d8;
+  border-radius: 4px;
+  box-sizing: border-box;
+  cursor: pointer;
+  height: 36px;
+  padding: 3px;
+  width: 100%;
+}
 .weekly-calendar-period-controls {
   display: grid;
   gap: 8px;
@@ -3310,6 +3349,21 @@ body[data-partner="vamp"] .session-back-title {
         <p class="calendar-day-filter-help">At least one day must be selected.</p>
       </fieldset>
     </div>
+    <fieldset id="weekly-aggregate-banner-controls" class="weekly-aggregate-banner-controls">
+      <legend>Aggregate Weekly Banner</legend>
+      <label class="field-control" for="weekly-banner-eyebrow">
+        <span>Banner Eyebrow</span>
+        <input id="weekly-banner-eyebrow" type="text" maxlength="120" value="Amyloidosis Program Spotlight Series">
+      </label>
+      <label class="field-control" for="weekly-banner-title">
+        <span>Main Title</span>
+        <input id="weekly-banner-title" type="text" maxlength="120" value="All Eligible Partners Amyloidosis Program">
+      </label>
+      <label class="field-control" for="weekly-banner-color">
+        <span>Banner Background</span>
+        <input id="weekly-banner-color" type="color" value="#173F5F">
+      </label>
+    </fieldset>
     <label class="field-control calendar-filter-control weekly-filter-control" for="calendar-date-chip-size">
       <span>Day &amp; Date Box Size</span>
       <span class="adjustment-slider-row">
@@ -4245,6 +4299,9 @@ const multiRegistrationSizeSlider = document.getElementById('multi-registration-
 const calendarDateChipSizeSlider = document.getElementById('calendar-date-chip-size');
 const weeklyCalendarYearInput = document.getElementById('weekly-calendar-year');
 const weeklyCalendarWeekSelect = document.getElementById('weekly-calendar-week');
+const weeklyBannerEyebrowInput = document.getElementById('weekly-banner-eyebrow');
+const weeklyBannerTitleInput = document.getElementById('weekly-banner-title');
+const weeklyBannerColorInput = document.getElementById('weekly-banner-color');
 const weeklyTimezoneDisplaySelect = document.getElementById('weekly-timezone-display');
 const weeklyPostTextArea = document.getElementById('weekly-post-text');
 const sideFontSelects = Array.from(document.querySelectorAll('.side-font-select'));
@@ -4682,6 +4739,13 @@ const CALENDAR_DEFAULT_CONFIG = {
   sessionsApiUrl: '',
   profilesApiUrl: ''
 };
+const WEEKLY_AGGREGATE_BANNER_DEFAULTS = Object.freeze({
+  eyebrow: 'Amyloidosis Program Spotlight Series',
+  title: 'All Eligible Partners Amyloidosis Program',
+  color: '#173F5F'
+});
+const WEEKLY_AGGREGATE_BANNER_STORAGE_KEY = 'weekly_aggregate_banner';
+let weeklyAggregateBannerSettings = { ...WEEKLY_AGGREGATE_BANNER_DEFAULTS };
 const CALENDAR_DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const CALENDAR_MONTH_INDEX = {
   Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
@@ -5202,6 +5266,71 @@ function getCardScopedStorageKey(baseKey, layout) {
   return baseKey + '__card__' + getCurrentCardMemoryKey(layout);
 }
 
+function normalizeWeeklyAggregateBannerSettings(settings) {
+  const value = settings && typeof settings === 'object' ? settings : {};
+  const color = String(value.color || '');
+  return {
+    eyebrow: typeof value.eyebrow === 'string'
+      ? value.eyebrow.slice(0, 120)
+      : WEEKLY_AGGREGATE_BANNER_DEFAULTS.eyebrow,
+    title: typeof value.title === 'string'
+      ? value.title.slice(0, 120)
+      : WEEKLY_AGGREGATE_BANNER_DEFAULTS.title,
+    color: /^#[0-9a-f]{6}$/i.test(color)
+      ? color.toUpperCase()
+      : WEEKLY_AGGREGATE_BANNER_DEFAULTS.color
+  };
+}
+
+function loadWeeklyAggregateBannerSettings(layout) {
+  if (layout !== 'weekly-calendar-card') return { ...WEEKLY_AGGREGATE_BANNER_DEFAULTS };
+  try {
+    const stored = JSON.parse(window.localStorage.getItem(
+      getCardScopedStorageKey(WEEKLY_AGGREGATE_BANNER_STORAGE_KEY, layout)
+    ) || 'null');
+    if (stored && typeof stored === 'object') {
+      return normalizeWeeklyAggregateBannerSettings({ ...WEEKLY_AGGREGATE_BANNER_DEFAULTS, ...stored });
+    }
+  } catch (error) {
+    // Ignore invalid saved banner settings and keep the defaults.
+  }
+  return { ...WEEKLY_AGGREGATE_BANNER_DEFAULTS };
+}
+
+function saveWeeklyAggregateBannerSettings() {
+  try {
+    window.localStorage.setItem(
+      getCardScopedStorageKey(WEEKLY_AGGREGATE_BANNER_STORAGE_KEY, 'weekly-calendar-card'),
+      JSON.stringify(weeklyAggregateBannerSettings)
+    );
+  } catch (error) {
+    // Keep the in-memory settings when browser storage is unavailable.
+  }
+}
+
+function refreshWeeklyAggregateBannerControls() {
+  if (weeklyBannerEyebrowInput && weeklyBannerEyebrowInput.value !== weeklyAggregateBannerSettings.eyebrow) {
+    weeklyBannerEyebrowInput.value = weeklyAggregateBannerSettings.eyebrow;
+  }
+  if (weeklyBannerTitleInput && weeklyBannerTitleInput.value !== weeklyAggregateBannerSettings.title) {
+    weeklyBannerTitleInput.value = weeklyAggregateBannerSettings.title;
+  }
+  if (weeklyBannerColorInput && String(weeklyBannerColorInput.value || '').toUpperCase() !== weeklyAggregateBannerSettings.color) {
+    weeklyBannerColorInput.value = weeklyAggregateBannerSettings.color;
+  }
+}
+
+function setWeeklyAggregateBannerSetting(key, value) {
+  if (!isWeeklyCalendarAggregateMode() || !['eyebrow', 'title', 'color'].includes(key)) return;
+  weeklyAggregateBannerSettings = normalizeWeeklyAggregateBannerSettings({
+    ...weeklyAggregateBannerSettings,
+    [key]: value
+  });
+  saveWeeklyAggregateBannerSettings();
+  refreshWeeklyAggregateBannerControls();
+  syncCalendarCard();
+}
+
 function loadSelectedHeaderLogos(layout) {
   try {
     const stored = JSON.parse(window.localStorage.getItem(getCardScopedStorageKey(HEADER_LOGO_STORAGE_KEY, layout)) || 'null');
@@ -5395,6 +5524,10 @@ function saveSelectedHeaderLogoPositions() {
 }
 
 function loadCardScopedSettings(layout) {
+  if (layout === 'weekly-calendar-card') {
+    weeklyAggregateBannerSettings = loadWeeklyAggregateBannerSettings(layout);
+    refreshWeeklyAggregateBannerControls();
+  }
   selectedHeaderLogos = loadSelectedHeaderLogos(layout);
   selectedHeaderLogoCount = loadSelectedHeaderLogoCount(layout);
   selectedSponsorLogos = loadSelectedSponsorLogos(layout);
@@ -6173,6 +6306,9 @@ function getWeeklyCalendarSessionsApiUrl(configuredUrl = '') {
 
 function getCalendarConfig() {
   const aggregateMode = isWeeklyCalendarAggregateMode();
+  const bannerSettings = aggregateMode
+    ? normalizeWeeklyAggregateBannerSettings(weeklyAggregateBannerSettings)
+    : null;
   const calendar = aggregateMode ? {} : (activePartnerConfig.calendar || {});
   const configuredSessionsApiUrl = calendar.sessionsApiUrl || activePartnerConfig.sessionsApiUrl || '';
   const sessionsApiUrl = isWeeklyCalendarCardLayout()
@@ -6181,9 +6317,13 @@ function getCalendarConfig() {
   return {
     ...CALENDAR_DEFAULT_CONFIG,
     ...calendar,
+    seriesLabel: aggregateMode
+      ? bannerSettings.eyebrow
+      : (calendar.seriesLabel === undefined ? CALENDAR_DEFAULT_CONFIG.seriesLabel : calendar.seriesLabel),
     programTitle: aggregateMode
-      ? 'All Eligible Partners Amyloidosis Program'
+      ? bannerSettings.title
       : (activePartnerConfig.label || 'Partner') + ' Amyloidosis Program',
+    bannerColor: aggregateMode ? bannerSettings.color : '',
     sessionsApiUrl,
     profilesApiUrl: calendar.profilesApiUrl || getProfilesApiUrlForSessions(sessionsApiUrl),
     micrositeUrl: aggregateMode ? '' : (calendar.micrositeUrl || activePartnerConfig.micrositeUrl || '')
@@ -6302,8 +6442,23 @@ async function finishCalendarLoadProgress(sourceKey) {
   }
 }
 
+function applyCalendarBannerSettings(config, fallbackColor = '#006E8E') {
+  const eyebrow = document.getElementById('calendar-series-label');
+  const title = document.getElementById('calendar-program-title');
+  const banner = document.querySelector('.calendar-spotlight-band');
+  if (eyebrow) eyebrow.textContent = config.seriesLabel || '';
+  if (title) title.textContent = config.programTitle || '';
+  if (banner) {
+    const backgroundColor = isWeeklyCalendarAggregateMode()
+      ? config.bannerColor
+      : fallbackColor;
+    banner.style.backgroundColor = backgroundColor || fallbackColor;
+  }
+}
+
 function syncCalendarCard() {
   const cfg = getCalendarConfig();
+  if (isWeeklyCalendarCardLayout()) refreshWeeklyAggregateBannerControls();
   const colors = isWeeklyCalendarAggregateMode()
     ? { primary: '#173F5F', borderAccent: '#B9DEE6' }
     : (activePartnerConfig.colors || {});
@@ -6358,8 +6513,7 @@ function syncCalendarCard() {
   setCalendarLogo(2, 'calendar-logo-af');
   setCalendarLogo(3, 'calendar-logo-oav');
   setImg('calendar-subscribe-qr-code', cfg.qrSrc, cfg.qrAlt);
-  setText('calendar-series-label', cfg.seriesLabel);
-  setText('calendar-program-title', cfg.programTitle);
+  applyCalendarBannerSettings(cfg, colors.primary || '#006E8E');
   setText('calendar-microsite-url', getReadablePublicUrlText(cfg.micrositeUrl));
   updateCalendarTimezoneDisplay();
 
@@ -7121,6 +7275,16 @@ function setWeeklyCalendarPeriod(year, week) {
   if (calendarSessionsLoaded && isWeeklyCalendarCardLayout()) renderWeeklyCalendarSessions();
 }
 
+function setWeeklyCalendarPage(page) {
+  const sessions = calendarGetWeeklySessions(calendarSessionsData.sessions);
+  const pageCount = Math.ceil(sessions.length / WEEKLY_CALENDAR_PAGE_SIZE);
+  if (!pageCount) return;
+  const safePage = Math.max(0, Math.min(pageCount - 1, Number(page) || 0));
+  if (safePage === selectedWeeklyPage) return;
+  selectedWeeklyPage = safePage;
+  renderWeeklyCalendarSessions();
+}
+
 function initializeWeeklyCalendarControls() {
   if (!weeklyCalendarYearInput || !weeklyCalendarWeekSelect) return;
   weeklyCalendarYearInput.value = String(selectedWeeklyYear);
@@ -7142,20 +7306,23 @@ function initializeWeeklyCalendarControls() {
     input.addEventListener('change', () => setWeeklyCalendarDay(input.value, input.checked));
   });
   document.getElementById('weekly-page-previous')?.addEventListener('click', () => {
-    if (selectedWeeklyPage > 0) {
-      selectedWeeklyPage--;
-      renderWeeklyCalendarSessions();
-    }
+    setWeeklyCalendarPage(selectedWeeklyPage - 1);
   });
   document.getElementById('weekly-page-next')?.addEventListener('click', () => {
-    const pageCount = Math.ceil(calendarGetWeeklySessions(calendarSessionsData.sessions).length / WEEKLY_CALENDAR_PAGE_SIZE);
-    if (selectedWeeklyPage < pageCount - 1) {
-      selectedWeeklyPage++;
-      renderWeeklyCalendarSessions();
-    }
+    setWeeklyCalendarPage(selectedWeeklyPage + 1);
   });
   weeklyPostTextArea?.addEventListener('input', () => {
     saveWeeklyPostDraftEdit();
+  });
+}
+
+function initializeWeeklyAggregateBannerControls() {
+  [
+    [weeklyBannerEyebrowInput, 'eyebrow'],
+    [weeklyBannerTitleInput, 'title'],
+    [weeklyBannerColorInput, 'color']
+  ].forEach(([input, key]) => {
+    input?.addEventListener('input', () => setWeeklyAggregateBannerSetting(key, input.value));
   });
 }
 
@@ -7297,6 +7464,10 @@ function isWeeklyCalendarCardLayout() {
 
 function isWeeklyCalendarAggregateMode() {
   return isWeeklyCalendarCardLayout() && !hasSelectedPartner();
+}
+
+function shouldShowWeeklyAggregateBannerControls() {
+  return hasReadySelection() && isWeeklyCalendarAggregateMode();
 }
 
 function isAnyCalendarCardLayout() {
@@ -8325,8 +8496,12 @@ function updateControlAvailability() {
   });
   const weeklyPagination = document.getElementById('weekly-pagination-control');
   const weeklyPostPanel = document.getElementById('weekly-post-panel');
+  const weeklyAggregateBannerControls = document.getElementById('weekly-aggregate-banner-controls');
   if (weeklyPagination) weeklyPagination.style.display = ready && weeklyCalendarCard ? 'flex' : 'none';
   if (weeklyPostPanel) weeklyPostPanel.style.display = ready && weeklyCalendarCard ? 'block' : 'none';
+  if (weeklyAggregateBannerControls) {
+    weeklyAggregateBannerControls.style.display = shouldShowWeeklyAggregateBannerControls() ? 'grid' : 'none';
+  }
   if (btnBack) {
     btnBack.disabled = false;
     btnBack.style.opacity = '';
@@ -8353,6 +8528,7 @@ initSideFontControls();
 initPrimaryAdjustmentSliders();
 applySideFontSizes();
 initializeWeeklyCalendarControls();
+initializeWeeklyAggregateBannerControls();
 
 if (timezoneSelect) {
   timezoneSelect.value = selectedTimezone;

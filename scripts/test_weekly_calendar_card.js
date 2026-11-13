@@ -57,6 +57,159 @@ assert.match(weeklyPartnerHelpers.getWeeklyPartnerAvailabilityMessage('error', [
 assert.match(weeklyPartnerHelpers.getWeeklyPartnerAvailabilityMessage('ready', [], false), /No promo-card-enabled partners/);
 assert.match(weeklyPartnerHelpers.getWeeklyPartnerAvailabilityMessage('ready', [], true), /selected partner is not currently promo-card enabled/);
 
+const bannerDefaultsStart = source.indexOf('const WEEKLY_AGGREGATE_BANNER_DEFAULTS = Object.freeze(');
+const bannerDefaultsEnd = source.indexOf('\nconst WEEKLY_AGGREGATE_BANNER_STORAGE_KEY', bannerDefaultsStart);
+assert(bannerDefaultsStart >= 0 && bannerDefaultsEnd > bannerDefaultsStart, 'aggregate weekly banner defaults must be present');
+const weeklyBannerDefaults = new Function(
+  `${source.slice(bannerDefaultsStart, bannerDefaultsEnd)} return WEEKLY_AGGREGATE_BANNER_DEFAULTS;`
+)();
+assert.deepStrictEqual(weeklyBannerDefaults, {
+  eyebrow: 'Amyloidosis Program Spotlight Series',
+  title: 'All Eligible Partners Amyloidosis Program',
+  color: '#173F5F'
+}, 'aggregate banner defaults must match the approved copy and current blue');
+const bannerNormalizeStart = source.indexOf('function normalizeWeeklyAggregateBannerSettings');
+const bannerNormalizeEnd = source.indexOf('function loadWeeklyAggregateBannerSettings', bannerNormalizeStart);
+const normalizeWeeklyBanner = new Function(
+  'WEEKLY_AGGREGATE_BANNER_DEFAULTS',
+  `${source.slice(bannerNormalizeStart, bannerNormalizeEnd)} return normalizeWeeklyAggregateBannerSettings;`
+)(weeklyBannerDefaults);
+const editedBannerSettings = normalizeWeeklyBanner({ eyebrow: 'Edited eyebrow', title: 'Edited aggregate title', color: '#12abEF' });
+assert.deepStrictEqual(editedBannerSettings, { eyebrow: 'Edited eyebrow', title: 'Edited aggregate title', color: '#12ABEF' });
+assert.strictEqual(normalizeWeeklyBanner({ color: 'red' }).color, weeklyBannerDefaults.color, 'invalid stored colors must return to the safe default');
+
+const bannerStorageStart = bannerNormalizeEnd;
+const bannerStorageEnd = source.indexOf('function refreshWeeklyAggregateBannerControls', bannerStorageStart);
+const bannerStorage = new Map();
+const bannerStorageHelpers = new Function(
+  'WEEKLY_AGGREGATE_BANNER_DEFAULTS',
+  'WEEKLY_AGGREGATE_BANNER_STORAGE_KEY',
+  'normalizeWeeklyAggregateBannerSettings',
+  'window',
+  'getCardScopedStorageKey',
+  `let weeklyAggregateBannerSettings = { ...WEEKLY_AGGREGATE_BANNER_DEFAULTS };
+   ${source.slice(bannerStorageStart, bannerStorageEnd)}
+   return {
+     loadWeeklyAggregateBannerSettings,
+     saveWeeklyAggregateBannerSettings,
+     set(settings) { weeklyAggregateBannerSettings = settings; }
+   };`
+)(weeklyBannerDefaults, 'weekly_aggregate_banner', normalizeWeeklyBanner, {
+  localStorage: {
+    getItem: key => bannerStorage.get(key) || null,
+    setItem: (key, value) => bannerStorage.set(key, value)
+  }
+}, (key, layout) => `${key}__card__${layout}`);
+bannerStorageHelpers.set(editedBannerSettings);
+bannerStorageHelpers.saveWeeklyAggregateBannerSettings();
+assert.deepStrictEqual(
+  JSON.parse(bannerStorage.get('weekly_aggregate_banner__card__weekly-calendar-card')),
+  editedBannerSettings,
+  'aggregate banner settings must use the existing card-scoped storage convention',
+);
+assert.deepStrictEqual(
+  bannerStorageHelpers.loadWeeklyAggregateBannerSettings('weekly-calendar-card'),
+  editedBannerSettings,
+  'saved aggregate banner settings must reload for the weekly card',
+);
+assert.deepStrictEqual(
+  bannerStorageHelpers.loadWeeklyAggregateBannerSettings('calendar-card'),
+  weeklyBannerDefaults,
+  'monthly cards must not load aggregate weekly banner settings',
+);
+
+const bannerRenderStart = source.indexOf('function applyCalendarBannerSettings');
+const bannerRenderEnd = source.indexOf('function syncCalendarCard', bannerRenderStart);
+const makeBannerRenderer = aggregateMode => {
+  const elements = {
+    'calendar-series-label': { textContent: '' },
+    'calendar-program-title': { textContent: '' },
+    banner: { style: { backgroundColor: '' } }
+  };
+  const render = new Function(
+    'document',
+    'isWeeklyCalendarAggregateMode',
+    `${source.slice(bannerRenderStart, bannerRenderEnd)} return applyCalendarBannerSettings;`
+  )({
+    getElementById: id => elements[id],
+    querySelector: selector => selector === '.calendar-spotlight-band' ? elements.banner : null
+  }, () => aggregateMode);
+  return { elements, render };
+};
+const aggregateBannerRenderer = makeBannerRenderer(true);
+aggregateBannerRenderer.render({
+  seriesLabel: editedBannerSettings.eyebrow,
+  programTitle: editedBannerSettings.title,
+  bannerColor: editedBannerSettings.color
+});
+assert.strictEqual(aggregateBannerRenderer.elements['calendar-series-label'].textContent, editedBannerSettings.eyebrow);
+assert.strictEqual(aggregateBannerRenderer.elements['calendar-program-title'].textContent, editedBannerSettings.title);
+assert.strictEqual(aggregateBannerRenderer.elements.banner.style.backgroundColor, editedBannerSettings.color);
+const selectedBannerRenderer = makeBannerRenderer(false);
+selectedBannerRenderer.render({
+  seriesLabel: 'Partner Spotlight Series',
+  programTitle: 'Selected Partner Amyloidosis Program',
+  bannerColor: editedBannerSettings.color
+}, '#0057B8');
+assert.strictEqual(selectedBannerRenderer.elements['calendar-series-label'].textContent, 'Partner Spotlight Series');
+assert.strictEqual(selectedBannerRenderer.elements['calendar-program-title'].textContent, 'Selected Partner Amyloidosis Program');
+assert.strictEqual(selectedBannerRenderer.elements.banner.style.backgroundColor, '#0057B8', 'selected partner mode must ignore aggregate banner color overrides');
+assert(source.includes("? { primary: '#173F5F', borderAccent: '#B9DEE6' }"), 'editing the aggregate banner background must not recolor date chips or other calendar accents');
+assert(source.includes('id="weekly-banner-eyebrow" type="text"'));
+assert(source.includes('id="weekly-banner-title" type="text"'));
+assert(source.includes('id="weekly-banner-color" type="color"'));
+assert(source.includes("input?.addEventListener('input', () => setWeeklyAggregateBannerSetting(key, input.value))"), 'banner input changes must be wired to the live preview updater');
+assert(source.includes('return await domtoimage.toPng(surface, {'), 'PNG export must capture the same surface updated by the banner renderer');
+assert(source.includes('<div class="calendar-spotlight-band">'), 'the banner being rendered must be part of the exported card surface');
+
+const bannerSetterStart = source.indexOf('function setWeeklyAggregateBannerSetting');
+const bannerSetterEnd = source.indexOf('function loadSelectedHeaderLogos', bannerSetterStart);
+let bannerSaveCalls = 0;
+let bannerRefreshCalls = 0;
+let bannerSyncCalls = 0;
+const bannerSetterHarness = new Function(
+  'isWeeklyCalendarAggregateMode',
+  'normalizeWeeklyAggregateBannerSettings',
+  'saveWeeklyAggregateBannerSettings',
+  'refreshWeeklyAggregateBannerControls',
+  'syncCalendarCard',
+  'initialSettings',
+  `let weeklyAggregateBannerSettings = initialSettings;
+   ${source.slice(bannerSetterStart, bannerSetterEnd)}
+   return {
+     setWeeklyAggregateBannerSetting,
+     getSettings: () => weeklyAggregateBannerSettings
+   };`
+)(() => true, normalizeWeeklyBanner, () => { bannerSaveCalls++; }, () => { bannerRefreshCalls++; }, () => { bannerSyncCalls++; }, { ...weeklyBannerDefaults });
+bannerSetterHarness.setWeeklyAggregateBannerSetting('title', 'Edited live title');
+assert.strictEqual(bannerSetterHarness.getSettings().title, 'Edited live title');
+assert.deepStrictEqual([bannerSaveCalls, bannerRefreshCalls, bannerSyncCalls], [1, 1, 1], 'aggregate banner edits must persist and refresh the preview immediately');
+const selectedBannerSetter = new Function(
+  'isWeeklyCalendarAggregateMode',
+  'normalizeWeeklyAggregateBannerSettings',
+  'saveWeeklyAggregateBannerSettings',
+  'refreshWeeklyAggregateBannerControls',
+  'syncCalendarCard',
+  'initialSettings',
+  `let weeklyAggregateBannerSettings = initialSettings;
+   ${source.slice(bannerSetterStart, bannerSetterEnd)}
+   return { setWeeklyAggregateBannerSetting, getSettings: () => weeklyAggregateBannerSettings };`
+)(() => false, normalizeWeeklyBanner, () => { bannerSaveCalls++; }, () => { bannerRefreshCalls++; }, () => { bannerSyncCalls++; }, { ...weeklyBannerDefaults });
+selectedBannerSetter.setWeeklyAggregateBannerSetting('title', 'Must not leak');
+assert.deepStrictEqual(selectedBannerSetter.getSettings(), weeklyBannerDefaults, 'partner-selected mode must ignore aggregate banner edits');
+assert.deepStrictEqual([bannerSaveCalls, bannerRefreshCalls, bannerSyncCalls], [1, 1, 1]);
+
+const bannerVisibilityStart = source.indexOf('function shouldShowWeeklyAggregateBannerControls');
+const bannerVisibilityEnd = source.indexOf('function isAnyCalendarCardLayout', bannerVisibilityStart);
+const shouldShowAggregateBannerControls = new Function(
+  'hasReadySelection',
+  'isWeeklyCalendarAggregateMode',
+  `${source.slice(bannerVisibilityStart, bannerVisibilityEnd)} return shouldShowWeeklyAggregateBannerControls;`
+);
+assert.strictEqual(shouldShowAggregateBannerControls(() => true, () => true)(), true);
+assert.strictEqual(shouldShowAggregateBannerControls(() => true, () => false)(), false, 'partner-selected cards must hide aggregate banner controls');
+assert.strictEqual(shouldShowAggregateBannerControls(() => false, () => true)(), false, 'unselected cards must hide aggregate banner controls');
+
 const promoLoaderStart = source.indexOf('async function loadPromoEmployers()');
 const promoLoaderEnd = source.indexOf('function loadSelectedPartnerKey', promoLoaderStart);
 assert(promoLoaderStart >= 0 && promoLoaderEnd > promoLoaderStart, 'live promo-enabled employer term loader must be present');
@@ -115,18 +268,24 @@ const promoTermsChecks = async () => {
 const calendarConfigStart = source.indexOf('function getCalendarConfig()');
 const calendarConfigEnd = source.indexOf('function getAllCalendarSessionsApiUrl', calendarConfigStart);
 assert(calendarConfigStart >= 0 && calendarConfigEnd > calendarConfigStart, 'weekly and monthly calendar API config must be present');
-const createCalendarConfig = (partner, weekly, aggregate) => new Function(
+const createCalendarConfig = (partner, weekly, aggregate, bannerSettings = weeklyBannerDefaults) => new Function(
   'activePartnerConfig',
   'CALENDAR_DEFAULT_CONFIG',
   'isWeeklyCalendarAggregateMode',
   'isWeeklyCalendarCardLayout',
   'getWeeklyCalendarSessionsApiUrl',
   'getProfilesApiUrlForSessions',
+  'weeklyAggregateBannerSettings',
+  'normalizeWeeklyAggregateBannerSettings',
   `${source.slice(calendarConfigStart, calendarConfigEnd)} return getCalendarConfig;`
-)(partner, { programTitle: 'Calendar', sessionsApiUrl: '', profilesApiUrl: '', micrositeUrl: '' },
+)(partner, { programTitle: 'Calendar', seriesLabel: 'Default Series', sessionsApiUrl: '', profilesApiUrl: '', micrositeUrl: '' },
   () => aggregate, () => weekly,
-  () => 'https://somebodytotalkto.com/api/spotlight/microsite/sessions?partner=101,202&status=all',
-  () => 'https://somebodytotalkto.com/api/spotlight/microsite/profiles?partner=101,202');
+  configuredUrl => aggregate
+    ? 'https://somebodytotalkto.com/api/spotlight/microsite/sessions?partner=101,202&status=all'
+    : configuredUrl,
+  () => 'https://somebodytotalkto.com/api/spotlight/microsite/profiles?partner=101,202',
+  bannerSettings,
+  normalizeWeeklyBanner);
 const monthlyConfig = createCalendarConfig({
   label: 'Monthly Partner',
   sessionsApiUrl: 'https://somebodytotalkto.com/api/spotlight/microsite/sessions?partner=303&status=all',
@@ -136,6 +295,9 @@ const monthlyConfig = createCalendarConfig({
 assert.strictEqual(monthlyConfig.sessionsApiUrl, 'https://somebodytotalkto.com/api/spotlight/microsite/sessions?partner=303&status=all', 'monthly cards must retain their configured partner sessions URL');
 assert.strictEqual(monthlyConfig.profilesApiUrl, 'https://somebodytotalkto.com/api/spotlight/microsite/profiles?partner=303');
 assert.strictEqual(monthlyConfig.micrositeUrl, 'monthly.example');
+assert.strictEqual(monthlyConfig.programTitle, 'Monthly Partner Amyloidosis Program');
+assert.strictEqual(monthlyConfig.seriesLabel, 'Default Series');
+assert.strictEqual(monthlyConfig.bannerColor, '', 'monthly cards must not consume aggregate banner color settings');
 const aggregateConfig = createCalendarConfig({
   label: 'University of Chicago',
   sessionsApiUrl: 'https://somebodytotalkto.com/api/spotlight/microsite/sessions?partner=404',
@@ -143,9 +305,25 @@ const aggregateConfig = createCalendarConfig({
   calendar: { profilesApiUrl: 'https://somebodytotalkto.com/api/spotlight/microsite/profiles?partner=404' }
 }, true, true)();
 assert.strictEqual(aggregateConfig.programTitle, 'All Eligible Partners Amyloidosis Program');
+assert.strictEqual(aggregateConfig.seriesLabel, 'Amyloidosis Program Spotlight Series');
+assert.strictEqual(aggregateConfig.bannerColor, '#173F5F');
 assert.strictEqual(aggregateConfig.sessionsApiUrl, 'https://somebodytotalkto.com/api/spotlight/microsite/sessions?partner=101,202&status=all', 'aggregate weekly config must use only the live eligible partner list');
 assert.strictEqual(aggregateConfig.profilesApiUrl, 'https://somebodytotalkto.com/api/spotlight/microsite/profiles?partner=101,202');
 assert.strictEqual(aggregateConfig.micrositeUrl, '', 'aggregate weekly config must not reuse the fallback partner microsite');
+const editedAggregateConfig = createCalendarConfig({ label: 'Fallback Partner' }, true, true, editedBannerSettings)();
+assert.strictEqual(editedAggregateConfig.seriesLabel, 'Edited eyebrow');
+assert.strictEqual(editedAggregateConfig.programTitle, 'Edited aggregate title');
+assert.strictEqual(editedAggregateConfig.bannerColor, '#12ABEF', 'edited banner color must reach the calendar render config');
+const selectedWeeklyConfig = createCalendarConfig({
+  label: 'Selected Partner',
+  sessionsApiUrl: 'https://somebodytotalkto.com/api/spotlight/microsite/sessions?partner=404&status=all',
+  micrositeUrl: 'selected.example',
+  calendar: { seriesLabel: 'Partner Spotlight Series', profilesApiUrl: 'https://somebodytotalkto.com/api/spotlight/microsite/profiles?partner=404' }
+}, true, false, editedBannerSettings)();
+assert.strictEqual(selectedWeeklyConfig.programTitle, 'Selected Partner Amyloidosis Program');
+assert.strictEqual(selectedWeeklyConfig.seriesLabel, 'Partner Spotlight Series');
+assert.strictEqual(selectedWeeklyConfig.bannerColor, '', 'selected partner mode must ignore aggregate banner settings');
+assert.strictEqual(selectedWeeklyConfig.micrositeUrl, 'selected.example');
 
 const dateStart = source.indexOf('function calendarParseApiDate');
 const dateEnd = source.indexOf('function calendarMatchesSelectedRange', dateStart);
@@ -202,6 +380,42 @@ assert.deepStrictEqual(
   'a selected ISO week with no matching selected weekdays must return no sessions',
 );
 assert(source.includes("weeklyCalendarStatus('No calendar sessions match the selected ISO week and days.')"), 'empty weekly filters must show the no-results state');
+
+const weekPageStart = source.indexOf('function setWeeklyCalendarPeriod');
+const weekPageEnd = source.indexOf('function initializeWeeklyCalendarControls', weekPageStart);
+assert(weekPageStart >= 0 && weekPageEnd > weekPageStart, 'weekly period and pagination state handlers must be present');
+let weeklyRenders = 0;
+const weekPageHarness = new Function(
+  'calendarGetIsoWeeksInYear',
+  'calendarGetWeeklySessions',
+  'WEEKLY_CALENDAR_PAGE_SIZE',
+  'updateWeeklyCalendarRangeLabel',
+  'renderWeeklyCalendarSessions',
+  `let selectedWeeklyYear = 2026;
+   let selectedWeeklyWeek = 47;
+   let selectedWeeklyPage = 2;
+   let calendarSessionsLoaded = true;
+   let calendarSessionsData = { sessions: Array.from({ length: 6 }, (_, index) => ({ uuid: String(index) })) };
+   let weeklyCalendarYearInput = { value: '' };
+   let weeklyCalendarWeekSelect = { value: '', querySelector: () => ({ disabled: false }) };
+   let weeklyAggregateBannerSettings = ${JSON.stringify(editedBannerSettings)};
+   function isWeeklyCalendarCardLayout() { return true; }
+   ${source.slice(weekPageStart, weekPageEnd)}
+   return {
+     setWeeklyCalendarPeriod,
+     setWeeklyCalendarPage,
+     getState: () => ({ year: selectedWeeklyYear, week: selectedWeeklyWeek, page: selectedWeeklyPage, banner: weeklyAggregateBannerSettings })
+   };`
+)(() => 52, sessions => sessions, 2, () => {}, () => { weeklyRenders++; });
+weekPageHarness.setWeeklyCalendarPeriod(2027, 4);
+weekPageHarness.setWeeklyCalendarPage(1);
+assert.deepStrictEqual(weekPageHarness.getState(), {
+  year: 2027,
+  week: 4,
+  page: 1,
+  banner: editedBannerSettings
+}, 'banner edits must survive ISO week changes and pagination within the editing session');
+assert.strictEqual(weeklyRenders, 2);
 
 const timezoneStart = source.indexOf('function getWeeklyTimezoneLabel');
 const timezoneEnd = source.indexOf('function getWeeklyPostPageKey', timezoneStart);
@@ -473,7 +687,7 @@ assert(source.includes("return { pxW: 1440, pxH: 1800, wIn: 4.8, hIn: 6, tag: '4
 assert(source.includes("return { pxW: 1200, pxH: 1800, wIn: 4, hIn: 6, tag: '4x6', orientation: 'portrait' }"), 'monthly export dimensions must remain unchanged');
 
 promoTermsChecks().then(() => {
-  console.log('weekly calendar partner loading, ISO-week filters, drafts, captions, API alias/QR source, and export checks passed');
+  console.log('weekly aggregate banner controls, partner loading, ISO-week filters, drafts, captions, API alias/QR source, and export checks passed');
 }).catch(error => {
   console.error(error);
   process.exitCode = 1;
