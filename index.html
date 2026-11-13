@@ -5204,6 +5204,77 @@ function loadImageFromSrc(src) {
   });
 }
 
+async function validateWeeklyRegistrationQr(dataUrl) {
+  const source = String(dataUrl || '').trim();
+  if (!/^data:image\/[^;]+;base64,/i.test(source)) {
+    throw new Error('A registration QR image was not returned for the first-party short link.');
+  }
+
+  const decoded = await loadImageFromSrc(source);
+  const width = decoded.naturalWidth || decoded.width || 0;
+  const height = decoded.naturalHeight || decoded.height || 0;
+  if (width >= 200 && height >= 200) return source;
+
+  // Preserve QR modules with an integer nearest-neighbor scale; reject any output that changes source pixels.
+  if (!/^data:image\/png;base64,/i.test(source)
+    || width < 180 || height < 180 || width > 199 || height > 199
+    || width !== height) {
+    throw new Error('A registration QR image was smaller than the required scan size.');
+  }
+
+  const sourceCanvas = document.createElement('canvas');
+  sourceCanvas.width = width;
+  sourceCanvas.height = height;
+  const sourceContext = sourceCanvas.getContext('2d', { willReadFrequently: true });
+  if (!sourceContext) throw new Error('The registration QR image could not be checked.');
+  sourceContext.imageSmoothingEnabled = false;
+  sourceContext.drawImage(decoded, 0, 0, width, height);
+  const sourcePixels = sourceContext.getImageData(0, 0, width, height).data;
+
+  const scaledCanvas = document.createElement('canvas');
+  scaledCanvas.width = width * 2;
+  scaledCanvas.height = height * 2;
+  const scaledContext = scaledCanvas.getContext('2d', { willReadFrequently: true });
+  if (!scaledContext) throw new Error('The registration QR image could not be normalized.');
+  scaledContext.imageSmoothingEnabled = false;
+  scaledContext.drawImage(decoded, 0, 0, scaledCanvas.width, scaledCanvas.height);
+
+  const normalized = scaledCanvas.toDataURL('image/png');
+  const normalizedImage = await loadImageFromSrc(normalized);
+  const normalizedWidth = normalizedImage.naturalWidth || normalizedImage.width || 0;
+  const normalizedHeight = normalizedImage.naturalHeight || normalizedImage.height || 0;
+  if (normalizedWidth !== width * 2 || normalizedHeight !== height * 2
+    || normalizedWidth < 200 || normalizedHeight < 200) {
+    throw new Error('A registration QR image was smaller than the required scan size.');
+  }
+
+  const verificationCanvas = document.createElement('canvas');
+  verificationCanvas.width = normalizedWidth;
+  verificationCanvas.height = normalizedHeight;
+  const verificationContext = verificationCanvas.getContext('2d', { willReadFrequently: true });
+  if (!verificationContext) throw new Error('The registration QR image could not be verified.');
+  verificationContext.imageSmoothingEnabled = false;
+  verificationContext.drawImage(normalizedImage, 0, 0, normalizedWidth, normalizedHeight);
+  const normalizedPixels = verificationContext.getImageData(0, 0, normalizedWidth, normalizedHeight).data;
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const sourceOffset = (y * width + x) * 4;
+      const firstOffset = (y * 2 * normalizedWidth + x * 2) * 4;
+      for (let channel = 0; channel < 4; channel += 1) {
+        const pixel = sourcePixels[sourceOffset + channel];
+        if (normalizedPixels[firstOffset + channel] !== pixel
+          || normalizedPixels[firstOffset + 4 + channel] !== pixel
+          || normalizedPixels[firstOffset + normalizedWidth * 4 + channel] !== pixel
+          || normalizedPixels[firstOffset + (normalizedWidth + 1) * 4 + channel] !== pixel) {
+          throw new Error('The registration QR image could not be safely normalized.');
+        }
+      }
+    }
+  }
+
+  return normalized;
+}
+
 async function getRemoteImageDataUrl(src) {
   const fetchImage = async url => {
     const response = await fetch(url, { mode: 'cors', cache: 'force-cache' });
@@ -6531,12 +6602,13 @@ function setCalendarLoadProgress(percent) {
   state.querySelector('.calendar-load-bar').style.width = value + '%';
 }
 
-async function fetchCalendarJson(url, label) {
+async function fetchCalendarJson(url, label, cacheMode = 'default') {
   const controller = new AbortController();
   const timeout = window.setTimeout(() => controller.abort(), CALENDAR_REQUEST_TIMEOUT_MS);
   try {
     const response = await fetch(url, {
       mode: 'cors',
+      cache: cacheMode,
       headers: { Accept: 'application/json' },
       signal: controller.signal
     });
@@ -6889,14 +6961,34 @@ function weeklyCalendarStatus(message, canRetry = false, retryAction, retryLabel
   list.replaceChildren();
   const status = document.createElement('div');
   status.className = 'weekly-calendar-status';
-  status.textContent = message;
+  status.setAttribute('role', 'status');
+  status.setAttribute('aria-live', 'polite');
+  const messageNode = document.createElement('span');
+  messageNode.textContent = message;
+  status.appendChild(messageNode);
   if (canRetry) {
     const retry = document.createElement('button');
     retry.type = 'button';
     retry.textContent = retryLabel;
-    retry.addEventListener('click', () => {
-      if (typeof retryAction === 'function') retryAction();
-      else renderWeeklyCalendarSessions();
+    retry.addEventListener('click', async () => {
+      if (retry.disabled) return;
+      retry.disabled = true;
+      retry.textContent = 'Retrying…';
+      retry.setAttribute('aria-busy', 'true');
+      try {
+        if (typeof retryAction === 'function') await retryAction();
+        else await renderWeeklyCalendarSessions();
+      } catch (error) {
+        if (retry.isConnected) {
+          messageNode.textContent = `${message} ${error?.message || 'Please try again.'}`;
+        }
+      } finally {
+        if (retry.isConnected) {
+          retry.disabled = false;
+          retry.textContent = retryLabel;
+          retry.removeAttribute('aria-busy');
+        }
+      }
     });
     status.appendChild(retry);
   }
@@ -6926,32 +7018,65 @@ function getWeeklySessionRegistrationAssets(detail) {
 async function getWeeklySessionWithAlias(session) {
   const uuid = String(session.uuid || '').trim();
   if (!uuid) throw new Error('A session is missing its registration identifier.');
-  if (weeklySessionAliasCache.has(uuid)) return weeklySessionAliasCache.get(uuid);
+  if (weeklySessionAliasCache.has(uuid)) {
+    const cached = weeklySessionAliasCache.get(uuid);
+    if (weeklyQrDataUrlCache.has(cached.weekly_short_url)) return cached;
+    weeklySessionAliasCache.delete(uuid);
+  }
   if (weeklySessionAliasPromises.has(uuid)) return weeklySessionAliasPromises.get(uuid);
 
-  const request = (async () => {
-    const detailJson = await fetchCalendarJson(getWeeklySessionAliasApiUrl(session), 'Registration link');
+  let request;
+  request = (async () => {
+    const detailJson = await fetchCalendarJson(
+      getWeeklySessionAliasApiUrl(session),
+      'Registration link',
+      'no-store'
+    );
     const rows = Array.isArray(detailJson.data) ? detailJson.data : (detailJson.data ? [detailJson.data] : []);
     const detail = rows.find(row => String(row.uuid || '') === uuid);
     if (!detail) throw new Error('The registration service did not return this session.');
     const registrationAssets = getWeeklySessionRegistrationAssets(detail);
-    return {
+    const qrDataUrl = await validateWeeklyRegistrationQr(registrationAssets.qrSrc);
+    const enriched = {
       ...session,
       ...detail,
       short_url: registrationAssets.shortUrl,
       qr_payload_url: registrationAssets.shortUrl,
       weekly_short_url: registrationAssets.shortUrl,
-      weekly_qr_src: registrationAssets.qrSrc
+      weekly_qr_src: qrDataUrl
     };
+    if (weeklySessionAliasPromises.get(uuid) === request) {
+      weeklyQrDataUrlCache.set(registrationAssets.shortUrl, qrDataUrl);
+      weeklySessionAliasCache.set(uuid, enriched);
+    }
+    return enriched;
   })();
   weeklySessionAliasPromises.set(uuid, request);
   try {
-    const enriched = await request;
-    weeklySessionAliasCache.set(uuid, enriched);
-    return enriched;
+    return await request;
   } finally {
-    weeklySessionAliasPromises.delete(uuid);
+    if (weeklySessionAliasPromises.get(uuid) === request) weeklySessionAliasPromises.delete(uuid);
   }
+}
+
+function retryWeeklyCalendarRegistrationLinks() {
+  const sessions = calendarGetWeeklySessions(calendarSessionsData.sessions);
+  const pageRows = sessions.slice(
+    selectedWeeklyPage * WEEKLY_CALENDAR_PAGE_SIZE,
+    (selectedWeeklyPage + 1) * WEEKLY_CALENDAR_PAGE_SIZE
+  );
+  pageRows.forEach(session => {
+    const uuid = String(session.uuid || '').trim();
+    if (!uuid) return;
+    const cached = weeklySessionAliasCache.get(uuid);
+    const shortUrl = getApprovedRegistrationShortUrl(
+      cached?.weekly_short_url || cached?.qr_payload_url || cached?.short_url
+    );
+    weeklySessionAliasCache.delete(uuid);
+    weeklySessionAliasPromises.delete(uuid);
+    if (shortUrl) weeklyQrDataUrlCache.delete(shortUrl);
+  });
+  return renderWeeklyCalendarSessions(true);
 }
 
 function calendarFormatWeeklySessionDate(session) {
@@ -7171,7 +7296,7 @@ function updateWeeklyPostPanel(sessions) {
   setWeeklyPostDraft(pageKey, postLines.join('\n').trim());
 }
 
-async function renderWeeklyCalendarSessions() {
+async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
   const list = document.getElementById('calendar-sessions-list');
   if (!list || !isWeeklyCalendarCardLayout()) return;
   const token = ++weeklyPageLoadToken;
@@ -7197,7 +7322,9 @@ async function renderWeeklyCalendarSessions() {
     selectedWeeklyPage * WEEKLY_CALENDAR_PAGE_SIZE,
     (selectedWeeklyPage + 1) * WEEKLY_CALENDAR_PAGE_SIZE
   );
-  weeklyCalendarStatus('Preparing first-party registration links for this card…');
+  weeklyCalendarStatus(retryingRegistrationLinks
+    ? 'Retrying first-party registration links…'
+    : 'Preparing first-party registration links for this card…');
   updateWeeklyPostPanel([]);
   try {
     const rows = await Promise.all(pageRows.map(session => getWeeklySessionWithAlias(session)));
@@ -7351,15 +7478,15 @@ async function renderWeeklyCalendarSessions() {
     });
     await Promise.all(qrImages.map(async image => {
       const payloadUrl = image.dataset.weeklyPayloadUrl;
-      const dataUrl = weeklyQrDataUrlCache.get(payloadUrl) || image.getAttribute('src') || '';
+      const dataUrl = weeklyQrDataUrlCache.get(payloadUrl) || '';
       if (!/^data:image\/[^;]+;base64,/i.test(dataUrl)) {
         throw new Error('A registration QR image was not returned for the first-party short link.');
       }
       const decoded = await loadImageFromSrc(dataUrl);
-      if ((decoded.naturalWidth || decoded.width || 0) < 200) {
+      if ((decoded.naturalWidth || decoded.width || 0) < 200
+        || (decoded.naturalHeight || decoded.height || 0) < 200) {
         throw new Error('A registration QR image was smaller than the required scan size.');
       }
-      weeklyQrDataUrlCache.set(payloadUrl, dataUrl);
       image.src = dataUrl;
     }));
     if (token !== weeklyPageLoadToken || !isWeeklyCalendarCardLayout()) return;
@@ -7369,7 +7496,11 @@ async function renderWeeklyCalendarSessions() {
   } catch (error) {
     if (token !== weeklyPageLoadToken) return;
     updateWeeklyTimezoneLegend(null);
-    weeklyCalendarStatus(`Registration links could not be prepared. ${error.message}`, true);
+    weeklyCalendarStatus(
+      `Registration links could not be prepared. ${error.message}`,
+      true,
+      retryWeeklyCalendarRegistrationLinks
+    );
     updateWeeklyPostPanel([]);
     updateControlAvailability();
   }
