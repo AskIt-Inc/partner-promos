@@ -382,10 +382,12 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
 }
 .weekly-calendar-timezone-legend {
   color: #fff;
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.3;
-  margin: 8px 0 0;
+  font-size: 7.5px;
+  font-weight: 600;
+  line-height: 1.15;
+  margin: 2px 0 0;
+  opacity: .92;
+  letter-spacing: .01em;
 }
 .weekly-calendar-timezone-legend[hidden] { display: none; }
 .print-surface.layout-weekly-calendar-card .calendar-card-footer {
@@ -395,7 +397,8 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 7px;
+  justify-content: center;
+  gap: 8px;
   min-height: 0;
   overflow: hidden;
   padding: 8px 12px;
@@ -403,119 +406,133 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
 .weekly-calendar-session-row {
   background: var(--weekly-session-card-color, #93c47d);
   border: 1px solid rgba(255,255,255,.5);
-  border-radius: 10px;
-  display: flex;
-  flex: 1 1 0;
-  flex-direction: column;
-  min-height: 0;
+  border-radius: 5px;
+  display: grid;
+  flex: 0 1 auto;
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  align-items: stretch;
+  min-height: 160px;
   overflow: hidden;
 }
 .weekly-calendar-session-heading {
   color: #fff;
-  flex: 0 0 auto;
-  padding: 16px 22px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  padding: 8px 10px;
 }
-.weekly-calendar-condition {
+.weekly-calendar-conditions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 2px 3px;
+  margin: 0 0 4px;
+  min-width: 0;
+}
+.weekly-calendar-conditions[hidden] { display: none; }
+.weekly-calendar-conditions .weekly-calendar-condition {
   background: #e8fff6;
   border: 1px solid #48d7a3;
-  border-radius: 12px;
+  border-radius: 999px;
   color: #087a61;
-  display: inline-block;
-  font-size: 12px;
-  font-weight: 800;
-  line-height: 1.3;
-  margin: 0 0 8px;
-  padding: 3px 9px;
+  display: inline-flex;
+  font-size: 7px;
+  font-weight: 700;
+  line-height: 1.15;
+  margin: 0;
+  max-width: 100%;
+  padding: 2px 5px;
 }
-.weekly-calendar-condition[hidden] { display: none; }
 .weekly-calendar-session-title {
   color: #fff;
-  font-size: 22px;
+  font-size: 12px;
   font-weight: 800;
-  line-height: 1.2;
+  line-height: 1.16;
   margin: 0;
   overflow-wrap: anywhere;
 }
 .weekly-calendar-session-partner {
   color: rgba(255,255,255,.94);
-  font-size: 12px;
+  font-size: 7.5px;
   font-weight: 700;
-  line-height: 1.3;
-  margin: 5px 0 0;
+  line-height: 1.2;
+  margin: 3px 0 0;
   overflow-wrap: anywhere;
 }
 .weekly-calendar-session-timezone {
   color: #fff;
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.35;
-  margin: 7px 0 0;
+  font-size: 6.75px;
+  font-weight: 600;
+  line-height: 1.15;
+  margin: 2px 0 0;
+  opacity: .94;
 }
 .weekly-calendar-session-timezone[hidden] { display: none; }
 .weekly-calendar-session-divider {
   border: 0;
   border-top: 1px solid rgba(255,255,255,.55);
-  margin: 12px 0 0;
+  margin: 4px 0 3px;
 }
 .weekly-calendar-session-date-time {
-  align-items: flex-start;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  justify-content: center;
+  gap: 2px;
   min-width: 0;
+  margin-top: 2px;
 }
 .weekly-calendar-session-date {
   color: #ffd966;
-  font-size: 28px;
+  font-size: 9px;
   font-weight: 800;
-  line-height: 1.2;
+  line-height: 1.15;
   margin: 0;
   overflow-wrap: anywhere;
 }
 .weekly-calendar-session-times {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 1px;
   min-width: 0;
 }
 .weekly-calendar-session-time {
   color: #fff;
-  font-size: 16px;
-  font-weight: 800;
-  line-height: 1.5;
+  font-size: 8px;
+  font-weight: 700;
+  line-height: 1.18;
   margin: 0;
   overflow-wrap: anywhere;
 }
 .weekly-calendar-session-body {
   align-items: stretch;
-  display: grid;
-  gap: 22px;
-  grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
-  flex: 1 1 auto;
+  display: flex;
+  min-width: 0;
   min-height: 0;
-  padding: 16px 22px 22px;
+  border-left: 1px solid rgba(255,255,255,.42);
+  padding: 8px 8px 8px 6px;
 }
 .weekly-calendar-speaker-registration {
   align-items: center;
   display: grid;
-  gap: 16px;
-  grid-template-columns: minmax(0, 1fr) 184px;
+  gap: 4px;
+  grid-template-columns: minmax(0, 1fr) 78px;
+  width: 100%;
   min-width: 0;
 }
 .weekly-calendar-speakers {
   align-content: center;
   display: grid;
-  gap: 18px 12px;
+  align-items: center;
+  gap: 5px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   min-width: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 .weekly-calendar-speaker {
   align-items: center;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 3px;
   min-width: 0;
   text-align: center;
 }
@@ -526,82 +543,83 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
   border-radius: 50%;
   color: #243b4b;
   display: flex;
-  flex: 0 0 154px;
-  height: 154px;
+  flex: 0 0 36px;
+  height: 36px;
   justify-content: center;
   object-fit: cover;
   overflow: hidden;
-  width: 154px;
+  width: 36px;
 }
 .weekly-calendar-speaker-fallback {
-  font-size: 28px;
+  font-size: 11px;
   font-weight: 800;
 }
 .weekly-calendar-speaker-copy { min-width: 0; }
 .weekly-calendar-speaker-name {
   color: #fff;
   display: block;
-  font-size: 15px;
+  font-size: 7px;
   font-weight: 800;
-  line-height: 1.25;
+  line-height: 1.15;
   overflow-wrap: anywhere;
 }
 .weekly-calendar-speaker-credentials,
 .weekly-calendar-speaker-partner {
   color: rgba(255,255,255,.94);
   display: block;
-  font-size: 12px;
-  line-height: 1.3;
-  margin-top: 3px;
+  font-size: 6px;
+  line-height: 1.15;
+  margin-top: 2px;
   overflow-wrap: anywhere;
 }
 .weekly-calendar-speaker-empty {
   color: #fff;
-  font-size: 14px;
+  font-size: 6.5px;
   margin: 0;
 }
 .weekly-calendar-qr-block {
   align-items: center;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 3px;
   justify-content: center;
   min-width: 0;
-  padding-left: 14px;
-  border-left: 1px solid rgba(255,255,255,.45);
+  height: 100%;
+  padding-left: 4px;
+  border-left: 1px solid rgba(255,255,255,.42);
 }
 .weekly-calendar-qr-block img {
   background: #fff;
-  border: 4px solid #fff;
-  border-radius: 5px;
+  border: 2px solid #fff;
+  border-radius: 3px;
   display: block;
-  height: 124px;
+  flex: 0 0 64px;
+  height: 64px;
+  image-rendering: pixelated;
   object-fit: contain;
-  width: 124px;
+  width: 64px;
 }
 .weekly-calendar-register-cta {
   background: #cc0000;
-  border-radius: 15px;
+  border-radius: 4px;
   color: #fff;
-  font-size: 13px;
+  display: block;
+  font-size: 7px;
   font-weight: 900;
-  line-height: 1.25;
-  padding: 10px 13px;
+  line-height: 1.1;
+  padding: 3px 2px;
   text-align: center;
   text-decoration: none;
   max-width: 100%;
+  width: 100%;
 }
 .weekly-calendar-short-url {
-  background: rgba(255,255,255,.12);
-  border: 1px solid rgba(255,255,255,.45);
-  border-radius: 5px;
   color: #fff;
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1.25;
+  font-size: 6.5px;
+  font-weight: 600;
+  line-height: 1.1;
   overflow-wrap: anywhere;
   text-align: center;
-  padding: 6px;
   width: 100%;
 }
 .weekly-calendar-status {
@@ -6685,6 +6703,15 @@ function applyCalendarBannerSettings(config, fallbackColor = '#006E8E') {
   }
 }
 
+function getWeeklyCalendarLogoVisibility(selectedLogos, aggregateMode) {
+  const logos = Array.isArray(selectedLogos) ? selectedLogos : [];
+  return [
+    Boolean(logos[0]) && !aggregateMode,
+    Boolean(logos[1]),
+    Boolean(logos[2])
+  ];
+}
+
 function syncCalendarCard() {
   const cfg = getCalendarConfig();
   if (isWeeklyCalendarCardLayout()) refreshWeeklyAggregateBannerControls();
@@ -6722,7 +6749,7 @@ function syncCalendarCard() {
     if (option && option.src) {
       applyLogoOptionToImage(img, option);
       if (placeholder) placeholder.classList.remove('visible');
-      return;
+      return true;
     }
     if (img) {
       img.removeAttribute('src');
@@ -6731,16 +6758,35 @@ function syncCalendarCard() {
       img.style.display = 'none';
     }
     if (placeholder) placeholder.classList.add('visible');
+    return false;
   };
-  setCalendarLogo(1, 'calendar-logo-partner');
-  const partnerLogoSlot = document.getElementById('calendar-logo-partner')?.closest('.calendar-logo-slot');
-  const partnerLogoDivider = partnerLogoSlot?.nextElementSibling;
-  if (partnerLogoSlot) partnerLogoSlot.style.display = isWeeklyCalendarAggregateMode() ? 'none' : '';
-  if (partnerLogoDivider?.classList.contains('logo-divider')) {
-    partnerLogoDivider.style.display = isWeeklyCalendarAggregateMode() ? 'none' : '';
+  const selectedCalendarLogos = [
+    setCalendarLogo(1, 'calendar-logo-partner'),
+    setCalendarLogo(2, 'calendar-logo-af'),
+    setCalendarLogo(3, 'calendar-logo-oav')
+  ];
+  const calendarLogoBar = document.querySelector('.calendar-logo-bar');
+  if (calendarLogoBar && isWeeklyCalendarCardLayout()) {
+    const logoVisibility = getWeeklyCalendarLogoVisibility(
+      selectedCalendarLogos,
+      isWeeklyCalendarAggregateMode()
+    );
+    const logoSlots = Array.from(calendarLogoBar.querySelectorAll('.calendar-logo-slot'));
+    const logoDividers = Array.from(calendarLogoBar.querySelectorAll('.logo-divider'));
+    logoSlots.forEach((slot, index) => {
+      slot.style.display = logoVisibility[index] ? '' : 'none';
+      if (!logoVisibility[index]) slot.querySelector('.calendar-logo-placeholder')?.classList.remove('visible');
+    });
+    logoDividers.forEach((divider, index) => {
+      divider.style.display = logoVisibility[index] && logoVisibility[index + 1] ? '' : 'none';
+    });
+    calendarLogoBar.style.display = logoVisibility.some(Boolean) ? '' : 'none';
+  } else if (calendarLogoBar) {
+    calendarLogoBar.style.display = '';
+    calendarLogoBar.querySelectorAll('.calendar-logo-slot, .logo-divider').forEach(element => {
+      element.style.display = '';
+    });
   }
-  setCalendarLogo(2, 'calendar-logo-af');
-  setCalendarLogo(3, 'calendar-logo-oav');
   setImg('calendar-subscribe-qr-code', cfg.qrSrc, cfg.qrAlt);
   applyCalendarBannerSettings(cfg, colors.primary || '#006E8E');
   setText('calendar-microsite-url', getReadablePublicUrlText(cfg.micrositeUrl));
@@ -7179,7 +7225,7 @@ function updateWeeklyTimezoneLegend(presentation) {
   const legend = document.getElementById('weekly-calendar-timezone-legend');
   if (!legend) return;
   const text = presentation?.placement === 'legend' && presentation.legendLabels?.length
-    ? `Time lines follow this order: ${presentation.legendLabels.join(' | ')}`
+    ? `Times: ${presentation.legendLabels.join(' · ')}`
     : '';
   legend.textContent = text;
   legend.hidden = !text;
@@ -7376,33 +7422,38 @@ async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
       if (cardColor) row.style.setProperty('--weekly-session-card-color', cardColor);
       const heading = document.createElement('header');
       heading.className = 'weekly-calendar-session-heading';
-      const conditionText = (Array.isArray(session.indications) ? session.indications : [])
+      const indications = (Array.isArray(session.indications) ? session.indications : [])
         .map(calendarNormalizeSpaces)
-        .filter(Boolean)
-        .join(' + ');
-      const condition = document.createElement('span');
-      condition.className = 'weekly-calendar-condition';
-      condition.textContent = conditionText;
-      condition.hidden = !conditionText;
+        .filter((indication, indicationIndex, values) => indication && values.indexOf(indication) === indicationIndex);
+      const condition = document.createElement('div');
+      condition.className = 'weekly-calendar-conditions';
+      condition.setAttribute('role', 'list');
+      condition.setAttribute('aria-label', 'Session categories');
+      condition.hidden = indications.length === 0;
+      indications.forEach(indication => {
+        const category = document.createElement('span');
+        category.className = 'weekly-calendar-condition';
+        category.setAttribute('role', 'listitem');
+        category.textContent = indication;
+        condition.appendChild(category);
+      });
       const title = document.createElement('h2');
       title.className = 'weekly-calendar-session-title';
       title.textContent = calendarNormalizeSpaces(session.title) || 'Untitled session';
+      heading.append(condition, title);
       if (isWeeklyCalendarAggregateMode()) {
         const partnerLabel = document.createElement('p');
         partnerLabel.className = 'weekly-calendar-session-partner';
         partnerLabel.textContent = `Partner: ${calendarNormalizeSpaces(session.partner) || 'Partner details unavailable'}`;
-        heading.append(condition, title, partnerLabel);
-      } else {
-        heading.append(condition, title);
+        heading.appendChild(partnerLabel);
       }
       const timezone = document.createElement('p');
       timezone.className = 'weekly-calendar-session-timezone';
       const sessionLabels = timezonePresentation.sessionLabels[index] || [];
-      timezone.textContent = sessionLabels.length ? `Times in ${sessionLabels.join(' | ')}` : '';
+      timezone.textContent = sessionLabels.length ? `Times: ${sessionLabels.join(' · ')}` : '';
       timezone.hidden = !timezone.textContent;
       const divider = document.createElement('hr');
       divider.className = 'weekly-calendar-session-divider';
-      heading.append(timezone, divider);
 
       const dateTime = document.createElement('div');
       dateTime.className = 'weekly-calendar-session-date-time';
@@ -7412,7 +7463,8 @@ async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
       const times = document.createElement('div');
       times.className = 'weekly-calendar-session-times';
       renderWeeklySessionTimes(times, session);
-      dateTime.append(dateText, times);
+      dateTime.append(dateText, timezone, times);
+      heading.append(divider, dateTime);
 
       const body = document.createElement('div');
       body.className = 'weekly-calendar-session-body';
@@ -7494,14 +7546,14 @@ async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
       qr.dataset.weeklyPayloadUrl = session.weekly_short_url;
       qr.dataset.weeklySessionUuid = String(session.uuid || '').trim();
       qr.alt = `Registration QR code for ${calendarNormalizeSpaces(session.title)}`;
-      qr.width = 124;
-      qr.height = 124;
+      qr.width = 64;
+      qr.height = 64;
       const shortUrl = document.createElement('span');
       shortUrl.className = 'weekly-calendar-short-url';
       shortUrl.textContent = session.weekly_short_url;
       qrBlock.append(cta, qr, shortUrl);
       speakerRegistration.append(speakers, qrBlock);
-      body.append(dateTime, speakerRegistration);
+      body.appendChild(speakerRegistration);
       row.append(heading, body);
       list.appendChild(row);
       qrImages.push(qr);
@@ -7569,7 +7621,7 @@ function refreshWeeklyCalendarTimeLabels() {
     if (times && session) renderWeeklySessionTimes(times, session);
     if (timezone) {
       const labels = timezonePresentation.sessionLabels[index] || [];
-      timezone.textContent = labels.length ? `Times in ${labels.join(' | ')}` : '';
+      timezone.textContent = labels.length ? `Times: ${labels.join(' · ')}` : '';
       timezone.hidden = !timezone.textContent;
     }
   });

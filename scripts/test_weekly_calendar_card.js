@@ -395,6 +395,25 @@ assert(source.includes('id="weekly-calendar-week-search" class="weekly-calendar-
 assert(source.includes('role="listbox" aria-label="Weekly date ranges"'));
 assert(source.includes("weeklyCalendarWeekSearch?.addEventListener('input', refreshWeeklyCalendarWeekPicker)"));
 assert(source.includes("event.key === 'ArrowDown'"), 'the searchable week picker must support keyboard selection');
+const weeklyLogoHelperStart = source.indexOf('function getWeeklyCalendarLogoVisibility');
+const weeklyLogoHelperEnd = source.indexOf('function syncCalendarCard', weeklyLogoHelperStart);
+assert(weeklyLogoHelperStart >= 0 && weeklyLogoHelperEnd > weeklyLogoHelperStart, 'weekly logo visibility helper must be present');
+const getWeeklyCalendarLogoVisibility = new Function(
+  `${source.slice(weeklyLogoHelperStart, weeklyLogoHelperEnd)} return getWeeklyCalendarLogoVisibility;`
+)();
+assert.deepStrictEqual(
+  getWeeklyCalendarLogoVisibility([true, true, true], true),
+  [false, true, true],
+  'aggregate weekly cards must omit the partner slot while retaining explicitly selected shared logos'
+);
+assert.deepStrictEqual(
+  getWeeklyCalendarLogoVisibility([true, false, true], false),
+  [true, false, true],
+  'partner weekly cards must preserve selected logos and leave empty slots hidden'
+);
+assert(source.includes("calendarLogoBar.style.display = logoVisibility.some(Boolean) ? '' : 'none'"), 'an empty weekly logo bar must collapse');
+assert(source.includes("slot.querySelector('.calendar-logo-placeholder')?.classList.remove('visible')"), 'empty weekly logo placeholders must be hidden');
+assert(source.includes('divider.style.display = logoVisibility[index] && logoVisibility[index + 1] ? \'\' : \'none\''), 'weekly separators must appear only between selected logos');
 const pickerRefreshStart = source.indexOf('function refreshWeeklyCalendarWeekPicker');
 const pickerRefreshEnd = source.indexOf('function setWeeklyCalendarWeekPickerOpen', pickerRefreshStart);
 const pickerValue = { textContent: '' };
@@ -776,21 +795,28 @@ assert(source.includes('selectedWeeklyPage * WEEKLY_CALENDAR_PAGE_SIZE + index')
 assert(source.includes('background: var(--weekly-session-card-color, #93c47d);'));
 assert(source.includes('line.dataset.zone = zone;'));
 assert(source.includes("className = 'weekly-calendar-speaker-registration'"));
-assert(source.includes('qr.width = 124;'));
-assert(source.includes('qr.height = 124;'));
+assert(source.includes('qr.width = 64;'));
+assert(source.includes('qr.height = 64;'));
 assert(source.includes('session?.card_color'));
 assert(source.includes('background: #e8fff6;'));
 assert(source.includes('border: 1px solid #48d7a3;'));
 assert(source.includes('color: #087a61;'));
 assert(source.includes('color: #ffd966;'));
 assert(source.includes('background: #cc0000;'));
-assert(source.includes('flex: 0 0 154px;'));
+assert(source.includes('flex: 0 0 36px;'));
+assert(source.includes('flex: 0 0 64px;'), 'exported weekly QR images must remain at least 200 raster pixels wide');
+assert(source.includes('width: 64px;'));
+assert(64 * (1440 / (4.8 * 96)) >= 200, 'weekly QR cards must preserve a scan-sized raster code at export scale');
+assert(source.includes('grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);'));
+assert(source.includes("condition.setAttribute('role', 'list');"));
+assert(source.includes('category.textContent = indication;'), 'session indications must render as separate readable category chips');
 
-assert(source.includes('const WEEKLY_CALENDAR_PAGE_SIZE = 2;'), 'weekly sessions must paginate without shrinking their QR codes');
+assert(source.includes('const WEEKLY_CALENDAR_PAGE_SIZE = 2;'), 'weekly sessions must keep two-session pagination');
 assert(source.includes('option value="abbreviation">Abbreviation only'));
 assert(source.includes('option value="location">Abbreviation + city'));
 assert(source.includes("className = 'weekly-calendar-session-timezone'"));
-assert(source.includes('Times in ${sessionLabels.join(\' | \')}'));
+assert(source.includes('Times: ${sessionLabels.join(\' · \')}'));
+assert(source.includes('`Times: ${presentation.legendLabels.join(\' · \')}`'));
 assert(source.includes("className = 'weekly-calendar-session-title'"));
 assert(source.includes("className = 'weekly-calendar-condition'"));
 assert(source.includes("className = 'weekly-calendar-speaker'"));
