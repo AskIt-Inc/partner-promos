@@ -41,6 +41,7 @@ jobs:
       - name: Verify runtime configuration and tracked-link flow
         run: |
           node scripts/generate-runtime-config.js --check=runtime-config.js
+          node scripts/test_weekly_calendar_card.js
           node scripts/test_source_scoped_links.js
           python scripts/test_qr_exports.py
           bash scripts/verify-phase-1d.sh --config-only

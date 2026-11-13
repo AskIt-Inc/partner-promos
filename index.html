@@ -254,14 +254,24 @@ body {
   width: 4in;
   height: 6in;
 }
+.print-surface.layout-weekly-calendar-card {
+  width: 4.8in;
+  height: 6in;
+}
 .print-surface.layout-calendar-card > .front-side,
 .print-surface.layout-calendar-card > .card-back,
 .print-surface.layout-calendar-card > .session-back-side,
-.print-surface.layout-calendar-card > .coming-soon-front-side {
+.print-surface.layout-calendar-card > .coming-soon-front-side,
+.print-surface.layout-weekly-calendar-card > .front-side,
+.print-surface.layout-weekly-calendar-card > .card-back,
+.print-surface.layout-weekly-calendar-card > .session-back-side,
+.print-surface.layout-weekly-calendar-card > .coming-soon-front-side {
   display: none !important;
 }
 .print-surface.layout-calendar-card:not(.show-back) > .calendar-card-front-side,
-.print-surface.layout-calendar-card.show-back > .coming-soon-back-side {
+.print-surface.layout-calendar-card.show-back > .coming-soon-back-side,
+.print-surface.layout-weekly-calendar-card:not(.show-back) > .calendar-card-front-side,
+.print-surface.layout-weekly-calendar-card.show-back > .coming-soon-back-side {
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -343,6 +353,371 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
   line-height: 1.1;
   letter-spacing: 0;
 }
+.calendar-week-range {
+  display: none;
+}
+.print-surface.layout-weekly-calendar-card .calendar-week-range {
+  display: block;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.1;
+  margin: 4px 0 0;
+  opacity: 0.94;
+}
+.print-surface.layout-weekly-calendar-card .calendar-band-title {
+  margin-bottom: 0;
+}
+.print-surface.layout-weekly-calendar-card .calendar-band-eyebrow-text {
+  color: #FFE8A3;
+}
+.print-surface.layout-weekly-calendar-card .calendar-logo-bar {
+  height: 54px;
+}
+.print-surface.layout-weekly-calendar-card .calendar-logo-slot img {
+  max-height: 34px;
+}
+.print-surface.layout-weekly-calendar-card .calendar-spotlight-band {
+  padding: 7px 16px 8px;
+}
+.weekly-calendar-timezone-legend {
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 8px 0 0;
+}
+.weekly-calendar-timezone-legend[hidden] { display: none; }
+.print-surface.layout-weekly-calendar-card .calendar-card-footer {
+  display: none;
+}
+.print-surface.layout-weekly-calendar-card .calendar-sessions {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 7px;
+  min-height: 0;
+  overflow: hidden;
+  padding: 8px 12px;
+}
+.weekly-calendar-session-row {
+  background: var(--weekly-session-card-color, #93c47d);
+  border: 1px solid rgba(255,255,255,.5);
+  border-radius: 10px;
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+.weekly-calendar-session-heading {
+  color: #fff;
+  flex: 0 0 auto;
+  padding: 16px 22px 12px;
+}
+.weekly-calendar-condition {
+  background: #e8fff6;
+  border: 1px solid #48d7a3;
+  border-radius: 12px;
+  color: #087a61;
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.3;
+  margin: 0 0 8px;
+  padding: 3px 9px;
+}
+.weekly-calendar-condition[hidden] { display: none; }
+.weekly-calendar-session-title {
+  color: #fff;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.weekly-calendar-session-timezone {
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+  margin: 7px 0 0;
+}
+.weekly-calendar-session-timezone[hidden] { display: none; }
+.weekly-calendar-session-divider {
+  border: 0;
+  border-top: 1px solid rgba(255,255,255,.55);
+  margin: 12px 0 0;
+}
+.weekly-calendar-session-date-time {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  justify-content: center;
+  min-width: 0;
+}
+.weekly-calendar-session-date {
+  color: #ffd966;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.weekly-calendar-session-times {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+.weekly-calendar-session-time {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.5;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.weekly-calendar-session-body {
+  align-items: stretch;
+  display: grid;
+  gap: 22px;
+  grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 16px 22px 22px;
+}
+.weekly-calendar-speaker-registration {
+  align-items: center;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) 184px;
+  min-width: 0;
+}
+.weekly-calendar-speakers {
+  align-content: center;
+  display: grid;
+  gap: 18px 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-width: 0;
+  overflow: hidden;
+}
+.weekly-calendar-speaker {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  text-align: center;
+}
+.weekly-calendar-speaker img,
+.weekly-calendar-speaker-fallback {
+  align-items: center;
+  background: #e8eef2;
+  border-radius: 50%;
+  color: #243b4b;
+  display: flex;
+  flex: 0 0 154px;
+  height: 154px;
+  justify-content: center;
+  object-fit: cover;
+  overflow: hidden;
+  width: 154px;
+}
+.weekly-calendar-speaker-fallback {
+  font-size: 28px;
+  font-weight: 800;
+}
+.weekly-calendar-speaker-copy { min-width: 0; }
+.weekly-calendar-speaker-name {
+  color: #fff;
+  display: block;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.weekly-calendar-speaker-credentials,
+.weekly-calendar-speaker-partner {
+  color: rgba(255,255,255,.94);
+  display: block;
+  font-size: 12px;
+  line-height: 1.3;
+  margin-top: 3px;
+  overflow-wrap: anywhere;
+}
+.weekly-calendar-speaker-empty {
+  color: #fff;
+  font-size: 14px;
+  margin: 0;
+}
+.weekly-calendar-qr-block {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+  min-width: 0;
+  padding-left: 14px;
+  border-left: 1px solid rgba(255,255,255,.45);
+}
+.weekly-calendar-qr-block img {
+  background: #fff;
+  border: 4px solid #fff;
+  border-radius: 5px;
+  display: block;
+  height: 124px;
+  object-fit: contain;
+  width: 124px;
+}
+.weekly-calendar-register-cta {
+  background: #cc0000;
+  border-radius: 15px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.25;
+  padding: 10px 13px;
+  text-align: center;
+  text-decoration: none;
+  max-width: 100%;
+}
+.weekly-calendar-short-url {
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.45);
+  border-radius: 5px;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  text-align: center;
+  padding: 6px;
+  width: 100%;
+}
+.weekly-calendar-status {
+  align-self: center;
+  color: #4d5d67;
+  font-size: 9px;
+  line-height: 1.35;
+  margin: auto;
+  max-width: 78%;
+  text-align: center;
+}
+.weekly-calendar-status button {
+  background: #fff;
+  border: 1px solid var(--calendar-primary);
+  border-radius: 4px;
+  color: var(--calendar-primary);
+  cursor: pointer;
+  display: block;
+  font-size: 9px;
+  font-weight: 800;
+  margin: 8px auto 0;
+  padding: 5px 9px;
+}
+.weekly-calendar-filters {
+  display: grid;
+  gap: 10px;
+}
+.weekly-calendar-period-controls {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr 1fr;
+}
+.weekly-calendar-period-controls input,
+.weekly-calendar-period-controls select {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  box-sizing: border-box;
+  color: #222;
+  font: inherit;
+  min-height: 34px;
+  padding: 6px 8px;
+  width: 100%;
+}
+.weekly-calendar-range-label {
+  color: #4d5d67;
+  font-size: 10px;
+  font-weight: 700;
+  grid-column: 1 / -1;
+  line-height: 1.3;
+  margin: 0;
+}
+.weekly-pagination-control {
+  align-items: center;
+  display: none;
+  gap: 7px;
+}
+.weekly-pagination-control button {
+  background: #fff;
+  border: 1px solid #c8d1d8;
+  border-radius: 4px;
+  color: #263747;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 8px;
+}
+.weekly-pagination-control button:disabled { opacity: 0.45; cursor: default; }
+.weekly-pagination-label { color: #4d5d67; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.weekly-post-panel {
+  display: none;
+  margin: 16px auto 28px;
+  max-width: 700px;
+  width: min(100%, 700px);
+}
+.weekly-post-panel label {
+  color: #233442;
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+.weekly-post-panel textarea {
+  border: 1px solid #c7d1d8;
+  border-radius: 6px;
+  box-sizing: border-box;
+  color: #263747;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.45;
+  min-height: 106px;
+  padding: 10px;
+  resize: vertical;
+  width: 100%;
+}
+.weekly-post-session-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+.weekly-post-session {
+  background: #fff;
+  border: 1px solid #d8e0e5;
+  border-radius: 6px;
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+}
+.weekly-post-session-title { color: #172b3a; font-size: 12px; font-weight: 800; line-height: 1.3; }
+.weekly-post-session-meta { color: #586974; font-size: 11px; }
+.weekly-post-session-link-row { align-items: center; display: flex; gap: 8px; min-width: 0; }
+.weekly-post-session-link { color: #0057b8; font-size: 11px; overflow-wrap: anywhere; }
+.weekly-post-session-link-row button {
+  background: #f0f5f8;
+  border: 1px solid #c8d7e0;
+  border-radius: 4px;
+  color: #263747;
+  cursor: pointer;
+  flex: 0 0 auto;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 5px 8px;
+}
+.weekly-post-empty { color: #586974; font-size: 12px; margin: 0; }
 .calendar-sessions {
   flex: 1;
   padding: 3px 16px;
@@ -652,6 +1027,71 @@ body[data-partner="vamp"] .calendar-chip-month {
   font-size: 6.5px;
 }
 .print-surface.layout-calendar-card .coming-soon-fine-print {
+  font-size: 7px;
+  padding: 4px 16px 6px;
+}
+.print-surface.layout-weekly-calendar-card .coming-soon-logo-bar {
+  height: 60px;
+  padding: 8px 12px;
+  gap: 6px;
+}
+.print-surface.layout-weekly-calendar-card .coming-soon-logo-bar img {
+  height: 32px;
+  max-width: 102px;
+}
+.print-surface.layout-weekly-calendar-card .coming-soon-logo-bar img[data-logo-key="oav"] {
+  height: 38px;
+  max-width: 148px;
+}
+.print-surface.layout-weekly-calendar-card .coming-soon-logo-bar img.coming-logo-af {
+  height: 32px;
+}
+.print-surface.layout-weekly-calendar-card .coming-soon-logo-bar .logo-divider {
+  height: 34px;
+  margin: 0 4px;
+  order: 0;
+}
+.print-surface.layout-weekly-calendar-card .coming-soon-title-strip {
+  padding: 6px 16px;
+  gap: 7px;
+}
+.print-surface.layout-weekly-calendar-card .coming-soon-program-name { font-size: 10px; }
+.print-surface.layout-weekly-calendar-card .coming-soon-date,
+.print-surface.layout-weekly-calendar-card .coming-soon-dot { display: none; }
+.print-surface.layout-weekly-calendar-card .coming-soon-badge {
+  font-size: 7px;
+  padding: 2px 8px;
+}
+.print-surface.layout-weekly-calendar-card .coming-soon-band { padding: 9px 16px 10px; }
+.print-surface.layout-weekly-calendar-card .coming-soon-label span { font-size: 8px; }
+.print-surface.layout-weekly-calendar-card .coming-soon-feature-name { font-size: 21px; }
+.print-surface.layout-weekly-calendar-card .coming-soon-body {
+  padding: 12px 16px 8px;
+  grid-template-columns: 1fr 92px;
+  column-gap: 12px;
+}
+.print-surface.layout-weekly-calendar-card .coming-soon-copy p {
+  font-size: 11.5px;
+  line-height: 1.35;
+}
+.print-surface.layout-weekly-calendar-card .coming-soon-cta { font-size: 11px; }
+.print-surface.layout-weekly-calendar-card .coming-soon-url {
+  font-size: 8.5px;
+  padding: 3px 7px;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.print-surface.layout-weekly-calendar-card .coming-soon-qr-box {
+  width: 84px;
+  height: 84px;
+}
+.print-surface.layout-weekly-calendar-card .coming-soon-qr-box img {
+  width: 78px;
+  height: 78px;
+}
+.print-surface.layout-weekly-calendar-card .coming-soon-qr-label { font-size: 6.5px; }
+.print-surface.layout-weekly-calendar-card .coming-soon-fine-print {
   font-size: 7px;
   padding: 4px 16px 6px;
 }
@@ -2813,6 +3253,7 @@ body[data-partner="vamp"] .session-back-title {
         <option value="foundation">Medical Amyloidosis Session - Spotlight</option>
         <option value="classic">Medical Amyloidosis Session - Non Spotlight</option>
         <option value="calendar-card">Monthly Calendar Card</option>
+        <option value="weekly-calendar-card">Weekly Calendar Card</option>
         <option value="coming-soon">Coming Soon Card</option>
       </select>
     </label>
@@ -2836,7 +3277,31 @@ body[data-partner="vamp"] .session-back-title {
       </label>
       <p class="calendar-day-filter-help">Select which session days to show in the monthly calendar. At least one day must be selected.</p>
     </fieldset>
-    <label class="field-control calendar-filter-control" for="calendar-date-chip-size">
+    <div class="weekly-calendar-filters weekly-filter-control">
+      <div class="weekly-calendar-period-controls">
+        <label class="field-control" for="weekly-calendar-year">
+          <span>ISO Year</span>
+          <input id="weekly-calendar-year" type="number" min="2000" max="2100" step="1" inputmode="numeric">
+        </label>
+        <label class="field-control" for="weekly-calendar-week">
+          <span>ISO Week</span>
+          <select id="weekly-calendar-week" aria-label="ISO week number"></select>
+        </label>
+        <p class="weekly-calendar-range-label" id="weekly-calendar-range-label" aria-live="polite"></p>
+      </div>
+      <fieldset class="calendar-day-filter-group">
+        <legend>Weekly Session Days</legend>
+        <label class="calendar-day-option"><input class="weekly-calendar-day-checkbox" type="checkbox" value="Mon" checked><span>Monday</span></label>
+        <label class="calendar-day-option"><input class="weekly-calendar-day-checkbox" type="checkbox" value="Tue" checked><span>Tuesday</span></label>
+        <label class="calendar-day-option"><input class="weekly-calendar-day-checkbox" type="checkbox" value="Wed" checked><span>Wednesday</span></label>
+        <label class="calendar-day-option"><input class="weekly-calendar-day-checkbox" type="checkbox" value="Thu" checked><span>Thursday</span></label>
+        <label class="calendar-day-option"><input class="weekly-calendar-day-checkbox" type="checkbox" value="Fri" checked><span>Friday</span></label>
+        <label class="calendar-day-option"><input class="weekly-calendar-day-checkbox" type="checkbox" value="Sat" checked><span>Saturday</span></label>
+        <label class="calendar-day-option"><input class="weekly-calendar-day-checkbox" type="checkbox" value="Sun" checked><span>Sunday</span></label>
+        <p class="calendar-day-filter-help">At least one day must be selected.</p>
+      </fieldset>
+    </div>
+    <label class="field-control calendar-filter-control weekly-filter-control" for="calendar-date-chip-size">
       <span>Day &amp; Date Box Size</span>
       <span class="adjustment-slider-row">
         <input id="calendar-date-chip-size" type="range" min="70" max="130" step="5" value="100" aria-label="Day and date box size">
@@ -2910,6 +3375,13 @@ body[data-partner="vamp"] .session-back-title {
         <option value="PT">Pacific Time - Los Angeles</option>
         <option value="AK">Alaska Time - Anchorage</option>
         <option value="HT">Hawaii Time - Honolulu</option>
+      </select>
+    </label>
+    <label class="field-control weekly-filter-control" for="weekly-timezone-display">
+      <span>Timezone Labels</span>
+      <select id="weekly-timezone-display" aria-label="Timezone label display">
+        <option value="abbreviation">Abbreviation only</option>
+        <option value="location">Abbreviation + city</option>
       </select>
     </label>
     <label class="field-control header-logo-count-control" for="header-logo-count">
@@ -3295,6 +3767,11 @@ body[data-partner="vamp"] .session-back-title {
   <button class="calendar-filter-control calendar-range-btn active" data-calendar-range="all" type="button">Full Month</button>
   <button class="calendar-filter-control calendar-range-btn" data-calendar-range="early" type="button">Card 1</button>
   <button class="calendar-filter-control calendar-range-btn" data-calendar-range="late" type="button">Card 2</button>
+  <div class="weekly-pagination-control" id="weekly-pagination-control" aria-label="Weekly calendar pages">
+    <button id="weekly-page-previous" type="button">Previous</button>
+    <span class="weekly-pagination-label" id="weekly-pagination-label">Card 1 of 1</span>
+    <button id="weekly-page-next" type="button">Next</button>
+  </div>
   <button class="btn-png" id="btn-download-png" onclick="downloadPNG()">&#8595; PNG</button>
 </div>
 
@@ -3562,7 +4039,7 @@ body[data-partner="vamp"] .session-back-title {
       <div id="coming-fine-print" class="coming-soon-fine-print"></div>
     </section>
 
-    <section class="calendar-card-front-side" aria-label="Partner monthly calendar card front">
+    <section class="calendar-card-front-side" aria-label="Partner calendar card front">
       <div class="calendar-logo-bar">
         <div class="calendar-logo-slot">
           <img id="calendar-logo-partner" src="" alt="">
@@ -3595,6 +4072,8 @@ body[data-partner="vamp"] .session-back-title {
           <span id="calendar-series-label" class="calendar-band-eyebrow-text">Amyloidosis Program Spotlight Series</span>
         </div>
         <p id="calendar-program-title" class="calendar-band-title">City of Hope Amyloidosis Program</p>
+        <p id="calendar-week-range" class="calendar-week-range"></p>
+        <p id="weekly-calendar-timezone-legend" class="weekly-calendar-timezone-legend" aria-live="polite" hidden></p>
       </div>
 
       <div class="calendar-sessions" id="calendar-sessions-list">
@@ -3718,6 +4197,11 @@ body[data-partner="vamp"] .session-back-title {
     </section>
 
   </div><!-- /print-surface -->
+  <section class="weekly-post-panel" id="weekly-post-panel" aria-label="Weekly calendar post text">
+    <label for="weekly-post-text">Editable post text draft</label>
+    <textarea id="weekly-post-text" aria-label="Editable post text draft"></textarea>
+    <div class="weekly-post-session-list" id="weekly-post-session-list"></div>
+  </section>
 </div>
 
 </section>
@@ -3750,6 +4234,10 @@ const multiPresenterNameSizeSlider = document.getElementById('multi-presenter-na
 const multiPresenterDetailSizeSlider = document.getElementById('multi-presenter-detail-size');
 const multiRegistrationSizeSlider = document.getElementById('multi-registration-size');
 const calendarDateChipSizeSlider = document.getElementById('calendar-date-chip-size');
+const weeklyCalendarYearInput = document.getElementById('weekly-calendar-year');
+const weeklyCalendarWeekSelect = document.getElementById('weekly-calendar-week');
+const weeklyTimezoneDisplaySelect = document.getElementById('weekly-timezone-display');
+const weeklyPostTextArea = document.getElementById('weekly-post-text');
 const sideFontSelects = Array.from(document.querySelectorAll('.side-font-select'));
 const headerLogoSelects = Array.from(document.querySelectorAll('.header-logo-select'));
 const headerLogoCountSelect = document.getElementById('header-logo-count');
@@ -3994,16 +4482,17 @@ let activePartnerConfig = partnerConfigs.partners[activePartnerKey] || partnerCo
 const promoRuntimeConfig = window.STTT_PROMO_RUNTIME_CONFIG || {};
 const TIMEZONE_STORAGE_KEY = 'facebook_promo_card_timezone';
 const TIMEZONE_OPTIONS = {
-  ET: { short: 'ET', iana: 'America/New_York', apiKey: 'ET' },
-  CT: { short: 'CT', iana: 'America/Chicago', apiKey: 'CT' },
-  MT: { short: 'MT', iana: 'America/Denver', apiKey: 'MT' },
-  AZ: { short: 'AZ', iana: 'America/Phoenix' },
-  PT: { short: 'PT', iana: 'America/Los_Angeles', apiKey: 'PT' },
-  AK: { short: 'AK', iana: 'America/Anchorage' },
-  HT: { short: 'HT', iana: 'Pacific/Honolulu' }
+  ET: { short: 'ET', city: 'New York', iana: 'America/New_York', apiKey: 'ET' },
+  CT: { short: 'CT', city: 'Chicago', iana: 'America/Chicago', apiKey: 'CT' },
+  MT: { short: 'MT', city: 'Denver', iana: 'America/Denver', apiKey: 'MT' },
+  AZ: { short: 'AZ', city: 'Phoenix', iana: 'America/Phoenix' },
+  PT: { short: 'PT', city: 'Los Angeles', iana: 'America/Los_Angeles', apiKey: 'PT' },
+  AK: { short: 'AK', city: 'Anchorage', iana: 'America/Anchorage' },
+  HT: { short: 'HT', city: 'Honolulu', iana: 'Pacific/Honolulu' }
 };
 const VALID_TIMEZONES = Object.keys(TIMEZONE_OPTIONS);
 let selectedTimezone = loadSelectedTimezone();
+let weeklyTimezoneDisplayMode = 'abbreviation';
 const TITLE_FONT_STORAGE_KEY = 'facebook_promo_title_font_size';
 const TITLE_PREFIX_FONT_STORAGE_KEY = 'facebook_promo_title_prefix_font_size';
 const TITLE_SUFFIX_FONT_STORAGE_KEY = 'facebook_promo_title_suffix_font_size';
@@ -4197,6 +4686,21 @@ let calendarLoadProgressTimer = null;
 let calendarLoadProgressValue = 10;
 let selectedCalendarFilters = new Set(['Mon', 'Tue', 'Wed', 'Thu']);
 let selectedCalendarRange = 'all';
+const WEEKLY_CALENDAR_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const WEEKLY_CALENDAR_PAGE_SIZE = 2;
+const currentIsoWeek = calendarGetCurrentIsoWeek();
+let selectedWeeklyYear = currentIsoWeek.year;
+let selectedWeeklyWeek = currentIsoWeek.week;
+let selectedWeeklyDays = new Set(WEEKLY_CALENDAR_DAYS);
+let selectedWeeklyPage = 0;
+let weeklyPageLoadToken = 0;
+let weeklyCardPageReady = false;
+const weeklySessionAliasCache = new Map();
+const weeklySessionAliasPromises = new Map();
+const weeklyQrDataUrlCache = new Map();
+const weeklyPostDraftCache = new Map();
+let weeklyPostDraftPageKey = '';
+let weeklyPostDraftDirty = false;
 const CALENDAR_REQUEST_TIMEOUT_MS = 10000;
 const partnerBackSeriesMonthRequests = new Map();
 const partnerBackEmployerRequests = new Map();
@@ -5450,7 +5954,67 @@ function calendarParseApiDate(dateText) {
     ? CALENDAR_DAY_NAMES[new Date(Date.UTC(year, monthIndex, dayNumber)).getUTCDay()]
     : '';
 
-  return { month: monthToken, day, weekday, dayNumber };
+  return { month: monthToken, day, weekday, year, monthIndex, dayNumber };
+}
+
+function calendarGetIsoWeekFromDate(date) {
+  const isoDate = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  const isoDay = isoDate.getUTCDay() || 7;
+  isoDate.setUTCDate(isoDate.getUTCDate() + 4 - isoDay);
+  const year = isoDate.getUTCFullYear();
+  const yearStart = Date.UTC(year, 0, 1);
+  const week = Math.ceil((((isoDate.getTime() - yearStart) / 86400000) + 1) / 7);
+  return { year, week };
+}
+
+function calendarGetCurrentIsoWeek() {
+  const today = new Date();
+  return calendarGetIsoWeekFromDate(new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())));
+}
+
+function calendarGetIsoWeekStartUtc(year, week) {
+  const jan4 = new Date(Date.UTC(year, 0, 4));
+  const isoDay = jan4.getUTCDay() || 7;
+  jan4.setUTCDate(jan4.getUTCDate() - isoDay + 1 + ((week - 1) * 7));
+  return jan4;
+}
+
+function calendarGetIsoWeeksInYear(year) {
+  return calendarGetIsoWeekFromDate(new Date(Date.UTC(year, 11, 28))).week;
+}
+
+function calendarFormatWeeklyRange(year = selectedWeeklyYear, week = selectedWeeklyWeek) {
+  const start = calendarGetIsoWeekStartUtc(year, week);
+  const end = new Date(start.getTime() + (6 * 86400000));
+  const startMonth = new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(start);
+  const endMonth = new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(end);
+  const startDay = start.getUTCDate();
+  const endDay = end.getUTCDate();
+  const endYear = end.getUTCFullYear();
+  if (start.getUTCFullYear() === endYear && start.getUTCMonth() === end.getUTCMonth()) {
+    return `${startMonth} ${startDay}–${endDay}, ${endYear}`;
+  }
+  const startLabel = `${startMonth} ${startDay}, ${start.getUTCFullYear()}`;
+  const endLabel = `${endMonth} ${endDay}, ${endYear}`;
+  return `${startLabel} – ${endLabel}`;
+}
+
+function calendarGetWeeklyLabel(year = selectedWeeklyYear, week = selectedWeeklyWeek) {
+  return `Week ${week} · ${calendarFormatWeeklyRange(year, week)}`;
+}
+
+function calendarGetWeeklySessions(sessions) {
+  return (Array.isArray(sessions) ? sessions : [])
+    .slice()
+    .sort((a, b) => Number(a.timestamp || 0) - Number(b.timestamp || 0))
+    .filter(session => {
+      const date = calendarParseApiDate(session.date);
+      if (date.monthIndex === undefined || !Number.isFinite(date.year) || !Number.isFinite(date.dayNumber)) return false;
+      const isoWeek = calendarGetIsoWeekFromDate(new Date(Date.UTC(date.year, date.monthIndex, date.dayNumber)));
+      return isoWeek.year === selectedWeeklyYear
+        && isoWeek.week === selectedWeeklyWeek
+        && selectedWeeklyDays.has(date.weekday);
+    });
 }
 
 function calendarMatchesSelectedRange(session) {
@@ -5678,8 +6242,8 @@ function syncCalendarCard() {
   setText('calendar-microsite-url', getReadablePublicUrlText(cfg.micrositeUrl));
   updateCalendarTimezoneDisplay();
 
-  if (isCalendarCardLayout() && !calendarSessionsLoaded) {
-    loadCalendarSessions();
+  if (isAnyCalendarCardLayout()) {
+    if (!calendarSessionsLoaded) loadCalendarSessions();
   }
   applyHeaderLogoSizes();
 }
@@ -5707,6 +6271,10 @@ function getCalendarProgramTime(zone = selectedTimezone) {
 }
 
 function updateCalendarTimezoneDisplay() {
+  if (isWeeklyCalendarCardLayout()) {
+    updateWeeklyCalendarRangeLabel();
+    return;
+  }
   const el = document.getElementById('calendar-footer-timezone');
   if (!el) return;
   const cfg = getCalendarConfig();
@@ -5774,6 +6342,11 @@ function renderCalendarSessionsFromApi(sessions, profiles) {
     profiles: Array.isArray(profiles) ? profiles : []
   };
   const profileMap = calendarBuildProfileMap(Array.isArray(profiles) ? profiles : []);
+  if (isWeeklyCalendarCardLayout()) {
+    calendarSessionsLoaded = true;
+    renderWeeklyCalendarSessions();
+    return;
+  }
   const filtered = calendarGetFilteredSessions(sessions);
 
   list.replaceChildren();
@@ -5854,6 +6427,594 @@ function renderCalendarSessionsFromApi(sessions, profiles) {
 
   calendarSessionsLoaded = true;
   updateCalendarTimezoneDisplay();
+}
+
+function updateWeeklyCalendarRangeLabel() {
+  const label = calendarGetWeeklyLabel();
+  const sidebarLabel = document.getElementById('weekly-calendar-range-label');
+  const cardLabel = document.getElementById('calendar-week-range');
+  if (sidebarLabel) sidebarLabel.textContent = label;
+  if (cardLabel) cardLabel.textContent = label;
+}
+
+function updateWeeklyPagination(sessionCount) {
+  const control = document.getElementById('weekly-pagination-control');
+  const label = document.getElementById('weekly-pagination-label');
+  const previous = document.getElementById('weekly-page-previous');
+  const next = document.getElementById('weekly-page-next');
+  const pageCount = Math.ceil(sessionCount / WEEKLY_CALENDAR_PAGE_SIZE);
+  if (label) {
+    label.textContent = pageCount
+      ? `Card ${selectedWeeklyPage + 1} of ${pageCount} · ${sessionCount} sessions`
+      : 'No cards · 0 sessions';
+  }
+  if (previous) previous.disabled = selectedWeeklyPage <= 0 || pageCount === 0;
+  if (next) next.disabled = pageCount === 0 || selectedWeeklyPage >= pageCount - 1;
+  if (control) control.style.display = isWeeklyCalendarCardLayout() && hasReadySelection() ? 'flex' : 'none';
+}
+
+function weeklyCalendarStatus(message, canRetry = false) {
+  const list = document.getElementById('calendar-sessions-list');
+  if (!list) return;
+  list.replaceChildren();
+  const status = document.createElement('div');
+  status.className = 'weekly-calendar-status';
+  status.textContent = message;
+  if (canRetry) {
+    const retry = document.createElement('button');
+    retry.type = 'button';
+    retry.textContent = 'Retry registration links';
+    retry.addEventListener('click', () => renderWeeklyCalendarSessions());
+    status.appendChild(retry);
+  }
+  list.appendChild(status);
+}
+
+function getWeeklySessionAliasApiUrl(session) {
+  const cfg = getCalendarConfig();
+  return getSessionApiUrl(getAllCalendarSessionsApiUrl(cfg.sessionsApiUrl), {
+    uuid: String(session.uuid || ''),
+    card_type: 'facebook-promo',
+    base64: 'yes',
+    view: 'full'
+  });
+}
+
+function getWeeklySessionRegistrationAssets(detail) {
+  const shortUrl = getApprovedRegistrationShortUrl(detail?.qr_payload_url);
+  const qrSrc = String(detail?.qr_base64 || '').trim();
+  if (!shortUrl || !isCanonicalTrackedRegistrationUrl(detail?.tracked_registration_url)
+    || !/^data:image\/[^;]+;base64,/i.test(qrSrc)) {
+    throw new Error('A first-party registration link and matching QR image are not available for one of the sessions.');
+  }
+  return { shortUrl, qrSrc };
+}
+
+async function getWeeklySessionWithAlias(session) {
+  const uuid = String(session.uuid || '').trim();
+  if (!uuid) throw new Error('A session is missing its registration identifier.');
+  if (weeklySessionAliasCache.has(uuid)) return weeklySessionAliasCache.get(uuid);
+  if (weeklySessionAliasPromises.has(uuid)) return weeklySessionAliasPromises.get(uuid);
+
+  const request = (async () => {
+    const detailJson = await fetchCalendarJson(getWeeklySessionAliasApiUrl(session), 'Registration link');
+    const rows = Array.isArray(detailJson.data) ? detailJson.data : (detailJson.data ? [detailJson.data] : []);
+    const detail = rows.find(row => String(row.uuid || '') === uuid);
+    if (!detail) throw new Error('The registration service did not return this session.');
+    const registrationAssets = getWeeklySessionRegistrationAssets(detail);
+    return {
+      ...session,
+      ...detail,
+      short_url: registrationAssets.shortUrl,
+      qr_payload_url: registrationAssets.shortUrl,
+      weekly_short_url: registrationAssets.shortUrl,
+      weekly_qr_src: registrationAssets.qrSrc
+    };
+  })();
+  weeklySessionAliasPromises.set(uuid, request);
+  try {
+    const enriched = await request;
+    weeklySessionAliasCache.set(uuid, enriched);
+    return enriched;
+  } finally {
+    weeklySessionAliasPromises.delete(uuid);
+  }
+}
+
+function calendarFormatWeeklySessionDate(session) {
+  const date = calendarParseApiDate(session.date);
+  if (date.monthIndex === undefined || !Number.isFinite(date.year) || !Number.isFinite(date.dayNumber)) {
+    return calendarNormalizeSpaces(session.date);
+  }
+  return new Intl.DateTimeFormat('en-US', {
+    weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC'
+  }).format(new Date(Date.UTC(date.year, date.monthIndex, date.dayNumber)));
+}
+
+function getWeeklyTimezoneLabel(zone = selectedTimezone, mode = weeklyTimezoneDisplayMode) {
+  const option = TIMEZONE_OPTIONS[zone] || TIMEZONE_OPTIONS.ET;
+  return mode === 'location' && option.city ? `${option.short} · ${option.city}` : option.short;
+}
+
+function getWeeklySessionTimes(session) {
+  const source = session && session.times_by_zone && typeof session.times_by_zone === 'object'
+    ? session.times_by_zone
+    : {};
+  return ['ET', 'CT', 'MT', 'PT'].flatMap(zone => {
+    const option = TIMEZONE_OPTIONS[zone];
+    const apiKey = option?.apiKey || zone;
+    const raw = source[apiKey] || (zone === 'ET' ? session?.time : '');
+    const time = cleanTimeValue(raw);
+    return time ? [{ zone, label: getWeeklyTimezoneLabel(zone), time }] : [];
+  });
+}
+
+function getWeeklySessionCardColor(session, sessionIndex = 0) {
+  const candidate = calendarNormalizeSpaces(session?.card_color);
+  if (candidate && window.CSS?.supports?.('color', candidate)) return candidate;
+  const palette = ['#93c47d', '#bf9000', '#76a5af'];
+  const index = Number.isInteger(sessionIndex) && sessionIndex >= 0 ? sessionIndex : 0;
+  return palette[index % palette.length];
+}
+
+function getWeeklyTimezonePresentation(zoneSets) {
+  const labelSets = Array.isArray(zoneSets)
+    ? zoneSets.map(zones => (Array.isArray(zones) ? zones : []).map(zone => getWeeklyTimezoneLabel(zone)))
+    : [];
+  const firstSet = labelSets[0] || [];
+  const shared = firstSet.length > 0 && labelSets.every(labels =>
+    labels.length === firstSet.length && labels.every((label, index) => label === firstSet[index])
+  );
+  return {
+    placement: shared ? 'legend' : 'per-session',
+    legendLabels: shared ? firstSet : [],
+    sessionLabels: shared ? labelSets.map(() => []) : labelSets
+  };
+}
+
+function renderWeeklySessionTimes(container, session) {
+  if (!container) return;
+  container.replaceChildren();
+  const times = getWeeklySessionTimes(session);
+  if (!times.length) {
+    const unavailable = document.createElement('p');
+    unavailable.className = 'weekly-calendar-session-time';
+    unavailable.textContent = 'Time TBA';
+    container.appendChild(unavailable);
+    return;
+  }
+  times.forEach(({ zone, label, time }) => {
+    const line = document.createElement('p');
+    line.className = 'weekly-calendar-session-time';
+    line.dataset.zone = zone;
+    line.textContent = time;
+    line.setAttribute('aria-label', `${label}: ${time}`);
+    container.appendChild(line);
+  });
+}
+
+function getWeeklySessionCaptionLines(session) {
+  const title = calendarNormalizeSpaces(session?.title) || 'Untitled session';
+  const date = calendarFormatWeeklySessionDate(session);
+  const lines = [`• ${title} — ${date}`];
+  const times = getWeeklySessionTimes(session);
+  if (times.length) {
+    lines.push(...times.map(({ label, time }) => `  ${label}: ${time}`));
+  } else {
+    lines.push('  Time TBA');
+  }
+  lines.push(`  Register: ${session?.weekly_short_url || ''}`, '');
+  return lines;
+}
+
+function updateWeeklyTimezoneLegend(presentation) {
+  const legend = document.getElementById('weekly-calendar-timezone-legend');
+  if (!legend) return;
+  const text = presentation?.placement === 'legend' && presentation.legendLabels?.length
+    ? `Time lines follow this order: ${presentation.legendLabels.join(' | ')}`
+    : '';
+  legend.textContent = text;
+  legend.hidden = !text;
+}
+
+function getWeeklyPostPageKey() {
+  return [
+    activePartnerKey,
+    selectedWeeklyYear,
+    selectedWeeklyWeek,
+    [...selectedWeeklyDays].sort().join(','),
+    selectedWeeklyPage
+  ].join('|');
+}
+
+function setWeeklyPostDraft(pageKey, generatedText) {
+  if (!weeklyPostTextArea) return;
+  if (weeklyPostDraftPageKey && weeklyPostDraftPageKey !== pageKey && weeklyPostDraftDirty) {
+    weeklyPostDraftCache.set(weeklyPostDraftPageKey, weeklyPostTextArea.value);
+  }
+  if (weeklyPostDraftPageKey !== pageKey) {
+    weeklyPostDraftPageKey = pageKey;
+    weeklyPostDraftDirty = weeklyPostDraftCache.has(pageKey);
+    weeklyPostTextArea.value = weeklyPostDraftCache.get(pageKey) ?? generatedText;
+  } else if (!weeklyPostDraftDirty) {
+    weeklyPostTextArea.value = generatedText;
+  }
+  if (weeklyPostDraftDirty) weeklyPostDraftCache.set(pageKey, weeklyPostTextArea.value);
+}
+
+function saveWeeklyPostDraftEdit() {
+  const pageKey = getWeeklyPostPageKey();
+  weeklyPostDraftPageKey = pageKey;
+  weeklyPostDraftDirty = true;
+  weeklyPostDraftCache.set(pageKey, weeklyPostTextArea.value);
+}
+
+function updateWeeklyPostPanel(sessions) {
+  const panel = document.getElementById('weekly-post-panel');
+  const list = document.getElementById('weekly-post-session-list');
+  if (!panel || !list) return;
+  panel.style.display = isWeeklyCalendarCardLayout() ? 'block' : 'none';
+  list.replaceChildren();
+  const rows = Array.isArray(sessions) ? sessions : [];
+  const pageKey = getWeeklyPostPageKey();
+  const timezonePresentation = getWeeklyTimezonePresentation(
+    rows.map(session => getWeeklySessionTimes(session).map(({ zone }) => zone))
+  );
+  if (!rows.length) {
+    setWeeklyPostDraft(pageKey, '');
+    const empty = document.createElement('p');
+    empty.className = 'weekly-post-empty';
+    empty.textContent = 'No sessions are available on this card yet.';
+    list.appendChild(empty);
+    return;
+  }
+
+  const postLines = [`${activePartnerConfig.label || 'Partner'} Amyloidosis Program · ${calendarGetWeeklyLabel()}`, ''];
+  if (timezonePresentation.placement === 'legend' && timezonePresentation.legendLabels.length) {
+    postLines.push(`Time lines follow this order: ${timezonePresentation.legendLabels.join(' | ')}.`, '');
+  }
+  rows.forEach(session => {
+    const title = calendarNormalizeSpaces(session.title) || 'Untitled session';
+    const date = calendarFormatWeeklySessionDate(session);
+    const displayTimes = getWeeklySessionTimes(session)
+      .map(({ label, time }) => `${label}: ${time}`);
+    const displayTime = displayTimes.length ? displayTimes.join(' · ') : 'Time TBA';
+    const shortUrl = session.weekly_short_url;
+    postLines.push(...getWeeklySessionCaptionLines(session));
+
+    const item = document.createElement('article');
+    item.className = 'weekly-post-session';
+    const titleEl = document.createElement('div');
+    titleEl.className = 'weekly-post-session-title';
+    titleEl.textContent = title;
+    const meta = document.createElement('div');
+    meta.className = 'weekly-post-session-meta';
+    meta.textContent = `${date} · ${displayTime}`;
+    const linkRow = document.createElement('div');
+    linkRow.className = 'weekly-post-session-link-row';
+    const link = document.createElement('span');
+    link.className = 'weekly-post-session-link';
+    link.textContent = shortUrl;
+    const copy = document.createElement('button');
+    copy.type = 'button';
+    copy.textContent = 'Copy';
+    copy.setAttribute('aria-label', `Copy registration short URL for ${title}`);
+    copy.addEventListener('click', async () => {
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(shortUrl);
+        } else {
+          const temporary = document.createElement('textarea');
+          temporary.value = shortUrl;
+          temporary.style.position = 'fixed';
+          temporary.style.opacity = '0';
+          document.body.appendChild(temporary);
+          temporary.select();
+          const copied = document.execCommand('copy');
+          temporary.remove();
+          if (!copied) throw new Error('Clipboard unavailable');
+        }
+        copy.textContent = 'Copied';
+        window.setTimeout(() => { copy.textContent = 'Copy'; }, 1200);
+      } catch (error) {
+        copy.textContent = 'Select URL';
+        window.setTimeout(() => { copy.textContent = 'Copy'; }, 1600);
+      }
+    });
+    linkRow.append(link, copy);
+    item.append(titleEl, meta, linkRow);
+    list.appendChild(item);
+  });
+  setWeeklyPostDraft(pageKey, postLines.join('\n').trim());
+}
+
+async function renderWeeklyCalendarSessions() {
+  const list = document.getElementById('calendar-sessions-list');
+  if (!list || !isWeeklyCalendarCardLayout()) return;
+  const token = ++weeklyPageLoadToken;
+  const sessions = calendarGetWeeklySessions(calendarSessionsData.sessions);
+  const pageCount = Math.ceil(sessions.length / WEEKLY_CALENDAR_PAGE_SIZE);
+  if (pageCount && selectedWeeklyPage >= pageCount) selectedWeeklyPage = pageCount - 1;
+  updateWeeklyCalendarRangeLabel();
+  updateWeeklyPagination(sessions.length);
+  list.classList.add('weekly-calendar-session-list');
+  list.classList.remove('calendar-sessions-filtered', 'calendar-sessions-dense', 'calendar-sessions-compact');
+  weeklyCardPageReady = false;
+  updateControlAvailability();
+
+  if (!sessions.length) {
+    updateWeeklyTimezoneLegend(null);
+    weeklyCalendarStatus('No calendar sessions match the selected ISO week and days.');
+    updateWeeklyPostPanel([]);
+    updateControlAvailability();
+    return;
+  }
+
+  const pageRows = sessions.slice(
+    selectedWeeklyPage * WEEKLY_CALENDAR_PAGE_SIZE,
+    (selectedWeeklyPage + 1) * WEEKLY_CALENDAR_PAGE_SIZE
+  );
+  weeklyCalendarStatus('Preparing first-party registration links for this card…');
+  updateWeeklyPostPanel([]);
+  try {
+    const rows = await Promise.all(pageRows.map(session => getWeeklySessionWithAlias(session)));
+    if (token !== weeklyPageLoadToken || !isWeeklyCalendarCardLayout()) return;
+    const timezonePresentation = getWeeklyTimezonePresentation(
+      rows.map(session => getWeeklySessionTimes(session).map(({ zone }) => zone))
+    );
+    updateWeeklyTimezoneLegend(timezonePresentation);
+    const qrImages = [];
+    list.replaceChildren();
+    rows.forEach((session, index) => {
+      const date = calendarParseApiDate(session.date);
+      const dateLabel = calendarFormatWeeklySessionDate(session).replace(/, \d{4}$/, '');
+      const row = document.createElement('article');
+      row.className = 'weekly-calendar-session-row';
+      const cardColor = getWeeklySessionCardColor(
+        session,
+        selectedWeeklyPage * WEEKLY_CALENDAR_PAGE_SIZE + index
+      );
+      if (cardColor) row.style.setProperty('--weekly-session-card-color', cardColor);
+      const heading = document.createElement('header');
+      heading.className = 'weekly-calendar-session-heading';
+      const conditionText = (Array.isArray(session.indications) ? session.indications : [])
+        .map(calendarNormalizeSpaces)
+        .filter(Boolean)
+        .join(' + ');
+      const condition = document.createElement('span');
+      condition.className = 'weekly-calendar-condition';
+      condition.textContent = conditionText;
+      condition.hidden = !conditionText;
+      const title = document.createElement('h2');
+      title.className = 'weekly-calendar-session-title';
+      title.textContent = calendarNormalizeSpaces(session.title) || 'Untitled session';
+      const timezone = document.createElement('p');
+      timezone.className = 'weekly-calendar-session-timezone';
+      const sessionLabels = timezonePresentation.sessionLabels[index] || [];
+      timezone.textContent = sessionLabels.length ? `Times in ${sessionLabels.join(' | ')}` : '';
+      timezone.hidden = !timezone.textContent;
+      const divider = document.createElement('hr');
+      divider.className = 'weekly-calendar-session-divider';
+      heading.append(condition, title, timezone, divider);
+
+      const dateTime = document.createElement('div');
+      dateTime.className = 'weekly-calendar-session-date-time';
+      const dateText = document.createElement('p');
+      dateText.className = 'weekly-calendar-session-date';
+      dateText.textContent = dateLabel;
+      const times = document.createElement('div');
+      times.className = 'weekly-calendar-session-times';
+      renderWeeklySessionTimes(times, session);
+      dateTime.append(dateText, times);
+
+      const body = document.createElement('div');
+      body.className = 'weekly-calendar-session-body';
+      const speakers = document.createElement('div');
+      speakers.className = 'weekly-calendar-speakers';
+      const presenters = Array.isArray(session.presenters) ? session.presenters : [];
+      if (!presenters.length) {
+        const empty = document.createElement('p');
+        empty.className = 'weekly-calendar-speaker-empty';
+        empty.textContent = 'Speaker details unavailable';
+        speakers.appendChild(empty);
+      }
+      presenters.forEach(presenter => {
+        const speaker = document.createElement('div');
+        speaker.className = 'weekly-calendar-speaker';
+        const firstName = calendarNormalizeSpaces(presenter.first_name);
+        const lastName = calendarNormalizeSpaces(presenter.last_name);
+        const suffix = calendarNormalizeSuffix(presenter.name_suffix);
+        let displayName = [firstName, lastName].filter(Boolean).join(' ');
+        if (displayName && suffix) displayName += `, ${suffix}`;
+        if (!displayName) displayName = calendarNormalizeSpaces(presenter.display_name) || 'Presenter details unavailable';
+
+        const headshotData = String(presenter.headshot_base64 || '').trim();
+        if (headshotData.startsWith('data:image/')) {
+          const headshot = document.createElement('img');
+          headshot.src = headshotData;
+          headshot.alt = `Headshot of ${displayName}`;
+          speaker.appendChild(headshot);
+        } else {
+          const fallback = document.createElement('span');
+          fallback.className = 'weekly-calendar-speaker-fallback';
+          fallback.setAttribute('aria-hidden', 'true');
+          fallback.textContent = displayName.split(/\s+/).slice(0, 2).map(part => part.charAt(0)).join('').toUpperCase();
+          speaker.appendChild(fallback);
+        }
+
+        const copy = document.createElement('div');
+        copy.className = 'weekly-calendar-speaker-copy';
+        const name = document.createElement('span');
+        name.className = 'weekly-calendar-speaker-name';
+        name.textContent = displayName;
+        copy.appendChild(name);
+        const credentialParts = [presenter.title, presenter.specialty_line_1, presenter.specialty_line_2]
+          .map(calendarNormalizeSpaces)
+          .filter((value, partIndex, values) => value && value !== suffix && values.indexOf(value) === partIndex);
+        if (credentialParts.length) {
+          const credentials = document.createElement('span');
+          credentials.className = 'weekly-calendar-speaker-credentials';
+          credentials.textContent = credentialParts.join(' · ');
+          copy.appendChild(credentials);
+        }
+        const employer = calendarNormalizeSpaces(presenter.employer);
+        const partner = calendarNormalizeSpaces(session.partner || activePartnerConfig.label);
+        const affiliation = employer && partner && employer !== partner ? `${employer} · ${partner}` : (employer || partner);
+        if (affiliation) {
+          const partnerLine = document.createElement('span');
+          partnerLine.className = 'weekly-calendar-speaker-partner';
+          partnerLine.textContent = affiliation;
+          copy.appendChild(partnerLine);
+        }
+        speaker.appendChild(copy);
+        speakers.appendChild(speaker);
+      });
+
+      const speakerRegistration = document.createElement('div');
+      speakerRegistration.className = 'weekly-calendar-speaker-registration';
+      const qrBlock = document.createElement('div');
+      qrBlock.className = 'weekly-calendar-qr-block';
+      const cta = document.createElement('a');
+      cta.className = 'weekly-calendar-register-cta';
+      cta.href = session.weekly_short_url;
+      cta.target = '_blank';
+      cta.rel = 'noopener noreferrer';
+      const registrationDate = [date.month, date.day].filter(Boolean).join(' ') || 'Date TBA';
+      cta.textContent = `REGISTER · ${registrationDate}`;
+      cta.setAttribute('aria-label', `Register for ${calendarNormalizeSpaces(session.title)} on ${dateLabel}`);
+      const qr = document.createElement('img');
+      qr.src = session.weekly_qr_src;
+      qr.dataset.weeklyPayloadUrl = session.weekly_short_url;
+      qr.alt = `Registration QR code for ${calendarNormalizeSpaces(session.title)}`;
+      qr.width = 124;
+      qr.height = 124;
+      const shortUrl = document.createElement('span');
+      shortUrl.className = 'weekly-calendar-short-url';
+      shortUrl.textContent = session.weekly_short_url;
+      qrBlock.append(cta, qr, shortUrl);
+      speakerRegistration.append(speakers, qrBlock);
+      body.append(dateTime, speakerRegistration);
+      row.append(heading, body);
+      list.appendChild(row);
+      qrImages.push(qr);
+    });
+    await Promise.all(qrImages.map(async image => {
+      const payloadUrl = image.dataset.weeklyPayloadUrl;
+      const dataUrl = weeklyQrDataUrlCache.get(payloadUrl) || image.getAttribute('src') || '';
+      if (!/^data:image\/[^;]+;base64,/i.test(dataUrl)) {
+        throw new Error('A registration QR image was not returned for the first-party short link.');
+      }
+      const decoded = await loadImageFromSrc(dataUrl);
+      if ((decoded.naturalWidth || decoded.width || 0) < 200) {
+        throw new Error('A registration QR image was smaller than the required scan size.');
+      }
+      weeklyQrDataUrlCache.set(payloadUrl, dataUrl);
+      image.src = dataUrl;
+    }));
+    if (token !== weeklyPageLoadToken || !isWeeklyCalendarCardLayout()) return;
+    weeklyCardPageReady = rows.length > 0;
+    updateWeeklyPostPanel(rows);
+    updateControlAvailability();
+  } catch (error) {
+    if (token !== weeklyPageLoadToken) return;
+    updateWeeklyTimezoneLegend(null);
+    weeklyCalendarStatus(`Registration links could not be prepared. ${error.message}`, true);
+    updateWeeklyPostPanel([]);
+    updateControlAvailability();
+  }
+}
+
+function refreshWeeklyCalendarTimeLabels() {
+  if (!isWeeklyCalendarCardLayout() || !calendarSessionsLoaded) return;
+  const sessions = calendarGetWeeklySessions(calendarSessionsData.sessions);
+  const pageRows = sessions.slice(
+    selectedWeeklyPage * WEEKLY_CALENDAR_PAGE_SIZE,
+    (selectedWeeklyPage + 1) * WEEKLY_CALENDAR_PAGE_SIZE
+  ).map(session => weeklySessionAliasCache.get(String(session.uuid || '')));
+  if (!pageRows.length || pageRows.some(session => !session)) return;
+  const timezonePresentation = getWeeklyTimezonePresentation(
+    pageRows.map(session => getWeeklySessionTimes(session).map(({ zone }) => zone))
+  );
+  updateWeeklyTimezoneLegend(timezonePresentation);
+  document.querySelectorAll('.weekly-calendar-session-row').forEach((row, index) => {
+    const session = pageRows[index];
+    const times = row.querySelector('.weekly-calendar-session-times');
+    const timezone = row.querySelector('.weekly-calendar-session-timezone');
+    if (times && session) renderWeeklySessionTimes(times, session);
+    if (timezone) {
+      const labels = timezonePresentation.sessionLabels[index] || [];
+      timezone.textContent = labels.length ? `Times in ${labels.join(' | ')}` : '';
+      timezone.hidden = !timezone.textContent;
+    }
+  });
+  updateWeeklyPostPanel(pageRows);
+}
+
+function setWeeklyCalendarDay(filter, checked) {
+  if (!WEEKLY_CALENDAR_DAYS.includes(filter)) return;
+  if (checked) selectedWeeklyDays.add(filter);
+  else if (selectedWeeklyDays.size > 1) selectedWeeklyDays.delete(filter);
+  document.querySelectorAll('.weekly-calendar-day-checkbox').forEach(input => {
+    input.checked = selectedWeeklyDays.has(input.value);
+  });
+  selectedWeeklyPage = 0;
+  updateWeeklyCalendarRangeLabel();
+  if (calendarSessionsLoaded && isWeeklyCalendarCardLayout()) renderWeeklyCalendarSessions();
+}
+
+function setWeeklyCalendarPeriod(year, week) {
+  const safeYear = Math.max(2000, Math.min(2100, Number(year) || selectedWeeklyYear));
+  const maxWeek = calendarGetIsoWeeksInYear(safeYear);
+  const safeWeek = Math.max(1, Math.min(maxWeek, Number(week) || 1));
+  selectedWeeklyYear = safeYear;
+  selectedWeeklyWeek = safeWeek;
+  if (weeklyCalendarYearInput) weeklyCalendarYearInput.value = String(safeYear);
+  if (weeklyCalendarWeekSelect) {
+    weeklyCalendarWeekSelect.value = String(safeWeek);
+    const week53 = weeklyCalendarWeekSelect.querySelector('option[value="53"]');
+    if (week53) week53.disabled = maxWeek < 53;
+  }
+  selectedWeeklyPage = 0;
+  updateWeeklyCalendarRangeLabel();
+  if (calendarSessionsLoaded && isWeeklyCalendarCardLayout()) renderWeeklyCalendarSessions();
+}
+
+function initializeWeeklyCalendarControls() {
+  if (!weeklyCalendarYearInput || !weeklyCalendarWeekSelect) return;
+  weeklyCalendarYearInput.value = String(selectedWeeklyYear);
+  weeklyCalendarWeekSelect.replaceChildren();
+  for (let week = 1; week <= 53; week++) {
+    const option = document.createElement('option');
+    option.value = String(week);
+    option.textContent = `Week ${String(week).padStart(2, '0')}`;
+    weeklyCalendarWeekSelect.appendChild(option);
+  }
+  setWeeklyCalendarPeriod(selectedWeeklyYear, selectedWeeklyWeek);
+  weeklyCalendarYearInput.addEventListener('change', () => {
+    setWeeklyCalendarPeriod(weeklyCalendarYearInput.value, selectedWeeklyWeek);
+  });
+  weeklyCalendarWeekSelect.addEventListener('change', () => {
+    setWeeklyCalendarPeriod(selectedWeeklyYear, weeklyCalendarWeekSelect.value);
+  });
+  document.querySelectorAll('.weekly-calendar-day-checkbox').forEach(input => {
+    input.addEventListener('change', () => setWeeklyCalendarDay(input.value, input.checked));
+  });
+  document.getElementById('weekly-page-previous')?.addEventListener('click', () => {
+    if (selectedWeeklyPage > 0) {
+      selectedWeeklyPage--;
+      renderWeeklyCalendarSessions();
+    }
+  });
+  document.getElementById('weekly-page-next')?.addEventListener('click', () => {
+    const pageCount = Math.ceil(calendarGetWeeklySessions(calendarSessionsData.sessions).length / WEEKLY_CALENDAR_PAGE_SIZE);
+    if (selectedWeeklyPage < pageCount - 1) {
+      selectedWeeklyPage++;
+      renderWeeklyCalendarSessions();
+    }
+  });
+  weeklyPostTextArea?.addEventListener('input', () => {
+    saveWeeklyPostDraftEdit();
+  });
 }
 
 function setCalendarFilter(filter, checked) {
@@ -5950,7 +7111,7 @@ function isPartnerBackLayout() {
 }
 
 function isImmediatePreviewLayout() {
-  return isPartnerBackLayout() || isComingSoonLayout() || isCalendarCardLayout();
+  return isPartnerBackLayout() || isComingSoonLayout() || isAnyCalendarCardLayout();
 }
 
 function isComingSoonLayout() {
@@ -5959,6 +7120,14 @@ function isComingSoonLayout() {
 
 function isCalendarCardLayout() {
   return surface.classList.contains('layout-calendar-card');
+}
+
+function isWeeklyCalendarCardLayout() {
+  return surface.classList.contains('layout-weekly-calendar-card');
+}
+
+function isAnyCalendarCardLayout() {
+  return isCalendarCardLayout() || isWeeklyCalendarCardLayout();
 }
 
 function isSpotlightSessionListLayout() {
@@ -6812,7 +7981,9 @@ function syncSessionBackContent() {
 
 function updateSizeLabel() {
   const is3x5 = surface.classList.contains('size-3x5');
-  const layoutLabel = isPartnerOptionalCard()
+  const layoutLabel = isWeeklyCalendarCardLayout()
+    ? 'Weekly Calendar Card'
+    : (isPartnerOptionalCard()
     ? 'Facebook Promo'
     : (isComingSoonLayout()
     ? 'Coming Soon card'
@@ -6820,12 +7991,16 @@ function updateSizeLabel() {
       ? 'Partner Back Card'
       : (isCalendarCardLayout()
         ? 'Monthly Calendar Card'
-        : (surface.classList.contains('layout-classic') ? 'Classic card' : '3-logo card'))));
+        : (surface.classList.contains('layout-classic') ? 'Classic card' : '3-logo card')))));
   const sideLabel = currentSide === 'partner-back'
     ? 'Partner Back Card'
     : (currentSide === 'back' ? 'Back side' : 'Front side');
   if (isCalendarCardLayout()) {
     lbl.textContent = '4 × 6 inch · 1200 × 1800 px @ 300 DPI · ' + layoutLabel + ' · ' + sideLabel;
+    return;
+  }
+  if (isWeeklyCalendarCardLayout()) {
+    lbl.textContent = '4.8 × 6 inch · 1440 × 1800 px @ 300 DPI · ' + layoutLabel + ' · ' + sideLabel;
     return;
   }
   lbl.textContent = is3x5
@@ -6835,6 +8010,7 @@ function updateSizeLabel() {
 
 function getLayoutTag() {
   if (isPartnerOptionalCard()) return 'facebook-promo';
+  if (isWeeklyCalendarCardLayout()) return 'weekly-calendar-card';
   if (isCalendarCardLayout()) return 'monthly-calendar-card';
   if (isComingSoonLayout()) return 'coming-soon';
   if (isPartnerBackLayout()) return 'partner-back';
@@ -6861,7 +8037,8 @@ function getExportTimestamp() {
 
 function getCalendarReadyMessage(prefix = '') {
   const label = activePartnerConfig.label || 'selected partner';
-  return prefix + 'Monthly Calendar Card loaded for ' + label + '. Use Front and Back to preview both sides.';
+  const card = isWeeklyCalendarCardLayout() ? 'Weekly Calendar Card' : 'Monthly Calendar Card';
+  return prefix + card + ' loaded for ' + label + '. Use Front and Back to preview both sides.';
 }
 
 function setSide(side) {
@@ -6884,6 +8061,8 @@ function setSide(side) {
 function updateControlAvailability() {
   const partnerBack = isPartnerBackLayout();
   const calendarCard = isCalendarCardLayout();
+  const weeklyCalendarCard = isWeeklyCalendarCardLayout();
+  const anyCalendarCard = calendarCard || weeklyCalendarCard;
   const immediatePreview = isImmediatePreviewLayout();
   const ready = hasReadySelection();
   const autoSessionList = ready && isSpotlightSessionListLayout();
@@ -6896,7 +8075,7 @@ function updateControlAvailability() {
   const activeFontScope = currentSide === 'partner-back'
     ? 'partner-back'
     : (currentSide === 'back' ? (isComingSoonLayout() ? 'coming-back' : 'back') : (isComingSoonLayout() ? 'coming-front' : 'front'));
-  const sessionFontControlsVisible = (activeFontScope === 'front' && (sessionLayoutReady || (ready && calendarCard)))
+  const sessionFontControlsVisible = (activeFontScope === 'front' && (sessionLayoutReady || (ready && anyCalendarCard)))
     || (activeFontScope === 'back' && sessionLayoutReady)
     || (activeFontScope === 'partner-back' && ready && canShowPartnerBackSide())
     || (activeFontScope === 'coming-front' && ready && isComingSoonLayout())
@@ -6957,14 +8136,22 @@ function updateControlAvailability() {
     el.style.display = showFeatureCanvasControls ? '' : 'none';
   });
   document.querySelectorAll('.timezone-control').forEach(el => {
-    el.style.display = ready && (sessionLookupVisible || calendarCard || isMultiPresenterFacebookPromo()) ? '' : 'none';
+    el.style.display = ready && (sessionLookupVisible || anyCalendarCard || isMultiPresenterFacebookPromo()) ? '' : 'none';
   });
   document.querySelectorAll('.search-input-row, .search-action-row').forEach(el => {
     el.style.display = sessionLookupVisible ? '' : 'none';
   });
   document.querySelectorAll('.calendar-filter-control').forEach(el => {
-    el.style.display = ready && calendarCard ? '' : 'none';
+    el.style.display = ready && (calendarCard || (weeklyCalendarCard && el.classList.contains('weekly-filter-control'))) ? '' : 'none';
   });
+  document.querySelectorAll('.weekly-filter-control').forEach(el => {
+    if (el.classList.contains('calendar-filter-control')) return;
+    el.style.display = ready && weeklyCalendarCard ? '' : 'none';
+  });
+  const weeklyPagination = document.getElementById('weekly-pagination-control');
+  const weeklyPostPanel = document.getElementById('weekly-post-panel');
+  if (weeklyPagination) weeklyPagination.style.display = ready && weeklyCalendarCard ? 'flex' : 'none';
+  if (weeklyPostPanel) weeklyPostPanel.style.display = ready && weeklyCalendarCard ? 'block' : 'none';
   if (btnBack) {
     btnBack.disabled = false;
     btnBack.style.opacity = '';
@@ -6977,21 +8164,34 @@ function updateControlAvailability() {
     if (!showPartnerBackSide) btnPartnerBack.classList.remove('active');
   }
   if (btn3x5) {
-    btn3x5.disabled = partnerBack || calendarCard;
-    btn3x5.style.opacity = partnerBack || calendarCard ? '0.45' : '';
-    btn3x5.style.cursor = partnerBack || calendarCard ? 'default' : '';
+    btn3x5.disabled = partnerBack || anyCalendarCard;
+    btn3x5.style.opacity = partnerBack || anyCalendarCard ? '0.45' : '';
+    btn3x5.style.cursor = partnerBack || anyCalendarCard ? 'default' : '';
+  }
+  const downloadButton = document.getElementById('btn-download-png');
+  if (downloadButton) {
+    downloadButton.disabled = weeklyCalendarCard && currentSide === 'front' && !weeklyCardPageReady;
   }
 }
 
 initSideFontControls();
 initPrimaryAdjustmentSliders();
 applySideFontSizes();
+initializeWeeklyCalendarControls();
 
 if (timezoneSelect) {
   timezoneSelect.value = selectedTimezone;
   timezoneSelect.addEventListener('change', () => {
     saveSelectedTimezone(timezoneSelect.value);
     updateSelectedTimezoneDisplay();
+    refreshWeeklyCalendarTimeLabels();
+  });
+}
+if (weeklyTimezoneDisplaySelect) {
+  weeklyTimezoneDisplaySelect.value = weeklyTimezoneDisplayMode;
+  weeklyTimezoneDisplaySelect.addEventListener('change', () => {
+    weeklyTimezoneDisplayMode = weeklyTimezoneDisplaySelect.value === 'location' ? 'location' : 'abbreviation';
+    refreshWeeklyCalendarTimeLabels();
   });
 }
 
@@ -7194,7 +8394,7 @@ if (partnerSelect) {
         ? 'Partner changed. Coming Soon card is ready.'
         : (isPartnerBackLayout()
           ? 'Partner changed. Partner Back Card is ready.'
-          : (isCalendarCardLayout()
+          : (isAnyCalendarCardLayout()
             ? getCalendarReadyMessage('Partner changed. ')
             : (isSpotlightSessionListLayout()
               ? 'Partner changed. Loading Spotlight sessions...'
@@ -7363,7 +8563,7 @@ function updateHeaderLogos() {
   syncBackLogos();
   syncSessionPromoLogos();
   syncSessionBackContent();
-  if (isCalendarCardLayout()) syncCalendarCard();
+  if (isAnyCalendarCardLayout()) syncCalendarCard();
   applyHeaderLogoSizes();
 }
 
@@ -7374,12 +8574,15 @@ function setLayout(layout) {
   const isPartnerBack = layout === 'partner-back';
   const isComingSoon = layout === 'coming-soon';
   const isCalendarCard = layout === 'calendar-card';
+  const isWeeklyCalendarCard = layout === 'weekly-calendar-card';
   surface.classList.toggle('layout-classic', isClassic);
   surface.classList.toggle('layout-foundation', layout === 'foundation' || isFacebookPromo || isFacebookPromoMulti);
   surface.classList.toggle('layout-facebook-multi', isFacebookPromoMulti);
   surface.classList.toggle('layout-partner-back', isPartnerBack);
   surface.classList.toggle('layout-coming-soon', isComingSoon);
   surface.classList.toggle('layout-calendar-card', isCalendarCard);
+  surface.classList.toggle('layout-weekly-calendar-card', isWeeklyCalendarCard);
+  document.getElementById('btn-4x6').innerHTML = isWeeklyCalendarCard ? '4.8&times;6' : '4&times;6';
   if (!isFacebookPromo && !isFacebookPromoMulti) restoreStandardHeaderLogoLayout();
   loadCardScopedSettings(layout);
 
@@ -7393,7 +8596,7 @@ function setLayout(layout) {
     setSide('front');
     syncComingSoonCard();
   }
-  if (isCalendarCard) {
+  if (isCalendarCard || isWeeklyCalendarCard) {
     surface.classList.remove('size-3x5');
     document.getElementById('btn-4x6').classList.add('active');
     document.getElementById('btn-3x5').classList.remove('active');
@@ -7428,7 +8631,7 @@ syncBackLogos();
 loadPartnerConfigs();
 
 function setSize(s) {
-  if ((isPartnerBackLayout() || isCalendarCardLayout()) && s === '3x5') {
+  if ((isPartnerBackLayout() || isAnyCalendarCardLayout()) && s === '3x5') {
     setSize('4x6');
     return;
   }
@@ -7449,6 +8652,9 @@ function setSize(s) {
 }
 
 function getExportDimensions() {
+  if (isWeeklyCalendarCardLayout()) {
+    return { pxW: 1440, pxH: 1800, wIn: 4.8, hIn: 6, tag: '4.8x6', orientation: 'portrait' };
+  }
   if (isCalendarCardLayout()) {
     return { pxW: 1200, pxH: 1800, wIn: 4, hIn: 6, tag: '4x6', orientation: 'portrait' };
   }
@@ -7592,14 +8798,17 @@ async function captureCard(scale, pxW, pxH) {
       }
     }
     restorePreviewAdjustments = freezePreviewAdjustmentsForExport(surface);
+    const bounds = surface.getBoundingClientRect();
+    const renderWidth = isWeeklyCalendarCardLayout() ? bounds.width : surface.offsetWidth;
+    const renderHeight = isWeeklyCalendarCardLayout() ? bounds.height : surface.offsetHeight;
     return await domtoimage.toPng(surface, {
       width: pxW, height: pxH,
       disableEmbedFonts: true,
       style: {
         transform: `scale(${scale})`,
         transformOrigin: 'top left',
-        width: surface.offsetWidth + 'px',
-        height: surface.offsetHeight + 'px'
+        width: renderWidth + 'px',
+        height: renderHeight + 'px'
       }
     });
   } finally {
@@ -7616,7 +8825,8 @@ async function captureCard(scale, pxW, pxH) {
 async function downloadPNG() {
   const btn   = document.getElementById('btn-download-png');
   const cfg   = getExportDimensions();
-  const scale = cfg.pxW / surface.offsetWidth;
+  const renderWidth = isWeeklyCalendarCardLayout() ? surface.getBoundingClientRect().width : surface.offsetWidth;
+  const scale = cfg.pxW / renderWidth;
   btn.textContent = 'Exporting…'; btn.disabled = true;
   try {
     const dataUrl = await captureCard(scale, cfg.pxW, cfg.pxH);
@@ -7624,7 +8834,11 @@ async function downloadPNG() {
     a.download = `facebook-promo-${getExportPartnerSlug()}-${getLayoutTag()}-${currentSide}-${cfg.tag}-${getExportTimestamp()}.png`;
     a.href = dataUrl; a.click();
   } catch(e) { alert('PNG export failed: ' + e.message); }
-  finally { btn.textContent = '↓ PNG'; btn.disabled = false; }
+  finally {
+    btn.textContent = '↓ PNG';
+    if (isWeeklyCalendarCardLayout()) updateControlAvailability();
+    else btn.disabled = false;
+  }
 }
 
 /* ══════════════════════════════════════════════════
@@ -7653,7 +8867,7 @@ cardTypeSelect.addEventListener('change', () => {
       ? 'Coming Soon card is ready. Use Front and Back to preview both sides.'
       : (isPartnerBackLayout()
         ? 'Partner Back Card is ready.'
-        : (isCalendarCardLayout()
+        : (isAnyCalendarCardLayout()
           ? getCalendarReadyMessage()
           : (isSpotlightSessionListLayout()
             ? 'Loading Spotlight sessions...'
