@@ -348,6 +348,8 @@ const weeklyHelpers = new Function(
      calendarGetIsoWeekStartUtc,
      calendarGetIsoWeeksInYear,
      calendarFormatWeeklyRange,
+     calendarFormatWeeklyWeekOption,
+     getWeeklyCalendarWeekOptions,
      calendarGetWeeklyLabel,
      calendarGetWeeklySessions
    };`
@@ -363,6 +365,88 @@ assert.strictEqual(weeklyHelpers.calendarGetIsoWeeksInYear(2021), 52);
 assert.strictEqual(weeklyHelpers.calendarGetIsoWeekStartUtc(2021, 1).toISOString(), '2021-01-04T00:00:00.000Z');
 assert.strictEqual(weeklyHelpers.calendarFormatWeeklyRange(2026, 47), 'Nov 16–22, 2026');
 assert.strictEqual(weeklyHelpers.calendarFormatWeeklyRange(2020, 53), 'Dec 28, 2020 – Jan 3, 2021');
+assert.strictEqual(weeklyHelpers.calendarFormatWeeklyWeekOption(2026, 44), 'Oct 26–Nov 1 (Week 44)');
+assert.strictEqual(weeklyHelpers.calendarFormatWeeklyWeekOption(2026, 46), 'Nov 9–15 (Week 46)');
+assert.strictEqual(weeklyHelpers.calendarFormatWeeklyWeekOption(2020, 53), 'Dec 28–Jan 3 (Week 53)');
+assert.deepStrictEqual(
+  weeklyHelpers.getWeeklyCalendarWeekOptions(2026, 'nov 9').map(option => option.week),
+  [46],
+  'searching by date text must find the matching ISO week'
+);
+assert.deepStrictEqual(
+  weeklyHelpers.getWeeklyCalendarWeekOptions(2026, '2026').map(option => option.week),
+  Array.from({ length: weeklyHelpers.calendarGetIsoWeeksInYear(2026) }, (_, index) => index + 1),
+  'week search must include the selected ISO year and only weeks valid in that year'
+);
+assert.strictEqual(weeklyHelpers.getWeeklyCalendarWeekOptions(2020).length, 53);
+assert.strictEqual(weeklyHelpers.getWeeklyCalendarWeekOptions(2021).length, 52);
+assert(source.includes('id="weekly-calendar-week-search" class="weekly-calendar-week-search" type="search"'));
+assert(source.includes('role="listbox" aria-label="Weekly date ranges"'));
+assert(source.includes("weeklyCalendarWeekSearch?.addEventListener('input', refreshWeeklyCalendarWeekPicker)"));
+assert(source.includes("event.key === 'ArrowDown'"), 'the searchable week picker must support keyboard selection');
+const pickerRefreshStart = source.indexOf('function refreshWeeklyCalendarWeekPicker');
+const pickerRefreshEnd = source.indexOf('function setWeeklyCalendarWeekPickerOpen', pickerRefreshStart);
+const pickerValue = { textContent: '' };
+const pickerSearch = { value: '' };
+const pickerEmpty = { hidden: true };
+const pickerOptionList = {
+  items: [],
+  replaceChildren() { this.items = []; },
+  appendChild(option) { this.items.push(option); }
+};
+const pickerRefresh = new Function(
+  'weeklyCalendarWeekValue',
+  'weeklyCalendarWeekOptions',
+  'weeklyCalendarWeekSearch',
+  'weeklyCalendarWeekEmpty',
+  'calendarFormatWeeklyWeekOption',
+  'getWeeklyCalendarWeekOptions',
+  'selectedWeeklyYear',
+  'selectedWeeklyWeek',
+  'document',
+  `${source.slice(pickerRefreshStart, pickerRefreshEnd)} return refreshWeeklyCalendarWeekPicker;`
+)(pickerValue, pickerOptionList, pickerSearch, pickerEmpty,
+  weeklyHelpers.calendarFormatWeeklyWeekOption, weeklyHelpers.getWeeklyCalendarWeekOptions,
+  2026, 46, {
+    createElement: () => ({
+      dataset: {},
+      attributes: {},
+      setAttribute(name, value) { this.attributes[name] = value; }
+    })
+  });
+pickerRefresh();
+assert.strictEqual(pickerValue.textContent, 'Nov 9–15 (Week 46)');
+assert.strictEqual(pickerOptionList.items.length, weeklyHelpers.calendarGetIsoWeeksInYear(2026));
+assert.strictEqual(pickerOptionList.items.find(option => option.dataset.week === '46').attributes['aria-selected'], 'true');
+pickerSearch.value = 'Nov 9';
+pickerRefresh();
+assert.deepStrictEqual(pickerOptionList.items.map(option => option.textContent), ['Nov 9–15 (Week 46)']);
+assert.strictEqual(pickerEmpty.hidden, true);
+pickerSearch.value = 'no matching week';
+pickerRefresh();
+assert.strictEqual(pickerOptionList.items.length, 0);
+assert.strictEqual(pickerEmpty.hidden, false);
+const pickerOpenStart = source.indexOf('function setWeeklyCalendarWeekPickerOpen');
+const pickerOpenEnd = source.indexOf('function setWeeklyCalendarPeriod', pickerOpenStart);
+const pickerMenu = { hidden: true };
+const pickerTrigger = { attributes: {}, setAttribute(name, value) { this.attributes[name] = value; } };
+let pickerFocusCalls = 0;
+const pickerSearchForOpen = { value: 'old search', focus() { pickerFocusCalls++; } };
+const setWeekPickerOpen = new Function(
+  'weeklyCalendarWeekTrigger',
+  'weeklyCalendarWeekMenu',
+  'weeklyCalendarWeekSearch',
+  'refreshWeeklyCalendarWeekPicker',
+  `${source.slice(pickerOpenStart, pickerOpenEnd)} return setWeeklyCalendarWeekPickerOpen;`
+)(pickerTrigger, pickerMenu, pickerSearchForOpen, () => {});
+setWeekPickerOpen(true, true);
+assert.strictEqual(pickerMenu.hidden, false);
+assert.strictEqual(pickerTrigger.attributes['aria-expanded'], 'true');
+assert.strictEqual(pickerSearchForOpen.value, '');
+assert.strictEqual(pickerFocusCalls, 1);
+setWeekPickerOpen(false);
+assert.strictEqual(pickerMenu.hidden, true);
+assert.strictEqual(pickerTrigger.attributes['aria-expanded'], 'false');
 assert.strictEqual(weeklyHelpers.calendarGetWeeklyLabel(2026, 47), 'Week 47 · Nov 16–22, 2026');
 
 const matchingSessions = weeklyHelpers.calendarGetWeeklySessions([
@@ -390,6 +474,7 @@ const weekPageHarness = new Function(
   'calendarGetWeeklySessions',
   'WEEKLY_CALENDAR_PAGE_SIZE',
   'updateWeeklyCalendarRangeLabel',
+  'refreshWeeklyCalendarWeekPicker',
   'renderWeeklyCalendarSessions',
   `let selectedWeeklyYear = 2026;
    let selectedWeeklyWeek = 47;
@@ -397,7 +482,6 @@ const weekPageHarness = new Function(
    let calendarSessionsLoaded = true;
    let calendarSessionsData = { sessions: Array.from({ length: 6 }, (_, index) => ({ uuid: String(index) })) };
    let weeklyCalendarYearInput = { value: '' };
-   let weeklyCalendarWeekSelect = { value: '', querySelector: () => ({ disabled: false }) };
    let weeklyAggregateBannerSettings = ${JSON.stringify(editedBannerSettings)};
    function isWeeklyCalendarCardLayout() { return true; }
    ${source.slice(weekPageStart, weekPageEnd)}
@@ -406,7 +490,7 @@ const weekPageHarness = new Function(
      setWeeklyCalendarPage,
      getState: () => ({ year: selectedWeeklyYear, week: selectedWeeklyWeek, page: selectedWeeklyPage, banner: weeklyAggregateBannerSettings })
    };`
-)(() => 52, sessions => sessions, 2, () => {}, () => { weeklyRenders++; });
+)(() => 52, sessions => sessions, 2, () => {}, () => {}, () => { weeklyRenders++; });
 weekPageHarness.setWeeklyCalendarPeriod(2027, 4);
 weekPageHarness.setWeeklyCalendarPage(1);
 assert.deepStrictEqual(weekPageHarness.getState(), {
@@ -687,7 +771,7 @@ assert(source.includes("return { pxW: 1440, pxH: 1800, wIn: 4.8, hIn: 6, tag: '4
 assert(source.includes("return { pxW: 1200, pxH: 1800, wIn: 4, hIn: 6, tag: '4x6', orientation: 'portrait' }"), 'monthly export dimensions must remain unchanged');
 
 promoTermsChecks().then(() => {
-  console.log('weekly aggregate banner controls, partner loading, ISO-week filters, drafts, captions, API alias/QR source, and export checks passed');
+  console.log('weekly date-range picker, aggregate banner controls, partner loading, ISO-week filters, drafts, captions, API alias/QR source, and export checks passed');
 }).catch(error => {
   console.error(error);
   process.exitCode = 1;

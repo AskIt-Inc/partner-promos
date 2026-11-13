@@ -671,10 +671,9 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
 .weekly-calendar-period-controls {
   display: grid;
   gap: 8px;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(105px, 0.7fr) minmax(0, 1.3fr);
 }
-.weekly-calendar-period-controls input,
-.weekly-calendar-period-controls select {
+.weekly-calendar-period-controls input {
   background: #fff;
   border: 1px solid var(--border);
   border-radius: 5px;
@@ -684,6 +683,121 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
   min-height: 34px;
   padding: 6px 8px;
   width: 100%;
+}
+.weekly-calendar-week-picker {
+  min-width: 0;
+  position: relative;
+}
+.weekly-calendar-week-trigger {
+  align-items: center;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  box-sizing: border-box;
+  color: #222;
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  gap: 8px;
+  justify-content: space-between;
+  min-height: 34px;
+  padding: 6px 8px;
+  text-align: left;
+  width: 100%;
+}
+.weekly-calendar-week-trigger:focus-visible,
+.weekly-calendar-week-search:focus-visible {
+  border-color: #4b9ec9;
+  box-shadow: 0 0 0 2px rgba(75, 158, 201, 0.22);
+  outline: none;
+}
+.weekly-calendar-week-trigger .weekly-calendar-week-value {
+  color: #222;
+  flex: 1;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.25;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: none;
+  white-space: nowrap;
+}
+.weekly-calendar-week-chevron {
+  border-bottom: 1.5px solid #68747d;
+  border-right: 1.5px solid #68747d;
+  flex: 0 0 7px;
+  height: 7px;
+  margin: -4px 2px 0 0;
+  transform: rotate(45deg);
+  transition: transform 0.12s ease;
+  width: 7px;
+}
+.weekly-calendar-week-trigger[aria-expanded="true"] .weekly-calendar-week-chevron {
+  margin-top: 4px;
+  transform: rotate(225deg);
+}
+.weekly-calendar-week-menu {
+  background: #fff;
+  border: 1px solid #c8d1d8;
+  border-radius: 5px;
+  box-shadow: 0 5px 16px rgba(30, 47, 58, 0.18);
+  left: auto;
+  max-width: calc(100vw - 40px);
+  padding: 6px;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  width: max(100%, 280px);
+  z-index: 30;
+}
+.weekly-calendar-week-menu[hidden] {
+  display: none;
+}
+.weekly-calendar-week-search {
+  background: #fff;
+  border: 1px solid #c8d1d8;
+  border-radius: 4px;
+  box-sizing: border-box;
+  color: #263747;
+  font: inherit;
+  margin-bottom: 5px;
+  min-height: 34px;
+  padding: 6px 8px;
+  width: 100%;
+}
+.weekly-calendar-week-options {
+  max-height: min(250px, 42vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.weekly-calendar-week-option {
+  background: #fff;
+  border: 0;
+  border-radius: 3px;
+  color: #4d5d67;
+  cursor: pointer;
+  display: block;
+  font: inherit;
+  min-height: 36px;
+  padding: 8px 10px;
+  text-align: left;
+  width: 100%;
+}
+.weekly-calendar-week-option:hover,
+.weekly-calendar-week-option:focus-visible {
+  background: #eef5ff;
+  outline: none;
+}
+.weekly-calendar-week-option[aria-selected="true"] {
+  background: #5b93f6;
+  color: #fff;
+}
+.weekly-calendar-week-empty {
+  color: #68747d;
+  font-size: 12px;
+  padding: 10px;
 }
 .weekly-calendar-range-label {
   color: #4d5d67;
@@ -3331,10 +3445,20 @@ body[data-partner="vamp"] .session-back-title {
           <span>ISO Year</span>
           <input id="weekly-calendar-year" type="number" min="2000" max="2100" step="1" inputmode="numeric">
         </label>
-        <label class="field-control" for="weekly-calendar-week">
-          <span>ISO Week</span>
-          <select id="weekly-calendar-week" aria-label="ISO week number"></select>
-        </label>
+        <div class="field-control">
+          <span id="weekly-calendar-week-label">Week Date Range</span>
+          <div class="weekly-calendar-week-picker" id="weekly-calendar-week-picker">
+            <button id="weekly-calendar-week-trigger" class="weekly-calendar-week-trigger" type="button" aria-labelledby="weekly-calendar-week-label weekly-calendar-week-value" aria-haspopup="listbox" aria-expanded="false" aria-controls="weekly-calendar-week-options">
+              <span id="weekly-calendar-week-value" class="weekly-calendar-week-value"></span>
+              <span class="weekly-calendar-week-chevron" aria-hidden="true"></span>
+            </button>
+            <div id="weekly-calendar-week-menu" class="weekly-calendar-week-menu" hidden>
+              <input id="weekly-calendar-week-search" class="weekly-calendar-week-search" type="search" placeholder="Search date or week…" aria-label="Search weeks by date or number" autocomplete="off">
+              <div id="weekly-calendar-week-options" class="weekly-calendar-week-options" role="listbox" aria-label="Weekly date ranges"></div>
+              <p id="weekly-calendar-week-empty" class="weekly-calendar-week-empty" role="status" hidden>No matching weeks.</p>
+            </div>
+          </div>
+        </div>
         <p class="weekly-calendar-range-label" id="weekly-calendar-range-label" aria-live="polite"></p>
       </div>
       <fieldset class="calendar-day-filter-group">
@@ -4298,7 +4422,13 @@ const multiPresenterDetailSizeSlider = document.getElementById('multi-presenter-
 const multiRegistrationSizeSlider = document.getElementById('multi-registration-size');
 const calendarDateChipSizeSlider = document.getElementById('calendar-date-chip-size');
 const weeklyCalendarYearInput = document.getElementById('weekly-calendar-year');
-const weeklyCalendarWeekSelect = document.getElementById('weekly-calendar-week');
+const weeklyCalendarWeekPicker = document.getElementById('weekly-calendar-week-picker');
+const weeklyCalendarWeekTrigger = document.getElementById('weekly-calendar-week-trigger');
+const weeklyCalendarWeekValue = document.getElementById('weekly-calendar-week-value');
+const weeklyCalendarWeekMenu = document.getElementById('weekly-calendar-week-menu');
+const weeklyCalendarWeekSearch = document.getElementById('weekly-calendar-week-search');
+const weeklyCalendarWeekOptions = document.getElementById('weekly-calendar-week-options');
+const weeklyCalendarWeekEmpty = document.getElementById('weekly-calendar-week-empty');
 const weeklyBannerEyebrowInput = document.getElementById('weekly-banner-eyebrow');
 const weeklyBannerTitleInput = document.getElementById('weekly-banner-title');
 const weeklyBannerColorInput = document.getElementById('weekly-banner-color');
@@ -6219,6 +6349,29 @@ function calendarFormatWeeklyRange(year = selectedWeeklyYear, week = selectedWee
   return `${startLabel} – ${endLabel}`;
 }
 
+function calendarFormatWeeklyWeekOption(year, week) {
+  const start = calendarGetIsoWeekStartUtc(year, week);
+  const end = new Date(start.getTime() + (6 * 86400000));
+  const startMonth = new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(start);
+  const endMonth = new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(end);
+  const startLabel = `${startMonth} ${start.getUTCDate()}`;
+  const endLabel = start.getUTCMonth() === end.getUTCMonth()
+    ? String(end.getUTCDate())
+    : `${endMonth} ${end.getUTCDate()}`;
+  return `${startLabel}–${endLabel} (Week ${week})`;
+}
+
+function getWeeklyCalendarWeekOptions(year = selectedWeeklyYear, query = '') {
+  const safeYear = Math.max(2000, Math.min(2100, Number(year) || selectedWeeklyYear));
+  const normalizedQuery = String(query || '').trim().toLocaleLowerCase();
+  return Array.from({ length: calendarGetIsoWeeksInYear(safeYear) }, (_, index) => {
+    const week = index + 1;
+    const label = calendarFormatWeeklyWeekOption(safeYear, week);
+    const searchText = `${label} ${safeYear} ${week} ${String(week).padStart(2, '0')}`.toLocaleLowerCase();
+    return { week, label, searchText };
+  }).filter(option => !normalizedQuery || option.searchText.includes(normalizedQuery));
+}
+
 function calendarGetWeeklyLabel(year = selectedWeeklyYear, week = selectedWeeklyWeek) {
   return `Week ${week} · ${calendarFormatWeeklyRange(year, week)}`;
 }
@@ -7258,6 +7411,42 @@ function setWeeklyCalendarDay(filter, checked) {
   if (calendarSessionsLoaded && isWeeklyCalendarCardLayout()) renderWeeklyCalendarSessions();
 }
 
+function refreshWeeklyCalendarWeekPicker() {
+  if (weeklyCalendarWeekValue) {
+    weeklyCalendarWeekValue.textContent = calendarFormatWeeklyWeekOption(selectedWeeklyYear, selectedWeeklyWeek);
+  }
+  if (!weeklyCalendarWeekOptions) return;
+
+  const options = getWeeklyCalendarWeekOptions(selectedWeeklyYear, weeklyCalendarWeekSearch?.value || '');
+  weeklyCalendarWeekOptions.replaceChildren();
+  options.forEach(optionData => {
+    const option = document.createElement('button');
+    option.type = 'button';
+    option.className = 'weekly-calendar-week-option';
+    option.dataset.week = String(optionData.week);
+    option.setAttribute('role', 'option');
+    option.setAttribute('aria-selected', String(optionData.week === selectedWeeklyWeek));
+    option.tabIndex = -1;
+    option.textContent = optionData.label;
+    weeklyCalendarWeekOptions.appendChild(option);
+  });
+  if (weeklyCalendarWeekEmpty) weeklyCalendarWeekEmpty.hidden = options.length > 0;
+}
+
+function setWeeklyCalendarWeekPickerOpen(open, focusSearch = false) {
+  if (!weeklyCalendarWeekTrigger || !weeklyCalendarWeekMenu) return;
+  const isOpen = Boolean(open);
+  weeklyCalendarWeekMenu.hidden = !isOpen;
+  weeklyCalendarWeekTrigger.setAttribute('aria-expanded', String(isOpen));
+  if (isOpen) {
+    if (weeklyCalendarWeekSearch) weeklyCalendarWeekSearch.value = '';
+    refreshWeeklyCalendarWeekPicker();
+    if (focusSearch) weeklyCalendarWeekSearch?.focus();
+  } else if (weeklyCalendarWeekSearch) {
+    weeklyCalendarWeekSearch.value = '';
+  }
+}
+
 function setWeeklyCalendarPeriod(year, week) {
   const safeYear = Math.max(2000, Math.min(2100, Number(year) || selectedWeeklyYear));
   const maxWeek = calendarGetIsoWeeksInYear(safeYear);
@@ -7265,11 +7454,7 @@ function setWeeklyCalendarPeriod(year, week) {
   selectedWeeklyYear = safeYear;
   selectedWeeklyWeek = safeWeek;
   if (weeklyCalendarYearInput) weeklyCalendarYearInput.value = String(safeYear);
-  if (weeklyCalendarWeekSelect) {
-    weeklyCalendarWeekSelect.value = String(safeWeek);
-    const week53 = weeklyCalendarWeekSelect.querySelector('option[value="53"]');
-    if (week53) week53.disabled = maxWeek < 53;
-  }
+  refreshWeeklyCalendarWeekPicker();
   selectedWeeklyPage = 0;
   updateWeeklyCalendarRangeLabel();
   if (calendarSessionsLoaded && isWeeklyCalendarCardLayout()) renderWeeklyCalendarSessions();
@@ -7286,21 +7471,61 @@ function setWeeklyCalendarPage(page) {
 }
 
 function initializeWeeklyCalendarControls() {
-  if (!weeklyCalendarYearInput || !weeklyCalendarWeekSelect) return;
+  if (!weeklyCalendarYearInput || !weeklyCalendarWeekTrigger || !weeklyCalendarWeekMenu || !weeklyCalendarWeekOptions) return;
   weeklyCalendarYearInput.value = String(selectedWeeklyYear);
-  weeklyCalendarWeekSelect.replaceChildren();
-  for (let week = 1; week <= 53; week++) {
-    const option = document.createElement('option');
-    option.value = String(week);
-    option.textContent = `Week ${String(week).padStart(2, '0')}`;
-    weeklyCalendarWeekSelect.appendChild(option);
-  }
   setWeeklyCalendarPeriod(selectedWeeklyYear, selectedWeeklyWeek);
+  weeklyCalendarWeekTrigger.addEventListener('click', () => {
+    setWeeklyCalendarWeekPickerOpen(weeklyCalendarWeekMenu.hidden, true);
+  });
+  weeklyCalendarWeekSearch?.addEventListener('input', refreshWeeklyCalendarWeekPicker);
+  weeklyCalendarWeekOptions.addEventListener('click', event => {
+    const option = event.target.closest('.weekly-calendar-week-option');
+    if (!option) return;
+    setWeeklyCalendarPeriod(selectedWeeklyYear, Number(option.dataset.week));
+    setWeeklyCalendarWeekPickerOpen(false);
+    weeklyCalendarWeekTrigger.focus();
+  });
+  weeklyCalendarWeekPicker?.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && !weeklyCalendarWeekMenu.hidden) {
+      event.preventDefault();
+      setWeeklyCalendarWeekPickerOpen(false);
+      weeklyCalendarWeekTrigger.focus();
+      return;
+    }
+    const visibleOptions = Array.from(weeklyCalendarWeekOptions.querySelectorAll('.weekly-calendar-week-option'));
+    const currentIndex = visibleOptions.indexOf(event.target);
+    if (event.target === weeklyCalendarWeekSearch && ['ArrowDown', 'ArrowUp'].includes(event.key) && visibleOptions.length) {
+      event.preventDefault();
+      const selectedOption = visibleOptions.find(option => option.getAttribute('aria-selected') === 'true');
+      const fallbackOption = event.key === 'ArrowDown' ? visibleOptions[0] : visibleOptions[visibleOptions.length - 1];
+      (selectedOption || fallbackOption).focus();
+    } else if (currentIndex >= 0 && ['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
+      event.preventDefault();
+      const nextIndex = event.key === 'Home'
+        ? 0
+        : event.key === 'End'
+          ? visibleOptions.length - 1
+          : Math.max(0, Math.min(visibleOptions.length - 1, currentIndex + (event.key === 'ArrowDown' ? 1 : -1)));
+      visibleOptions[nextIndex]?.focus();
+    } else if (event.target === weeklyCalendarWeekSearch && event.key === 'Enter' && visibleOptions.length === 1) {
+      event.preventDefault();
+      visibleOptions[0].click();
+    }
+  });
+  document.addEventListener('click', event => {
+    if (weeklyCalendarWeekPicker && !weeklyCalendarWeekPicker.contains(event.target)) {
+      setWeeklyCalendarWeekPickerOpen(false);
+    }
+  });
+  weeklyCalendarWeekPicker?.addEventListener('focusout', () => {
+    window.setTimeout(() => {
+      if (weeklyCalendarWeekPicker && !weeklyCalendarWeekPicker.contains(document.activeElement)) {
+        setWeeklyCalendarWeekPickerOpen(false);
+      }
+    }, 0);
+  });
   weeklyCalendarYearInput.addEventListener('change', () => {
     setWeeklyCalendarPeriod(weeklyCalendarYearInput.value, selectedWeeklyWeek);
-  });
-  weeklyCalendarWeekSelect.addEventListener('change', () => {
-    setWeeklyCalendarPeriod(selectedWeeklyYear, weeklyCalendarWeekSelect.value);
   });
   document.querySelectorAll('.weekly-calendar-day-checkbox').forEach(input => {
     input.addEventListener('change', () => setWeeklyCalendarDay(input.value, input.checked));
