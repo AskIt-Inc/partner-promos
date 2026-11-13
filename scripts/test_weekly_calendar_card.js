@@ -57,6 +57,61 @@ assert.match(weeklyPartnerHelpers.getWeeklyPartnerAvailabilityMessage('error', [
 assert.match(weeklyPartnerHelpers.getWeeklyPartnerAvailabilityMessage('ready', [], false), /No promo-card-enabled partners/);
 assert.match(weeklyPartnerHelpers.getWeeklyPartnerAvailabilityMessage('ready', [], true), /selected partner is not currently promo-card enabled/);
 
+const promoLoaderStart = source.indexOf('async function loadPromoEmployers()');
+const promoLoaderEnd = source.indexOf('function loadSelectedPartnerKey', promoLoaderStart);
+assert(promoLoaderStart >= 0 && promoLoaderEnd > promoLoaderStart, 'live promo-enabled employer term loader must be present');
+const makePromoTermsLoader = (fetchResponse) => {
+  const initialPartnerConfigs = { partners: { stale: { promoCardEnabled: true } } };
+  const fetchMock = async () => {
+    if (fetchResponse instanceof Error) throw fetchResponse;
+    return fetchResponse;
+  };
+  return new Function(
+    'fetch',
+    'EMPLOYERS_API_URL',
+    'partnerConfigs',
+    'getEmployerPartnerKey',
+    'getTimezoneCode',
+    'normalizeWeeklyCalendarPartnerTids',
+    `${source.slice(promoLoaderStart, promoLoaderEnd)}
+     return {
+       loadPromoEmployers,
+       partnerConfigs,
+       getState: () => ({ promoPartnerTermsStatus, livePromoPartnerTids })
+     };`
+  )(fetchMock, 'https://example.test/jsonapi/taxonomy_term/employer', initialPartnerConfigs,
+    term => String(term.attributes.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+    () => 'ET', weeklyPartnerHelpers.normalizeWeeklyCalendarPartnerTids);
+};
+const promoTermsChecks = async () => {
+  const loader = makePromoTermsLoader({
+    ok: true,
+    json: async () => ({ data: [
+      { attributes: { name: 'Partner One', drupal_internal__tid: 101, field_promo_card_enabled: true } },
+      { attributes: { name: 'Disabled Partner', drupal_internal__tid: 909, field_promo_card_enabled: false } },
+      { attributes: { name: 'Partner Two', drupal_internal__tid: '202', field_promo_card_enabled: true } }
+    ] })
+  });
+  await loader.loadPromoEmployers();
+  assert.deepStrictEqual(loader.getState(), { promoPartnerTermsStatus: 'ready', livePromoPartnerTids: [101, 202] }, 'the weekly partner list must be built from only live promo-enabled JSON:API terms');
+  assert.strictEqual(loader.partnerConfigs.partners.stale.promoCardEnabled, false, 'terms absent from the live response must lose stale local eligibility');
+  assert.strictEqual(loader.partnerConfigs.partners['partner-one'].partnerTid, 101);
+  assert.strictEqual(loader.partnerConfigs.partners['partner-two'].partnerTid, 202);
+
+  const failedLoader = makePromoTermsLoader(new Error('Employer API unavailable'));
+  await assert.rejects(failedLoader.loadPromoEmployers(), /Employer API unavailable/);
+  assert.deepStrictEqual(failedLoader.getState(), { promoPartnerTermsStatus: 'loading', livePromoPartnerTids: [] }, 'a failed term request must clear previously held IDs before its caller marks the error');
+  const missingTermsLoader = makePromoTermsLoader({ ok: true, json: async () => ({}) });
+  await assert.rejects(missingTermsLoader.loadPromoEmployers(), /did not include a term list/);
+  assert.deepStrictEqual(missingTermsLoader.getState(), { promoPartnerTermsStatus: 'loading', livePromoPartnerTids: [] }, 'a missing JSON:API data list must fail closed without stale IDs');
+
+  const partnerConfigStart = source.indexOf('async function loadPartnerConfigs()');
+  const partnerConfigEnd = source.indexOf('function isPartnerBackLayout', partnerConfigStart);
+  const partnerConfigSource = source.slice(partnerConfigStart, partnerConfigEnd);
+  assert(partnerConfigSource.includes("promoPartnerTermsStatus = 'error';"), 'a failed live term request must become a clear partner-list error');
+  assert(partnerConfigSource.includes('livePromoPartnerTids = [];'), 'failed live term requests must not keep stale partner IDs');
+};
+
 const calendarConfigStart = source.indexOf('function getCalendarConfig()');
 const calendarConfigEnd = source.indexOf('function getAllCalendarSessionsApiUrl', calendarConfigStart);
 assert(calendarConfigStart >= 0 && calendarConfigEnd > calendarConfigStart, 'weekly and monthly calendar API config must be present');
@@ -417,4 +472,9 @@ assert(source.includes("className = 'weekly-calendar-register-cta'"));
 assert(source.includes("return { pxW: 1440, pxH: 1800, wIn: 4.8, hIn: 6, tag: '4.8x6', orientation: 'portrait' }"));
 assert(source.includes("return { pxW: 1200, pxH: 1800, wIn: 4, hIn: 6, tag: '4x6', orientation: 'portrait' }"), 'monthly export dimensions must remain unchanged');
 
-console.log('weekly calendar ISO-week, filters, drafts, multi-zone grouping/captions, API alias/QR source, template styling, and export checks passed');
+promoTermsChecks().then(() => {
+  console.log('weekly calendar partner loading, ISO-week filters, drafts, captions, API alias/QR source, and export checks passed');
+}).catch(error => {
+  console.error(error);
+  process.exitCode = 1;
+});
