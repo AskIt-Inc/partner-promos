@@ -66,8 +66,8 @@ const weeklyBannerDefaults = new Function(
 assert.deepStrictEqual(weeklyBannerDefaults, {
   eyebrow: 'Amyloidosis Program Spotlight Series',
   title: 'All Eligible Partners Amyloidosis Program',
-  color: '#173F5F'
-}, 'aggregate banner defaults must match the approved copy and current blue');
+  color: '#85008C'
+}, 'aggregate banner defaults must match the approved copy and purple palette');
 const bannerNormalizeStart = source.indexOf('function normalizeWeeklyAggregateBannerSettings');
 const bannerNormalizeEnd = source.indexOf('function loadWeeklyAggregateBannerSettings', bannerNormalizeStart);
 const normalizeWeeklyBanner = new Function(
@@ -120,20 +120,21 @@ assert.deepStrictEqual(
 
 const bannerRenderStart = source.indexOf('function applyCalendarBannerSettings');
 const bannerRenderEnd = source.indexOf('function syncCalendarCard', bannerRenderStart);
-const makeBannerRenderer = aggregateMode => {
+const makeBannerRenderer = (aggregateMode, weeklyMode = true) => {
   const elements = {
     'calendar-series-label': { textContent: '' },
     'calendar-program-title': { textContent: '' },
-    banner: { style: { backgroundColor: '' } }
+    banner: { style: { backgroundColor: '', variables: {}, setProperty(key, value) { this.variables[key] = value; } } }
   };
   const render = new Function(
     'document',
     'isWeeklyCalendarAggregateMode',
+    'isWeeklyCalendarCardLayout',
     `${source.slice(bannerRenderStart, bannerRenderEnd)} return applyCalendarBannerSettings;`
   )({
     getElementById: id => elements[id],
     querySelector: selector => selector === '.calendar-spotlight-band' ? elements.banner : null
-  }, () => aggregateMode);
+  }, () => aggregateMode, () => weeklyMode);
   return { elements, render };
 };
 const aggregateBannerRenderer = makeBannerRenderer(true);
@@ -144,7 +145,8 @@ aggregateBannerRenderer.render({
 });
 assert.strictEqual(aggregateBannerRenderer.elements['calendar-series-label'].textContent, editedBannerSettings.eyebrow);
 assert.strictEqual(aggregateBannerRenderer.elements['calendar-program-title'].textContent, editedBannerSettings.title);
-assert.strictEqual(aggregateBannerRenderer.elements.banner.style.backgroundColor, editedBannerSettings.color);
+assert.strictEqual(aggregateBannerRenderer.elements.banner.style.variables['--weekly-banner-color'], editedBannerSettings.color);
+assert.strictEqual(aggregateBannerRenderer.elements.banner.style.backgroundColor, 'transparent');
 const selectedBannerRenderer = makeBannerRenderer(false);
 selectedBannerRenderer.render({
   seriesLabel: 'Partner Spotlight Series',
@@ -153,13 +155,18 @@ selectedBannerRenderer.render({
 }, '#0057B8');
 assert.strictEqual(selectedBannerRenderer.elements['calendar-series-label'].textContent, 'Partner Spotlight Series');
 assert.strictEqual(selectedBannerRenderer.elements['calendar-program-title'].textContent, 'Selected Partner Amyloidosis Program');
-assert.strictEqual(selectedBannerRenderer.elements.banner.style.backgroundColor, '#0057B8', 'selected partner mode must ignore aggregate banner color overrides');
-assert(source.includes("? { primary: '#173F5F', borderAccent: '#B9DEE6' }"), 'editing the aggregate banner background must not recolor date chips or other calendar accents');
+assert.strictEqual(selectedBannerRenderer.elements.banner.style.variables['--weekly-banner-color'], '#85008C', 'selected partner mode must use the campaign purple');
+const monthlyBannerRenderer = makeBannerRenderer(false, false);
+monthlyBannerRenderer.render({ seriesLabel: 'Monthly Series', programTitle: 'Monthly Partner' }, '#0057B8');
+assert.strictEqual(monthlyBannerRenderer.elements.banner.style.backgroundColor, '#0057B8', 'monthly partner banner colors must remain unchanged');
+assert(source.includes("? { primary: '#85008C', borderAccent: '#DCC1DF' }"), 'weekly banner edits must not recolor date panels or other campaign accents');
 assert(source.includes('id="weekly-banner-eyebrow" type="text"'));
 assert(source.includes('id="weekly-banner-title" type="text"'));
 assert(source.includes('id="weekly-banner-color" type="color"'));
 assert(source.includes("input?.addEventListener('input', () => setWeeklyAggregateBannerSetting(key, input.value))"), 'banner input changes must be wired to the live preview updater');
-assert(source.includes('return await domtoimage.toPng(surface, {'), 'PNG export must capture the same surface updated by the banner renderer');
+assert(source.includes('const pngDataUrl = await domtoimage.toPng(surface, {'), 'PNG export must capture the same surface updated by the banner renderer');
+assert(source.includes('width: pxW, height: pxH,'), 'the PNG renderer must use the configured 1440 × 1800 export dimensions');
+assert(source.includes('return isWeeklyCalendarCardLayout() ? addPngDpiMetadata(pngDataUrl, 300) : pngDataUrl;'), 'weekly exports must include 300-DPI metadata where supported');
 assert(source.includes('<div class="calendar-spotlight-band">'), 'the banner being rendered must be part of the exported card surface');
 
 const bannerSetterStart = source.indexOf('function setWeeklyAggregateBannerSetting');
@@ -306,7 +313,7 @@ const aggregateConfig = createCalendarConfig({
 }, true, true)();
 assert.strictEqual(aggregateConfig.programTitle, 'All Eligible Partners Amyloidosis Program');
 assert.strictEqual(aggregateConfig.seriesLabel, 'Amyloidosis Program Spotlight Series');
-assert.strictEqual(aggregateConfig.bannerColor, '#173F5F');
+assert.strictEqual(aggregateConfig.bannerColor, '#85008C');
 assert.strictEqual(aggregateConfig.sessionsApiUrl, 'https://somebodytotalkto.com/api/spotlight/microsite/sessions?partner=101,202&status=all', 'aggregate weekly config must use only the live eligible partner list');
 assert.strictEqual(aggregateConfig.profilesApiUrl, 'https://somebodytotalkto.com/api/spotlight/microsite/profiles?partner=101,202');
 assert.strictEqual(aggregateConfig.micrositeUrl, '', 'aggregate weekly config must not reuse the fallback partner microsite');
@@ -411,7 +418,7 @@ assert.deepStrictEqual(
   [true, false, true],
   'partner weekly cards must preserve selected logos and leave empty slots hidden'
 );
-assert(source.includes("calendarLogoBar.style.display = logoVisibility.some(Boolean) ? '' : 'none'"), 'an empty weekly logo bar must collapse');
+assert(source.includes("calendarLogoBar.style.display = noVisibleLogos ? 'none' : ''"), 'an empty weekly logo bar must collapse');
 assert(source.includes("slot.querySelector('.calendar-logo-placeholder')?.classList.remove('visible')"), 'empty weekly logo placeholders must be hidden');
 assert(source.includes('divider.style.display = logoVisibility[index] && logoVisibility[index + 1] ? \'\' : \'none\''), 'weekly separators must appear only between selected logos');
 const pickerRefreshStart = source.indexOf('function refreshWeeklyCalendarWeekPicker');
@@ -524,7 +531,7 @@ const weekPageHarness = new Function(
      setWeeklyCalendarPage,
      getState: () => ({ year: selectedWeeklyYear, week: selectedWeeklyWeek, page: selectedWeeklyPage, yearMin: weeklyCalendarYearInput.min, banner: weeklyAggregateBannerSettings })
    };`
-)(year => year === 2026 ? 53 : 52, () => ({ year: 2026, week: 46 }), sessions => sessions, 2, () => {}, () => {}, () => { weeklyRenders++; });
+)(year => year === 2026 ? 53 : 52, () => ({ year: 2026, week: 46 }), sessions => sessions, 3, () => {}, () => {}, () => { weeklyRenders++; });
 weekPageHarness.setWeeklyCalendarPeriod(2027, 4);
 weekPageHarness.setWeeklyCalendarPage(1);
 assert.deepStrictEqual(weekPageHarness.getState(), {
@@ -782,41 +789,53 @@ assert.deepStrictEqual(
   { shortUrl: 'https://somebodytotalkto.com/s/abc123def0', qrSrc: 'data:image/png;base64,ZmFrZQ==' },
   'the displayed alias and QR image must come from the same first-party API response',
 );
-assert(source.includes('qr.src = session.weekly_qr_src;'));
+assert(source.includes('const dataUrl = weeklyQrDataUrlCache.get(payloadUrl) || \'\';'));
+assert(source.includes('image.src = dataUrl;'), 'each footer QR must use the verified image from its own registration alias');
+assert(source.includes('qr.dataset.weeklyPayloadUrl = session.weekly_short_url;'), 'each QR payload must use that session’s short URL');
 assert(source.includes('cta.href = session.weekly_short_url;'));
 assert(source.includes('cta.textContent = `REGISTER · ${registrationDate}`;'));
 assert(source.includes('shortUrl.textContent = session.weekly_short_url;'));
 assert(source.includes('link.textContent = shortUrl;'));
 assert(source.includes('postLines.push(...getWeeklySessionCaptionLines(session));'));
-assert(source.includes("className = 'weekly-calendar-session-partner'"), 'aggregate cards must visibly label each session partner');
+assert(source.includes("className = 'weekly-calendar-session-partner'"), 'each session card must visibly label its partner');
 assert(source.includes("className = 'weekly-post-session-partner'"), 'aggregate post rows must visibly label each session partner');
-assert(source.includes("row.style.setProperty('--weekly-session-card-color', cardColor)"));
-assert(source.includes('selectedWeeklyPage * WEEKLY_CALENDAR_PAGE_SIZE + index'));
-assert(source.includes('background: var(--weekly-session-card-color, #93c47d);'));
+assert(source.includes('list.dataset.sessionCount = String(rows.length);'), 'the visible card count must select the one-, two-, or three-session layout');
+assert(source.includes('background: #fff;'));
+assert(source.includes('background: #159B36;'), 'session dates must appear in green date panels');
+assert(source.includes('background: linear-gradient(112deg, #680078 0%, var(--weekly-banner-color, #85008C) 54%, #A51BA6 100%);'));
+assert(source.includes('background: #EAF7FB;'), 'weekly posters must use the specified light-blue background');
+assert(source.includes('fill="#A4D95B"') && source.includes('fill="#A51BA6"'), 'the purple header must transition through the green and lavender wave');
+assert(source.includes('weekly-card-no-logo-bar .calendar-spotlight-band {\n  min-height: 113px;'), 'a poster without visible logos must keep the header within the target height range');
+assert(source.includes("classList.toggle('weekly-card-no-logo-bar', noVisibleLogos)"));
 assert(source.includes('line.dataset.zone = zone;'));
 assert(source.includes("className = 'weekly-calendar-speaker-registration'"));
+assert(source.includes("className = 'weekly-calendar-registration-item'"));
+assert(source.includes('registration.dataset.sessionCount = String(rows.length);'));
 assert(source.includes('qr.width = 64;'));
 assert(source.includes('qr.height = 64;'));
 assert(source.includes('session?.card_color'));
-assert(source.includes('background: #e8fff6;'));
-assert(source.includes('border: 1px solid #48d7a3;'));
-assert(source.includes('color: #087a61;'));
-assert(source.includes('color: #ffd966;'));
-assert(source.includes('background: #cc0000;'));
-assert(source.includes('flex: 0 0 36px;'));
+assert(source.includes('background: #F3FBEA;'));
+assert(source.includes('border: 1px solid #159B36;'));
+assert(source.includes('color: #075B36;'));
+assert(source.includes('background: #C62828;'));
+assert(source.includes('flex: 0 0 34px;'));
 assert(source.includes('flex: 0 0 64px;'), 'exported weekly QR images must remain at least 200 raster pixels wide');
 assert(source.includes('width: 64px;'));
 assert(64 * (1440 / (4.8 * 96)) >= 200, 'weekly QR cards must preserve a scan-sized raster code at export scale');
-assert(source.includes('grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);'));
+assert(source.includes('.calendar-sessions[data-session-count="1"] .weekly-calendar-session-row'));
+assert(source.includes('.calendar-sessions[data-session-count="2"] .weekly-calendar-session-row'));
+assert(source.includes('.calendar-sessions[data-session-count="3"] .weekly-calendar-session-row'));
 assert(source.includes("condition.setAttribute('role', 'list');"));
 assert(source.includes('category.textContent = indication;'), 'session indications must render as separate readable category chips');
 
-assert(source.includes('const WEEKLY_CALENDAR_PAGE_SIZE = 2;'), 'weekly sessions must keep two-session pagination');
+assert(source.includes('const WEEKLY_CALENDAR_PAGE_SIZE = 3;'), 'weekly posters must paginate no more than three sessions per card');
+assert(source.includes('ET · CT · MT · PT'), 'the header must name the four supported time zones');
+assert(source.includes('presenter.institution_name') || source.includes('getPresenterEmployer(presenter)'), 'speaker affiliations must retain institution details when supplied');
 assert(source.includes('option value="abbreviation">Abbreviation only'));
 assert(source.includes('option value="location">Abbreviation + city'));
 assert(source.includes("className = 'weekly-calendar-session-timezone'"));
 assert(source.includes('Times: ${sessionLabels.join(\' · \')}'));
-assert(source.includes('`Times: ${presentation.legendLabels.join(\' · \')}`'));
+assert(source.includes("legend.textContent = 'ET · CT · MT · PT';"));
 assert(source.includes("className = 'weekly-calendar-session-title'"));
 assert(source.includes("className = 'weekly-calendar-condition'"));
 assert(source.includes("className = 'weekly-calendar-speaker'"));
@@ -824,8 +843,47 @@ assert(source.includes("className = 'weekly-calendar-register-cta'"));
 assert(source.includes("return { pxW: 1440, pxH: 1800, wIn: 4.8, hIn: 6, tag: '4.8x6', orientation: 'portrait' }"));
 assert(source.includes("return { pxW: 1200, pxH: 1800, wIn: 4, hIn: 6, tag: '4x6', orientation: 'portrait' }"), 'monthly export dimensions must remain unchanged');
 
+const dpiHelperStart = source.indexOf('function addPngDpiMetadata');
+const dpiHelperEnd = source.indexOf('\nasync function captureCard', dpiHelperStart);
+assert(dpiHelperStart >= 0 && dpiHelperEnd > dpiHelperStart, 'PNG DPI metadata helper must be present');
+const addPngDpiMetadata = new Function(`${source.slice(dpiHelperStart, dpiHelperEnd)} return addPngDpiMetadata;`)();
+const makePngChunk = (type, data = []) => {
+  const bytes = Buffer.alloc(12 + data.length);
+  bytes.writeUInt32BE(data.length, 0);
+  bytes.write(type, 4, 'ascii');
+  Buffer.from(data).copy(bytes, 8);
+  return bytes;
+};
+const testPngHeader = Buffer.alloc(13);
+testPngHeader.writeUInt32BE(1440, 0);
+testPngHeader.writeUInt32BE(1800, 4);
+testPngHeader[8] = 8;
+testPngHeader[9] = 6;
+const testPng = Buffer.concat([
+  Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+  makePngChunk('IHDR', testPngHeader),
+  makePngChunk('IDAT', [0]),
+  makePngChunk('IEND')
+]);
+const dpiDataUrl = addPngDpiMetadata(`data:image/png;base64,${testPng.toString('base64')}`, 300);
+const dpiPng = Buffer.from(dpiDataUrl.split(',')[1], 'base64');
+let dpiChunk = null;
+let dpiChunkOffset = 8;
+while (dpiChunkOffset + 12 <= dpiPng.length) {
+  const chunkLength = dpiPng.readUInt32BE(dpiChunkOffset);
+  const chunkType = dpiPng.toString('ascii', dpiChunkOffset + 4, dpiChunkOffset + 8);
+  if (chunkType === 'pHYs') dpiChunk = dpiPng.subarray(dpiChunkOffset + 8, dpiChunkOffset + 17);
+  dpiChunkOffset += 12 + chunkLength;
+}
+assert(dpiChunk, 'weekly PNG exports must carry a pHYs resolution chunk');
+assert.strictEqual(dpiChunk.readUInt32BE(0), 11811, 'weekly PNG horizontal resolution must equal 300 DPI');
+assert.strictEqual(dpiChunk.readUInt32BE(4), 11811, 'weekly PNG vertical resolution must equal 300 DPI');
+assert.strictEqual(dpiChunk[8], 1, 'PNG pHYs units must be pixels per meter');
+assert.strictEqual(dpiPng.readUInt32BE(16), 1440, 'adding DPI metadata must preserve the configured PNG width');
+assert.strictEqual(dpiPng.readUInt32BE(20), 1800, 'adding DPI metadata must preserve the configured PNG height');
+
 promoTermsChecks().then(() => {
-  console.log('upcoming weekly date-range picker, aggregate banner controls, partner loading, ISO-week filters, drafts, captions, API alias/QR source, and export checks passed');
+  console.log('upcoming searchable week picker, poster layouts, registration QR integrity, speaker data, timezone, DPI metadata, and export checks passed');
 }).catch(error => {
   console.error(error);
   process.exitCode = 1;

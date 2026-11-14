@@ -359,10 +359,10 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
 .print-surface.layout-weekly-calendar-card .calendar-week-range {
   display: block;
   color: #fff;
-  font-size: 9px;
+  font-size: 9.5px;
   font-weight: 700;
   line-height: 1.1;
-  margin: 4px 0 0;
+  margin: 5px 0 0;
   opacity: 0.94;
 }
 .print-surface.layout-weekly-calendar-card .calendar-band-title {
@@ -371,22 +371,57 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
 .print-surface.layout-weekly-calendar-card .calendar-band-eyebrow-text {
   color: #FFE8A3;
 }
+.print-surface.layout-weekly-calendar-card:not(.show-back) > .calendar-card-front-side {
+  background: #EAF7FB;
+  color: #092E30;
+}
 .print-surface.layout-weekly-calendar-card .calendar-logo-bar {
-  height: 54px;
+  height: 56px;
+  background: #fff;
+  border-bottom: 0;
 }
 .print-surface.layout-weekly-calendar-card .calendar-logo-slot img {
   max-height: 34px;
 }
 .print-surface.layout-weekly-calendar-card .calendar-spotlight-band {
-  padding: 7px 16px 8px;
+  background: linear-gradient(112deg, #680078 0%, var(--weekly-banner-color, #85008C) 54%, #A51BA6 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: visible;
+  padding: 7px 18px 3px;
+  position: relative;
+}
+.print-surface.layout-weekly-calendar-card .calendar-card-front-side.weekly-card-no-logo-bar .calendar-spotlight-band {
+  min-height: 113px;
+}
+.print-surface.layout-weekly-calendar-card .calendar-band-eyebrow {
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.print-surface.layout-weekly-calendar-card .calendar-band-eyebrow svg {
+  flex: 0 0 13px;
+  height: 13px;
+  width: 13px;
+}
+.print-surface.layout-weekly-calendar-card .calendar-band-eyebrow-text {
+  font-size: 8.5px;
+  font-style: normal;
+  letter-spacing: .015em;
+}
+.print-surface.layout-weekly-calendar-card .calendar-band-title {
+  font-size: 14px;
+  line-height: 1.08;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 .weekly-calendar-timezone-legend {
   color: #fff;
-  font-size: 7.5px;
-  font-weight: 600;
+  font-size: 7.25px;
+  font-weight: 700;
   line-height: 1.15;
-  margin: 2px 0 0;
-  opacity: .92;
+  margin: 4px 0 0;
+  opacity: .96;
   letter-spacing: .01em;
 }
 .weekly-calendar-timezone-legend[hidden] { display: none; }
@@ -397,93 +432,144 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
   display: flex;
   flex: 1;
   flex-direction: column;
-  justify-content: center;
-  gap: 8px;
+  gap: 7px;
   min-height: 0;
+  overflow: visible;
+  padding: 9px 12px 8px;
+}
+.weekly-calendar-header-wave {
+  background: #EAF7FB;
+  flex: 0 0 18px;
+  height: 18px;
+  margin-top: -1px;
   overflow: hidden;
-  padding: 8px 12px;
+  width: 100%;
+}
+.weekly-calendar-header-wave svg {
+  display: block;
+  height: 100%;
+  width: 100%;
 }
 .weekly-calendar-session-row {
-  background: var(--weekly-session-card-color, #93c47d);
-  border: 1px solid rgba(255,255,255,.5);
-  border-radius: 5px;
+  background: #fff;
+  border: 1px solid #CFE4E2;
+  border-radius: 9px;
+  box-shadow: 0 2px 7px rgba(9, 46, 48, .08);
   display: grid;
-  flex: 0 1 auto;
-  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  flex: 1 1 0;
+  grid-template-columns: 66px minmax(0, 1.25fr) minmax(0, 1fr);
   align-items: stretch;
-  min-height: 160px;
-  overflow: hidden;
+  min-height: 0;
+  overflow: visible;
 }
-.weekly-calendar-session-heading {
+.weekly-calendar-session-date-panel {
+  align-items: center;
+  background: #159B36;
+  border-radius: 8px 0 0 8px;
   color: #fff;
   display: flex;
   flex-direction: column;
   justify-content: center;
   min-width: 0;
-  padding: 8px 10px;
+  padding: 5px 4px;
+  text-align: center;
+}
+.weekly-calendar-session-day-name {
+  color: rgba(255,255,255,.94);
+  font-size: 6.5px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+.weekly-calendar-session-date-number {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -.04em;
+  line-height: .98;
+  margin: 2px 0;
+}
+.weekly-calendar-session-month {
+  font-size: 7px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+.weekly-calendar-session-year {
+  font-size: 5.5px;
+  font-weight: 600;
+  line-height: 1.15;
+  margin-top: 2px;
+  opacity: .9;
+}
+.weekly-calendar-session-heading {
+  color: #092E30;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  padding: 6px 8px;
 }
 .weekly-calendar-conditions {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
   gap: 2px 3px;
-  margin: 0 0 4px;
+  margin: 0 0 3px;
   min-width: 0;
 }
 .weekly-calendar-conditions[hidden] { display: none; }
 .weekly-calendar-conditions .weekly-calendar-condition {
-  background: #e8fff6;
-  border: 1px solid #48d7a3;
+  background: #F3FBEA;
+  border: 1px solid #159B36;
   border-radius: 999px;
-  color: #087a61;
+  color: #075B36;
   display: inline-flex;
-  font-size: 7px;
+  font-size: 6.1px;
   font-weight: 700;
-  line-height: 1.15;
+  line-height: 1.1;
   margin: 0;
   max-width: 100%;
-  padding: 2px 5px;
+  padding: 2px 4px;
 }
 .weekly-calendar-session-title {
-  color: #fff;
-  font-size: 12px;
+  color: #092E30;
+  font-size: 9px;
   font-weight: 800;
-  line-height: 1.16;
+  line-height: 1.12;
   margin: 0;
   overflow-wrap: anywhere;
 }
 .weekly-calendar-session-partner {
-  color: rgba(255,255,255,.94);
-  font-size: 7.5px;
+  color: #075B36;
+  font-size: 6.2px;
   font-weight: 700;
   line-height: 1.2;
-  margin: 3px 0 0;
+  margin: 2px 0 0;
   overflow-wrap: anywhere;
 }
 .weekly-calendar-session-timezone {
-  color: #fff;
-  font-size: 6.75px;
+  color: #325F5C;
+  font-size: 5.8px;
   font-weight: 600;
   line-height: 1.15;
   margin: 2px 0 0;
-  opacity: .94;
 }
 .weekly-calendar-session-timezone[hidden] { display: none; }
 .weekly-calendar-session-divider {
   border: 0;
-  border-top: 1px solid rgba(255,255,255,.55);
-  margin: 4px 0 3px;
+  border-top: 1px solid #D9EBE7;
+  margin: 3px 0 2px;
 }
 .weekly-calendar-session-date-time {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
   min-width: 0;
-  margin-top: 2px;
+  margin-top: 1px;
 }
 .weekly-calendar-session-date {
-  color: #ffd966;
-  font-size: 9px;
+  color: #092E30;
+  font-size: 7px;
   font-weight: 800;
   line-height: 1.15;
   margin: 0;
@@ -491,31 +577,35 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
 }
 .weekly-calendar-session-times {
   display: flex;
-  flex-direction: column;
-  gap: 1px;
+  flex-wrap: wrap;
+  gap: 2px 5px;
   min-width: 0;
 }
 .weekly-calendar-session-time {
-  color: #fff;
-  font-size: 8px;
+  color: #325F5C;
+  font-size: 5.8px;
   font-weight: 700;
-  line-height: 1.18;
+  line-height: 1.12;
   margin: 0;
   overflow-wrap: anywhere;
+}
+.weekly-calendar-session-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
 }
 .weekly-calendar-session-body {
   align-items: stretch;
   display: flex;
   min-width: 0;
   min-height: 0;
-  border-left: 1px solid rgba(255,255,255,.42);
-  padding: 8px 8px 8px 6px;
+  border-left: 1px solid #E2EFED;
+  padding: 5px 6px;
 }
 .weekly-calendar-speaker-registration {
   align-items: center;
-  display: grid;
-  gap: 4px;
-  grid-template-columns: minmax(0, 1fr) 78px;
+  display: flex;
   width: 100%;
   min-width: 0;
 }
@@ -523,75 +613,72 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
   align-content: center;
   display: grid;
   align-items: center;
-  gap: 5px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  grid-template-columns: 1fr;
   min-width: 0;
   overflow: visible;
+  width: 100%;
+}
+.weekly-calendar-speakers.weekly-has-multiple-speakers {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 .weekly-calendar-speaker {
   align-items: center;
   display: flex;
-  flex-direction: column;
-  gap: 3px;
+  flex-direction: row;
+  gap: 4px;
   min-width: 0;
-  text-align: center;
+  text-align: left;
 }
 .weekly-calendar-speaker img,
 .weekly-calendar-speaker-fallback {
   align-items: center;
-  background: #e8eef2;
+  background: #EAF7FB;
+  border: 1px solid #159B36;
   border-radius: 50%;
-  color: #243b4b;
+  color: #075B36;
   display: flex;
-  flex: 0 0 36px;
-  height: 36px;
+  flex: 0 0 34px;
+  height: 34px;
   justify-content: center;
   object-fit: cover;
   overflow: hidden;
-  width: 36px;
+  width: 34px;
 }
 .weekly-calendar-speaker-fallback {
-  font-size: 11px;
+  font-size: 9px;
   font-weight: 800;
 }
 .weekly-calendar-speaker-copy { min-width: 0; }
 .weekly-calendar-speaker-name {
-  color: #fff;
+  color: #092E30;
   display: block;
-  font-size: 7px;
+  font-size: 6.2px;
   font-weight: 800;
-  line-height: 1.15;
+  line-height: 1.12;
   overflow-wrap: anywhere;
 }
 .weekly-calendar-speaker-credentials,
 .weekly-calendar-speaker-partner {
-  color: rgba(255,255,255,.94);
+  color: #325F5C;
   display: block;
-  font-size: 6px;
-  line-height: 1.15;
-  margin-top: 2px;
+  font-size: 5.5px;
+  line-height: 1.12;
+  margin-top: 1px;
   overflow-wrap: anywhere;
 }
 .weekly-calendar-speaker-empty {
-  color: #fff;
+  color: #325F5C;
   font-size: 6.5px;
   margin: 0;
 }
 .weekly-calendar-qr-block {
-  align-items: center;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  justify-content: center;
-  min-width: 0;
-  height: 100%;
-  padding-left: 4px;
-  border-left: 1px solid rgba(255,255,255,.42);
+  display: none;
 }
 .weekly-calendar-qr-block img {
   background: #fff;
-  border: 2px solid #fff;
-  border-radius: 3px;
+  border: 1px solid #D5E7E4;
+  border-radius: 4px;
   display: block;
   flex: 0 0 64px;
   height: 64px;
@@ -600,31 +687,146 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
   width: 64px;
 }
 .weekly-calendar-register-cta {
-  background: #cc0000;
-  border-radius: 4px;
+  background: #C62828;
+  border-radius: 3px;
   color: #fff;
   display: block;
-  font-size: 7px;
+  font-size: 6.2px;
   font-weight: 900;
-  line-height: 1.1;
-  padding: 3px 2px;
+  line-height: 1.12;
+  padding: 3px 4px;
   text-align: center;
   text-decoration: none;
   max-width: 100%;
   width: 100%;
 }
 .weekly-calendar-short-url {
-  color: #fff;
-  font-size: 6.5px;
+  color: #092E30;
+  font-size: 5.8px;
   font-weight: 600;
-  line-height: 1.1;
+  line-height: 1.12;
   overflow-wrap: anywhere;
-  text-align: center;
   width: 100%;
+}
+.weekly-calendar-registration {
+  background: #F8FFF2;
+  border: 1px solid #BBDDB3;
+  border-radius: 8px;
+  flex: 0 0 auto;
+  margin: 0 12px 9px;
+  padding: 5px 7px 7px;
+}
+.weekly-calendar-registration[hidden] { display: none !important; }
+.weekly-calendar-registration-heading {
+  color: #C62828;
+  font-size: 7.5px;
+  font-weight: 900;
+  letter-spacing: .045em;
+  line-height: 1.1;
+  margin-bottom: 4px;
+  text-align: center;
+}
+.weekly-calendar-registration-items {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.weekly-calendar-registration-item {
+  align-items: center;
+  display: grid;
+  gap: 5px;
+  grid-template-columns: 64px minmax(0, 1fr);
+  min-width: 0;
+}
+.weekly-calendar-registration-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  justify-content: center;
+  min-width: 0;
+}
+.weekly-calendar-registration .weekly-calendar-qr-block {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+}
+.weekly-calendar-registration .weekly-calendar-short-url {
+  font-size: 5.5px;
+  line-height: 1.08;
+}
+.weekly-calendar-registration .weekly-calendar-register-cta {
+  font-size: 6px;
+}
+.weekly-calendar-registration[data-session-count="1"] .weekly-calendar-registration-items {
+  grid-template-columns: minmax(0, 1fr);
+}
+.weekly-calendar-registration[data-session-count="1"] .weekly-calendar-registration-item {
+  grid-template-columns: 64px minmax(0, 1fr);
+}
+.weekly-calendar-registration[data-session-count="2"] .weekly-calendar-registration-items {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.print-surface.layout-weekly-calendar-card .calendar-sessions[data-session-count="1"] {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+.calendar-sessions[data-session-count="1"] .weekly-calendar-session-row {
+  grid-template-columns: 82px minmax(0, 1.25fr) minmax(0, 1fr);
+}
+.calendar-sessions[data-session-count="1"] .weekly-calendar-session-day-name { font-size: 8px; }
+.calendar-sessions[data-session-count="1"] .weekly-calendar-session-date-number { font-size: 31px; }
+.calendar-sessions[data-session-count="1"] .weekly-calendar-session-month { font-size: 9px; }
+.calendar-sessions[data-session-count="1"] .weekly-calendar-session-year { font-size: 7px; }
+.calendar-sessions[data-session-count="1"] .weekly-calendar-session-heading { padding: 10px 12px; }
+.calendar-sessions[data-session-count="1"] .weekly-calendar-session-title { font-size: 13px; line-height: 1.16; }
+.calendar-sessions[data-session-count="1"] .weekly-calendar-session-partner { font-size: 8px; margin-top: 4px; }
+.calendar-sessions[data-session-count="1"] .weekly-calendar-session-time { font-size: 7.5px; }
+.calendar-sessions[data-session-count="1"] .weekly-calendar-session-body { padding: 10px; }
+.calendar-sessions[data-session-count="1"] .weekly-calendar-speaker img,
+.calendar-sessions[data-session-count="1"] .weekly-calendar-speaker-fallback {
+  flex-basis: 50px;
+  height: 50px;
+  width: 50px;
+}
+.calendar-sessions[data-session-count="1"] .weekly-calendar-speaker-name { font-size: 8px; }
+.calendar-sessions[data-session-count="1"] .weekly-calendar-speaker-credentials,
+.calendar-sessions[data-session-count="1"] .weekly-calendar-speaker-partner { font-size: 7px; }
+.calendar-sessions[data-session-count="2"] .weekly-calendar-session-row { grid-template-columns: 68px minmax(0, 1.2fr) minmax(0, 1fr); }
+.calendar-sessions[data-session-count="2"] .weekly-calendar-session-title { font-size: 9px; }
+.calendar-sessions[data-session-count="2"] .weekly-calendar-speaker img,
+.calendar-sessions[data-session-count="2"] .weekly-calendar-speaker-fallback {
+  flex-basis: 32px;
+  height: 32px;
+  width: 32px;
+}
+.calendar-sessions[data-session-count="3"] .weekly-calendar-session-row { grid-template-columns: 60px minmax(0, 1.15fr) minmax(0, 1fr); }
+.calendar-sessions[data-session-count="3"] .weekly-calendar-session-heading { padding: 4px 6px; }
+.calendar-sessions[data-session-count="3"] .weekly-calendar-session-title { font-size: 8px; line-height: 1.1; }
+.calendar-sessions[data-session-count="3"] .weekly-calendar-session-partner { font-size: 5.8px; }
+.calendar-sessions[data-session-count="3"] .weekly-calendar-session-time { font-size: 5.5px; }
+.calendar-sessions[data-session-count="3"] .weekly-calendar-session-body { padding: 3px 4px; }
+.calendar-sessions[data-session-count="3"] .weekly-calendar-speaker img,
+.calendar-sessions[data-session-count="3"] .weekly-calendar-speaker-fallback {
+  flex-basis: 27px;
+  height: 27px;
+  width: 27px;
+}
+.calendar-sessions[data-session-count="3"] .weekly-calendar-speaker-name { font-size: 5.7px; }
+.calendar-sessions[data-session-count="3"] .weekly-calendar-speaker-credentials,
+.calendar-sessions[data-session-count="3"] .weekly-calendar-speaker-partner { font-size: 5px; }
+.calendar-sessions[data-session-count="3"] .weekly-calendar-speaker-registration { align-items: stretch; }
+.calendar-sessions[data-session-count="3"] .weekly-calendar-speakers.weekly-has-multiple-speakers {
+  gap: 2px;
+}
+.calendar-sessions[data-session-count="3"] .weekly-has-multiple-speakers .weekly-calendar-speaker {
+  flex-direction: column;
+  gap: 2px;
+  text-align: center;
 }
 .weekly-calendar-status {
   align-self: center;
-  color: #4d5d67;
+  color: #325F5C;
   font-size: 9px;
   line-height: 1.35;
   margin: auto;
@@ -3503,7 +3705,7 @@ body[data-partner="vamp"] .session-back-title {
       </label>
       <label class="field-control" for="weekly-banner-color">
         <span>Banner Background</span>
-        <input id="weekly-banner-color" type="color" value="#173F5F">
+        <input id="weekly-banner-color" type="color" value="#85008C">
       </label>
     </fieldset>
     <label class="field-control calendar-filter-control weekly-filter-control" for="calendar-date-chip-size">
@@ -4276,9 +4478,17 @@ body[data-partner="vamp"] .session-back-title {
           </svg>
           <span id="calendar-series-label" class="calendar-band-eyebrow-text">Amyloidosis Program Spotlight Series</span>
         </div>
-        <p id="calendar-program-title" class="calendar-band-title">City of Hope Amyloidosis Program</p>
+        <p id="calendar-program-title" class="calendar-band-title">All Eligible Partners Amyloidosis Program</p>
         <p id="calendar-week-range" class="calendar-week-range"></p>
-        <p id="weekly-calendar-timezone-legend" class="weekly-calendar-timezone-legend" aria-live="polite" hidden></p>
+        <p id="weekly-calendar-timezone-legend" class="weekly-calendar-timezone-legend" aria-label="Session time zones" aria-live="polite">ET · CT · MT · PT</p>
+      </div>
+
+      <div class="weekly-calendar-header-wave" aria-hidden="true">
+        <svg viewBox="0 0 1440 48" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+          <path fill="#A4D95B" d="M0 8C230 34 425 44 676 29S1120 5 1440 26V48H0Z"/>
+          <path fill="#A51BA6" d="M0 0C214 26 456 36 703 22S1170 4 1440 17V34C1178 23 930 30 696 39S240 31 0 14Z"/>
+          <path fill="#EAF7FB" d="M0 27C254 41 459 47 704 34S1164 15 1440 25V48H0Z"/>
+        </svg>
       </div>
 
       <div class="calendar-sessions" id="calendar-sessions-list">
@@ -4294,6 +4504,11 @@ body[data-partner="vamp"] .session-back-title {
           </div>
         </div>
       </div>
+
+      <section id="weekly-calendar-registration" class="weekly-calendar-registration" aria-label="Session registration" hidden>
+        <h2 class="weekly-calendar-registration-heading">REGISTER NOW</h2>
+        <div id="weekly-calendar-registration-items" class="weekly-calendar-registration-items"></div>
+      </section>
 
       <div class="calendar-card-footer">
         <div class="calendar-footer-main">
@@ -4890,7 +5105,7 @@ const CALENDAR_DEFAULT_CONFIG = {
 const WEEKLY_AGGREGATE_BANNER_DEFAULTS = Object.freeze({
   eyebrow: 'Amyloidosis Program Spotlight Series',
   title: 'All Eligible Partners Amyloidosis Program',
-  color: '#173F5F'
+  color: '#85008C'
 });
 const WEEKLY_AGGREGATE_BANNER_STORAGE_KEY = 'weekly_aggregate_banner';
 let weeklyAggregateBannerSettings = { ...WEEKLY_AGGREGATE_BANNER_DEFAULTS };
@@ -4908,7 +5123,7 @@ let calendarLoadProgressValue = 10;
 let selectedCalendarFilters = new Set(['Mon', 'Tue', 'Wed', 'Thu']);
 let selectedCalendarRange = 'all';
 const WEEKLY_CALENDAR_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-const WEEKLY_CALENDAR_PAGE_SIZE = 2;
+const WEEKLY_CALENDAR_PAGE_SIZE = 3;
 const currentIsoWeek = calendarGetCurrentIsoWeek();
 let selectedWeeklyYear = currentIsoWeek.year;
 let selectedWeeklyWeek = currentIsoWeek.week;
@@ -6696,10 +6911,16 @@ function applyCalendarBannerSettings(config, fallbackColor = '#006E8E') {
   if (eyebrow) eyebrow.textContent = config.seriesLabel || '';
   if (title) title.textContent = config.programTitle || '';
   if (banner) {
-    const backgroundColor = isWeeklyCalendarAggregateMode()
-      ? config.bannerColor
-      : fallbackColor;
-    banner.style.backgroundColor = backgroundColor || fallbackColor;
+    if (isWeeklyCalendarCardLayout()) {
+      const bannerColor = isWeeklyCalendarAggregateMode() ? config.bannerColor : '#85008C';
+      banner.style.setProperty('--weekly-banner-color', bannerColor || '#85008C');
+      banner.style.backgroundColor = 'transparent';
+    } else {
+      const backgroundColor = isWeeklyCalendarAggregateMode()
+        ? config.bannerColor
+        : fallbackColor;
+      banner.style.backgroundColor = backgroundColor || fallbackColor;
+    }
   }
 }
 
@@ -6715,8 +6936,8 @@ function getWeeklyCalendarLogoVisibility(selectedLogos, aggregateMode) {
 function syncCalendarCard() {
   const cfg = getCalendarConfig();
   if (isWeeklyCalendarCardLayout()) refreshWeeklyAggregateBannerControls();
-  const colors = isWeeklyCalendarAggregateMode()
-    ? { primary: '#173F5F', borderAccent: '#B9DEE6' }
+  const colors = isWeeklyCalendarCardLayout()
+    ? { primary: '#85008C', borderAccent: '#DCC1DF' }
     : (activePartnerConfig.colors || {});
   const root = document.documentElement;
   root.style.setProperty('--calendar-primary', colors.primary || '#006E8E');
@@ -6780,9 +7001,12 @@ function syncCalendarCard() {
     logoDividers.forEach((divider, index) => {
       divider.style.display = logoVisibility[index] && logoVisibility[index + 1] ? '' : 'none';
     });
-    calendarLogoBar.style.display = logoVisibility.some(Boolean) ? '' : 'none';
+    const noVisibleLogos = !logoVisibility.some(Boolean);
+    calendarLogoBar.style.display = noVisibleLogos ? 'none' : '';
+    calendarLogoBar.closest('.calendar-card-front-side')?.classList.toggle('weekly-card-no-logo-bar', noVisibleLogos);
   } else if (calendarLogoBar) {
     calendarLogoBar.style.display = '';
+    calendarLogoBar.closest('.calendar-card-front-side')?.classList.remove('weekly-card-no-logo-bar');
     calendarLogoBar.querySelectorAll('.calendar-logo-slot, .logo-divider').forEach(element => {
       element.style.display = '';
     });
@@ -7007,6 +7231,14 @@ function weeklyCalendarStatus(message, canRetry = false, retryAction, retryLabel
   const list = document.getElementById('calendar-sessions-list');
   if (!list) return;
   list.replaceChildren();
+  list.removeAttribute('data-session-count');
+  const registration = document.getElementById('weekly-calendar-registration');
+  const registrationItems = document.getElementById('weekly-calendar-registration-items');
+  if (registration) {
+    registration.hidden = true;
+    registration.removeAttribute('data-session-count');
+  }
+  if (registrationItems) registrationItems.replaceChildren();
   const status = document.createElement('div');
   status.className = 'weekly-calendar-status';
   status.setAttribute('role', 'status');
@@ -7224,11 +7456,8 @@ function getWeeklySessionCaptionLines(session) {
 function updateWeeklyTimezoneLegend(presentation) {
   const legend = document.getElementById('weekly-calendar-timezone-legend');
   if (!legend) return;
-  const text = presentation?.placement === 'legend' && presentation.legendLabels?.length
-    ? `Times: ${presentation.legendLabels.join(' · ')}`
-    : '';
-  legend.textContent = text;
-  legend.hidden = !text;
+  legend.textContent = 'ET · CT · MT · PT';
+  legend.hidden = false;
 }
 
 function getWeeklyPostPageKey() {
@@ -7361,6 +7590,7 @@ async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
   updateWeeklyPagination(sessions.length);
   list.classList.add('weekly-calendar-session-list');
   list.classList.remove('calendar-sessions-filtered', 'calendar-sessions-dense', 'calendar-sessions-compact');
+  list.removeAttribute('data-session-count');
   weeklyCardPageReady = false;
   updateControlAvailability();
 
@@ -7408,18 +7638,37 @@ async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
       rows.map(session => getWeeklySessionTimes(session).map(({ zone }) => zone))
     );
     updateWeeklyTimezoneLegend(timezonePresentation);
+    list.dataset.sessionCount = String(rows.length);
     const qrImages = [];
     list.replaceChildren();
+    const registration = document.getElementById('weekly-calendar-registration');
+    const registrationItems = document.getElementById('weekly-calendar-registration-items');
+    if (registrationItems) registrationItems.replaceChildren();
+    if (registration) {
+      registration.dataset.sessionCount = String(rows.length);
+      registration.hidden = false;
+    }
     rows.forEach((session, index) => {
       const date = calendarParseApiDate(session.date);
       const dateLabel = calendarFormatWeeklySessionDate(session).replace(/, \d{4}$/, '');
       const row = document.createElement('article');
       row.className = 'weekly-calendar-session-row';
-      const cardColor = getWeeklySessionCardColor(
-        session,
-        selectedWeeklyPage * WEEKLY_CALENDAR_PAGE_SIZE + index
-      );
-      if (cardColor) row.style.setProperty('--weekly-session-card-color', cardColor);
+      const datePanel = document.createElement('div');
+      datePanel.className = 'weekly-calendar-session-date-panel';
+      const dayName = document.createElement('span');
+      dayName.className = 'weekly-calendar-session-day-name';
+      dayName.textContent = date.weekday || 'DATE';
+      const dateNumber = document.createElement('span');
+      dateNumber.className = 'weekly-calendar-session-date-number';
+      dateNumber.textContent = date.day || '—';
+      const month = document.createElement('span');
+      month.className = 'weekly-calendar-session-month';
+      month.textContent = date.month || 'Date TBA';
+      const year = document.createElement('span');
+      year.className = 'weekly-calendar-session-year';
+      year.textContent = Number.isFinite(date.year) ? String(date.year) : '';
+      datePanel.append(dayName, dateNumber, month, year);
+
       const heading = document.createElement('header');
       heading.className = 'weekly-calendar-session-heading';
       const indications = (Array.isArray(session.indications) ? session.indications : [])
@@ -7441,12 +7690,10 @@ async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
       title.className = 'weekly-calendar-session-title';
       title.textContent = calendarNormalizeSpaces(session.title) || 'Untitled session';
       heading.append(condition, title);
-      if (isWeeklyCalendarAggregateMode()) {
-        const partnerLabel = document.createElement('p');
-        partnerLabel.className = 'weekly-calendar-session-partner';
-        partnerLabel.textContent = `Partner: ${calendarNormalizeSpaces(session.partner) || 'Partner details unavailable'}`;
-        heading.appendChild(partnerLabel);
-      }
+      const partnerLabel = document.createElement('p');
+      partnerLabel.className = 'weekly-calendar-session-partner';
+      partnerLabel.textContent = `Partner: ${calendarNormalizeSpaces(session.partner) || (hasSelectedPartner() ? activePartnerConfig.label : 'Partner details unavailable')}`;
+      heading.appendChild(partnerLabel);
       const timezone = document.createElement('p');
       timezone.className = 'weekly-calendar-session-timezone';
       const sessionLabels = timezonePresentation.sessionLabels[index] || [];
@@ -7457,13 +7704,10 @@ async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
 
       const dateTime = document.createElement('div');
       dateTime.className = 'weekly-calendar-session-date-time';
-      const dateText = document.createElement('p');
-      dateText.className = 'weekly-calendar-session-date';
-      dateText.textContent = dateLabel;
       const times = document.createElement('div');
       times.className = 'weekly-calendar-session-times';
       renderWeeklySessionTimes(times, session);
-      dateTime.append(dateText, timezone, times);
+      dateTime.append(timezone, times);
       heading.append(divider, dateTime);
 
       const body = document.createElement('div');
@@ -7471,6 +7715,7 @@ async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
       const speakers = document.createElement('div');
       speakers.className = 'weekly-calendar-speakers';
       const presenters = Array.isArray(session.presenters) ? session.presenters : [];
+      if (presenters.length > 1) speakers.classList.add('weekly-has-multiple-speakers');
       if (!presenters.length) {
         const empty = document.createElement('p');
         empty.className = 'weekly-calendar-speaker-empty';
@@ -7487,8 +7732,8 @@ async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
         if (displayName && suffix) displayName += `, ${suffix}`;
         if (!displayName) displayName = calendarNormalizeSpaces(presenter.display_name) || 'Presenter details unavailable';
 
-        const headshotData = String(presenter.headshot_base64 || '').trim();
-        if (headshotData.startsWith('data:image/')) {
+        const headshotData = getPresenterHeadshotSrc({ presenters: [presenter] }, 0);
+        if (headshotData) {
           const headshot = document.createElement('img');
           headshot.src = headshotData;
           headshot.alt = `Headshot of ${displayName}`;
@@ -7507,7 +7752,17 @@ async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
         name.className = 'weekly-calendar-speaker-name';
         name.textContent = displayName;
         copy.appendChild(name);
-        const credentialParts = [presenter.title, presenter.specialty_line_1, presenter.specialty_line_2]
+        const credentialParts = [
+          presenter.credentials,
+          presenter.credential,
+          presenter.professional_credentials,
+          presenter.title,
+          presenter.job_title,
+          presenter.role,
+          presenter.specialty,
+          presenter.specialty_line_1,
+          presenter.specialty_line_2
+        ]
           .map(calendarNormalizeSpaces)
           .filter((value, partIndex, values) => value && value !== suffix && values.indexOf(value) === partIndex);
         if (credentialParts.length) {
@@ -7516,9 +7771,7 @@ async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
           credentials.textContent = credentialParts.join(' · ');
           copy.appendChild(credentials);
         }
-        const employer = calendarNormalizeSpaces(presenter.employer);
-        const partner = calendarNormalizeSpaces(session.partner || (hasSelectedPartner() ? activePartnerConfig.label : ''));
-        const affiliation = employer && partner && employer !== partner ? `${employer} · ${partner}` : (employer || partner);
+        const affiliation = calendarNormalizeSpaces(getPresenterEmployer(presenter));
         if (affiliation) {
           const partnerLine = document.createElement('span');
           partnerLine.className = 'weekly-calendar-speaker-partner';
@@ -7531,6 +7784,14 @@ async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
 
       const speakerRegistration = document.createElement('div');
       speakerRegistration.className = 'weekly-calendar-speaker-registration';
+      speakerRegistration.appendChild(speakers);
+      body.appendChild(speakerRegistration);
+
+      row.append(datePanel, heading, body);
+      list.appendChild(row);
+
+      const registrationItem = document.createElement('article');
+      registrationItem.className = 'weekly-calendar-registration-item';
       const qrBlock = document.createElement('div');
       qrBlock.className = 'weekly-calendar-qr-block';
       const cta = document.createElement('a');
@@ -7542,7 +7803,6 @@ async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
       cta.textContent = `REGISTER · ${registrationDate}`;
       cta.setAttribute('aria-label', `Register for ${calendarNormalizeSpaces(session.title)} on ${dateLabel}`);
       const qr = document.createElement('img');
-      qr.src = session.weekly_qr_src;
       qr.dataset.weeklyPayloadUrl = session.weekly_short_url;
       qr.dataset.weeklySessionUuid = String(session.uuid || '').trim();
       qr.alt = `Registration QR code for ${calendarNormalizeSpaces(session.title)}`;
@@ -7551,11 +7811,12 @@ async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
       const shortUrl = document.createElement('span');
       shortUrl.className = 'weekly-calendar-short-url';
       shortUrl.textContent = session.weekly_short_url;
-      qrBlock.append(cta, qr, shortUrl);
-      speakerRegistration.append(speakers, qrBlock);
-      body.appendChild(speakerRegistration);
-      row.append(heading, body);
-      list.appendChild(row);
+      const registrationCopy = document.createElement('div');
+      registrationCopy.className = 'weekly-calendar-registration-copy';
+      registrationCopy.append(cta, shortUrl);
+      qrBlock.appendChild(qr);
+      registrationItem.append(qrBlock, registrationCopy);
+      if (registrationItems) registrationItems.appendChild(registrationItem);
       qrImages.push(qr);
     });
     const qrResults = await Promise.allSettled(qrImages.map(async image => {
@@ -9563,6 +9824,80 @@ function freezePreviewAdjustmentsForExport(root) {
   return () => restorers.reverse().forEach(restore => restore());
 }
 
+function addPngDpiMetadata(dataUrl, dpi = 300) {
+  const match = /^data:image\/png;base64,([A-Za-z0-9+/=]+)$/i.exec(String(dataUrl || ''));
+  if (!match || typeof atob !== 'function' || typeof btoa !== 'function') return dataUrl;
+  try {
+    const binary = atob(match[1]);
+    const png = Uint8Array.from(binary, character => character.charCodeAt(0));
+    const signature = [137, 80, 78, 71, 13, 10, 26, 10];
+    if (png.length < 33 || signature.some((byte, index) => png[index] !== byte)) return dataUrl;
+
+    const readUint32 = (bytes, offset) => (
+      ((bytes[offset] << 24) | (bytes[offset + 1] << 16) | (bytes[offset + 2] << 8) | bytes[offset + 3]) >>> 0
+    );
+    const writeUint32 = (bytes, offset, value) => {
+      bytes[offset] = (value >>> 24) & 0xff;
+      bytes[offset + 1] = (value >>> 16) & 0xff;
+      bytes[offset + 2] = (value >>> 8) & 0xff;
+      bytes[offset + 3] = value & 0xff;
+    };
+    const crc32 = bytes => {
+      let crc = 0xffffffff;
+      for (const byte of bytes) {
+        crc ^= byte;
+        for (let bit = 0; bit < 8; bit += 1) {
+          crc = (crc & 1) ? (0xedb88320 ^ (crc >>> 1)) : (crc >>> 1);
+        }
+      }
+      return (crc ^ 0xffffffff) >>> 0;
+    };
+
+    const pixelsPerMeter = Math.round(Number(dpi) / 0.0254);
+    if (!Number.isFinite(pixelsPerMeter) || pixelsPerMeter <= 0) return dataUrl;
+    const physicalChunk = new Uint8Array(21);
+    writeUint32(physicalChunk, 0, 9);
+    physicalChunk.set([112, 72, 89, 115], 4); // pHYs
+    writeUint32(physicalChunk, 8, pixelsPerMeter);
+    writeUint32(physicalChunk, 12, pixelsPerMeter);
+    physicalChunk[16] = 1;
+    writeUint32(physicalChunk, 17, crc32(physicalChunk.subarray(4, 17)));
+
+    const chunks = [];
+    let offset = 8;
+    let inserted = false;
+    while (offset + 12 <= png.length) {
+      const chunkLength = readUint32(png, offset);
+      const chunkEnd = offset + 12 + chunkLength;
+      if (chunkEnd > png.length) return dataUrl;
+      const chunkType = String.fromCharCode(...png.subarray(offset + 4, offset + 8));
+      if (chunkType !== 'pHYs') chunks.push(png.subarray(offset, chunkEnd));
+      if (chunkType === 'IHDR') {
+        chunks.push(physicalChunk);
+        inserted = true;
+      }
+      offset = chunkEnd;
+    }
+    if (!inserted || offset !== png.length) return dataUrl;
+
+    const outputLength = 8 + chunks.reduce((length, chunk) => length + chunk.length, 0);
+    const output = new Uint8Array(outputLength);
+    output.set(png.subarray(0, 8), 0);
+    let outputOffset = 8;
+    chunks.forEach(chunk => {
+      output.set(chunk, outputOffset);
+      outputOffset += chunk.length;
+    });
+    let outputBinary = '';
+    for (let index = 0; index < output.length; index += 0x8000) {
+      outputBinary += String.fromCharCode(...output.subarray(index, Math.min(index + 0x8000, output.length)));
+    }
+    return `data:image/png;base64,${btoa(outputBinary)}`;
+  } catch (error) {
+    return dataUrl;
+  }
+}
+
 async function captureCard(scale, pxW, pxH) {
   // dom-to-image-more scans ALL document.styleSheets for @font-face rules and
   // tries to fetch each font URL. Chrome/Firefox extension stylesheets inject
@@ -9621,7 +9956,7 @@ async function captureCard(scale, pxW, pxH) {
     const bounds = surface.getBoundingClientRect();
     const renderWidth = isWeeklyCalendarCardLayout() ? bounds.width : surface.offsetWidth;
     const renderHeight = isWeeklyCalendarCardLayout() ? bounds.height : surface.offsetHeight;
-    return await domtoimage.toPng(surface, {
+    const pngDataUrl = await domtoimage.toPng(surface, {
       width: pxW, height: pxH,
       disableEmbedFonts: true,
       style: {
@@ -9631,6 +9966,7 @@ async function captureCard(scale, pxW, pxH) {
         height: renderHeight + 'px'
       }
     });
+    return isWeeklyCalendarCardLayout() ? addPngDpiMetadata(pngDataUrl, 300) : pngDataUrl;
   } finally {
     restorePreviewAdjustments();
     restoreExportQrSize();

@@ -190,7 +190,7 @@ const selectiveRetryChecks = async () => {
     input => input,
     { sessions: rows },
     0,
-    2,
+    3,
     new Set(['session-failed']),
     aliases,
     promises,
