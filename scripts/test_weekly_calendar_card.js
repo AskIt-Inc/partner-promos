@@ -919,7 +919,9 @@ assert(source.includes('flex-basis: var(--weekly-presenter-photo-size, 88px);')
   && source.includes('flex-basis: var(--weekly-presenter-photo-size, 64px);'), 'weekly presenter photos must grow in every session-count layout');
 assert.strictEqual((source.match(/id="headshot-image-size"/g) || []).length, 1, 'weekly sizing must reuse the existing profile image control');
 assert(source.includes("const imageSizeControlVisible = weeklyCalendarCard\n    ? ready && currentSide === 'front'"), 'the existing profile image control must appear on the weekly front only');
-assert(source.includes("sessionAdjustmentControlsVisible || (weeklyCalendarCard && ready && currentSide === 'front')"), 'the shared adjustment panel must remain visible when it contains the weekly profile image control');
+assert(source.includes('fontSizeGroup.before(profileImageControl);')
+  && source.includes('fontSizeGroup.insertBefore(profileImageControl, firstMultiPresenterControl || null);'), 'the profile image control must sit outside the shared font-size fieldset only in weekly mode');
+assert(source.includes("el.style.display = sessionAdjustmentControlsVisible ? '' : 'none';"), 'weekly mode must not reveal an otherwise empty shared font-size fieldset');
 assert(source.includes('getWeeklyPresenterPhotoSize(rows.length, presenters.length, selectedHeadshotSize)'), 'new weekly session rows must use the selected profile size');
 assert(source.includes('function applyWeeklyCalendarPresenterSizes()')
   && source.includes('applyWeeklyCalendarPresenterSizes();\n    syncWeeklyCalendarCanvasSize();'), 'profile size changes must reflow weekly presenters and recalculate the one/two-session canvas');

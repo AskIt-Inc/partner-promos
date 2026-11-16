@@ -9236,6 +9236,16 @@ function updateControlAvailability() {
     || (activeFontScope === 'coming-front' && ready && isComingSoonLayout())
     || (activeFontScope === 'coming-back' && ready && isComingSoonLayout());
   const sessionAdjustmentControlsVisible = sessionFontControlsVisible && !weeklyCalendarCard;
+  const profileImageControl = document.querySelector('.image-size-control');
+  const fontSizeGroup = document.querySelector('.font-size-group');
+  if (profileImageControl && fontSizeGroup) {
+    if (weeklyCalendarCard && profileImageControl.parentElement === fontSizeGroup) {
+      fontSizeGroup.before(profileImageControl);
+    } else if (!weeklyCalendarCard && profileImageControl.parentElement !== fontSizeGroup) {
+      const firstMultiPresenterControl = fontSizeGroup.querySelector('.multi-presenter-adjustment-control');
+      fontSizeGroup.insertBefore(profileImageControl, firstMultiPresenterControl || null);
+    }
+  }
   const imageSizeControlVisible = weeklyCalendarCard
     ? ready && currentSide === 'front'
     : (sessionFontControlsVisible || (ready && currentSide === 'partner-back'));
@@ -9256,7 +9266,7 @@ function updateControlAvailability() {
     el.style.display = sessionAdjustmentControlsVisible && scope === activeFontScope ? '' : 'none';
   });
   document.querySelectorAll('.font-size-group').forEach(el => {
-    el.style.display = (sessionAdjustmentControlsVisible || (weeklyCalendarCard && ready && currentSide === 'front')) ? '' : 'none';
+    el.style.display = sessionAdjustmentControlsVisible ? '' : 'none';
   });
   document.querySelectorAll('.image-size-control').forEach(el => {
     el.style.display = imageSizeControlVisible ? '' : 'none';
