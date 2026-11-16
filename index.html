@@ -512,7 +512,7 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
   color: #092E30;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   min-width: 0;
   padding: 6px 8px;
 }
@@ -540,7 +540,7 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
 }
 .weekly-calendar-session-title {
   color: #092E30;
-  font-size: 9px;
+  font-size: calc(9px * var(--weekly-session-title-scale, 1));
   font-weight: 800;
   line-height: 1.12;
   margin: 0;
@@ -778,7 +778,7 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
 .calendar-sessions[data-session-count="1"] .weekly-calendar-session-month { font-size: 9px; }
 .calendar-sessions[data-session-count="1"] .weekly-calendar-session-year { font-size: 7px; }
 .calendar-sessions[data-session-count="1"] .weekly-calendar-session-heading { padding: 10px 12px; }
-.calendar-sessions[data-session-count="1"] .weekly-calendar-session-title { font-size: 13px; line-height: 1.16; }
+.calendar-sessions[data-session-count="1"] .weekly-calendar-session-title { font-size: calc(13px * var(--weekly-session-title-scale, 1)); line-height: 1.16; }
 .calendar-sessions[data-session-count="1"] .weekly-calendar-session-partner { font-size: 8px; margin-top: 4px; }
 .calendar-sessions[data-session-count="1"] .weekly-calendar-session-time { font-size: 7.5px; }
 .calendar-sessions[data-session-count="1"] .weekly-calendar-session-body { padding: 10px; }
@@ -805,7 +805,7 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
   text-align: center;
 }
 .calendar-sessions[data-session-count="2"] .weekly-calendar-session-row { grid-template-columns: calc(68px * var(--calendar-date-chip-scale, 1)) minmax(0, 1.2fr) minmax(0, 1fr); }
-.calendar-sessions[data-session-count="2"] .weekly-calendar-session-title { font-size: 9px; }
+.calendar-sessions[data-session-count="2"] .weekly-calendar-session-title { font-size: calc(9px * var(--weekly-session-title-scale, 1)); }
 .calendar-sessions[data-session-count="2"] .weekly-calendar-speakers.weekly-has-multiple-speakers {
   grid-template-columns: minmax(0, 1fr);
 }
@@ -817,7 +817,7 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
 }
 .calendar-sessions[data-session-count="3"] .weekly-calendar-session-row { grid-template-columns: calc(60px * var(--calendar-date-chip-scale, 1)) minmax(0, 1.15fr) minmax(0, 1fr); }
 .calendar-sessions[data-session-count="3"] .weekly-calendar-session-heading { padding: 4px 6px; }
-.calendar-sessions[data-session-count="3"] .weekly-calendar-session-title { font-size: 8px; line-height: 1.1; }
+.calendar-sessions[data-session-count="3"] .weekly-calendar-session-title { font-size: calc(8px * var(--weekly-session-title-scale, 1)); line-height: 1.1; }
 .calendar-sessions[data-session-count="3"] .weekly-calendar-session-partner { font-size: 5.8px; }
 .calendar-sessions[data-session-count="3"] .weekly-calendar-session-time { font-size: 5.5px; }
 .calendar-sessions[data-session-count="3"] .weekly-calendar-session-body { padding: 3px 4px; }
@@ -3730,6 +3730,13 @@ body[data-partner="vamp"] .session-back-title {
         <output id="calendar-date-chip-size-output" for="calendar-date-chip-size">100%</output>
       </span>
     </label>
+    <label class="field-control weekly-filter-control" for="weekly-session-title-size">
+      <span>Session Title Size</span>
+      <span class="adjustment-slider-row">
+        <input id="weekly-session-title-size" type="range" min="70" max="130" step="5" value="100" aria-label="Weekly session title size">
+        <output id="weekly-session-title-size-output" for="weekly-session-title-size">100%</output>
+      </span>
+    </label>
     <label class="field-control image-size-control" for="headshot-image-size">
       <span>Profile Image Size</span>
       <select id="headshot-image-size" aria-label="Profile image size">
@@ -4668,6 +4675,7 @@ const multiPresenterNameSizeSlider = document.getElementById('multi-presenter-na
 const multiPresenterDetailSizeSlider = document.getElementById('multi-presenter-detail-size');
 const multiRegistrationSizeSlider = document.getElementById('multi-registration-size');
 const calendarDateChipSizeSlider = document.getElementById('calendar-date-chip-size');
+const weeklySessionTitleSizeSlider = document.getElementById('weekly-session-title-size');
 const weeklyCalendarYearInput = document.getElementById('weekly-calendar-year');
 const weeklyCalendarWeekPicker = document.getElementById('weekly-calendar-week-picker');
 const weeklyCalendarWeekTrigger = document.getElementById('weekly-calendar-week-trigger');
@@ -4949,6 +4957,7 @@ const MULTI_PRESENTER_NAME_SIZE_STORAGE_KEY = 'facebook_promo_multi_presenter_na
 const MULTI_PRESENTER_DETAIL_SIZE_STORAGE_KEY = 'facebook_promo_multi_presenter_detail_size';
 const MULTI_REGISTRATION_SIZE_STORAGE_KEY = 'facebook_promo_multi_registration_size';
 const CALENDAR_DATE_CHIP_SIZE_STORAGE_KEY = 'facebook_promo_calendar_date_chip_size';
+const WEEKLY_SESSION_TITLE_SIZE_STORAGE_KEY = 'facebook_promo_weekly_session_title_size';
 const DEFAULT_TITLE_FONT_SIZE = '17';
 const DEFAULT_TITLE_PREFIX_FONT_SIZE = '14';
 const DEFAULT_TITLE_SUFFIX_FONT_SIZE = '17';
@@ -4962,6 +4971,7 @@ const DEFAULT_MULTI_PRESENTER_NAME_SIZE = '10.5';
 const DEFAULT_MULTI_PRESENTER_DETAIL_SIZE = '8.5';
 const DEFAULT_MULTI_REGISTRATION_SIZE = '11';
 const DEFAULT_CALENDAR_DATE_CHIP_SIZE = '100';
+const DEFAULT_WEEKLY_SESSION_TITLE_SIZE = '100';
 let selectedTitleFontSize = loadFontSize(TITLE_FONT_STORAGE_KEY, DEFAULT_TITLE_FONT_SIZE, getCurrentCardMemoryKey());
 let selectedTitlePrefixFontSize = loadFontSize(TITLE_PREFIX_FONT_STORAGE_KEY, DEFAULT_TITLE_PREFIX_FONT_SIZE, getCurrentCardMemoryKey());
 let selectedTitleSuffixFontSize = loadFontSize(TITLE_SUFFIX_FONT_STORAGE_KEY, DEFAULT_TITLE_SUFFIX_FONT_SIZE, getCurrentCardMemoryKey());
@@ -4975,6 +4985,7 @@ let selectedMultiPresenterNameSize = loadFontSize(MULTI_PRESENTER_NAME_SIZE_STOR
 let selectedMultiPresenterDetailSize = loadFontSize(MULTI_PRESENTER_DETAIL_SIZE_STORAGE_KEY, DEFAULT_MULTI_PRESENTER_DETAIL_SIZE, getCurrentCardMemoryKey());
 let selectedMultiRegistrationSize = loadFontSize(MULTI_REGISTRATION_SIZE_STORAGE_KEY, DEFAULT_MULTI_REGISTRATION_SIZE, getCurrentCardMemoryKey());
 let selectedCalendarDateChipSize = loadFontSize(CALENDAR_DATE_CHIP_SIZE_STORAGE_KEY, DEFAULT_CALENDAR_DATE_CHIP_SIZE, getCurrentCardMemoryKey());
+let selectedWeeklySessionTitleSize = loadFontSize(WEEKLY_SESSION_TITLE_SIZE_STORAGE_KEY, DEFAULT_WEEKLY_SESSION_TITLE_SIZE, getCurrentCardMemoryKey());
 const SIDE_FONT_STORAGE_PREFIX = 'facebook_promo_side_font_size_';
 const SIDE_FONT_CONTROL_CONFIGS = {
   partnerBackTopTitle: {
@@ -5999,6 +6010,7 @@ function loadCardScopedSettings(layout) {
   selectedMultiPresenterDetailSize = loadFontSize(MULTI_PRESENTER_DETAIL_SIZE_STORAGE_KEY, DEFAULT_MULTI_PRESENTER_DETAIL_SIZE, layout);
   selectedMultiRegistrationSize = loadFontSize(MULTI_REGISTRATION_SIZE_STORAGE_KEY, DEFAULT_MULTI_REGISTRATION_SIZE, layout);
   selectedCalendarDateChipSize = loadFontSize(CALENDAR_DATE_CHIP_SIZE_STORAGE_KEY, DEFAULT_CALENDAR_DATE_CHIP_SIZE, layout);
+  selectedWeeklySessionTitleSize = loadFontSize(WEEKLY_SESSION_TITLE_SIZE_STORAGE_KEY, DEFAULT_WEEKLY_SESSION_TITLE_SIZE, layout);
   selectedTimezone = loadSelectedTimezone(layout);
   if (timezoneSelect) timezoneSelect.value = selectedTimezone;
   selectedSideFontSizes = Object.fromEntries(Object.entries(SIDE_FONT_CONTROL_CONFIGS).map(([key, cfg]) => [
@@ -6014,6 +6026,7 @@ function loadCardScopedSettings(layout) {
   refreshFontControlsFromState();
   refreshMultiPresenterAdjustmentControls();
   refreshCalendarDateChipSizeControl();
+  refreshWeeklySessionTitleSizeControl();
   fitBandTitle();
   applyBackCardFontSizes();
   applyDescriptionFontSize();
@@ -8434,6 +8447,21 @@ function refreshCalendarDateChipSizeControl() {
   applyCalendarDateChipSize();
 }
 
+function applyWeeklySessionTitleSize() {
+  const size = Math.max(70, Math.min(130, Number(selectedWeeklySessionTitleSize) || 100));
+  document.documentElement.style.setProperty('--weekly-session-title-scale', String(size / 100));
+  if (isWeeklyCalendarCardLayout()) syncWeeklyCalendarCanvasSize();
+}
+
+function refreshWeeklySessionTitleSizeControl() {
+  const slider = document.getElementById('weekly-session-title-size');
+  if (!slider) return;
+  slider.value = String(Math.max(70, Math.min(130, Number(selectedWeeklySessionTitleSize) || 100)));
+  const output = document.getElementById('weekly-session-title-size-output');
+  if (output) output.textContent = formatFontSizeValue(slider.value) + '%';
+  applyWeeklySessionTitleSize();
+}
+
 function applyHeadshotSize() {
   const baseSize = Number(selectedHeadshotSize) || Number(DEFAULT_HEADSHOT_SIZE);
   const isSmallCard = surface.classList.contains('size-3x5');
@@ -9349,8 +9377,21 @@ if (calendarDateChipSizeSlider) {
   calendarDateChipSizeSlider.addEventListener('input', () => updateCalendarDateChipSize(false));
   calendarDateChipSizeSlider.addEventListener('change', () => updateCalendarDateChipSize(true));
 }
+if (weeklySessionTitleSizeSlider) {
+  const updateWeeklySessionTitleSize = persist => {
+    selectedWeeklySessionTitleSize = persist
+      ? saveFontSize(WEEKLY_SESSION_TITLE_SIZE_STORAGE_KEY, weeklySessionTitleSizeSlider.value, DEFAULT_WEEKLY_SESSION_TITLE_SIZE)
+      : weeklySessionTitleSizeSlider.value;
+    const output = document.getElementById('weekly-session-title-size-output');
+    if (output) output.textContent = formatFontSizeValue(selectedWeeklySessionTitleSize) + '%';
+    applyWeeklySessionTitleSize();
+  };
+  weeklySessionTitleSizeSlider.addEventListener('input', () => updateWeeklySessionTitleSize(false));
+  weeklySessionTitleSizeSlider.addEventListener('change', () => updateWeeklySessionTitleSize(true));
+}
 refreshMultiPresenterAdjustmentControls();
 refreshCalendarDateChipSizeControl();
+refreshWeeklySessionTitleSizeControl();
 
 initHeaderLogoNudgeSliders();
 updateHeaderLogoSizeControls();

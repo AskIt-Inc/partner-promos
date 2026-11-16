@@ -912,6 +912,41 @@ assert(source.includes('flex-basis: var(--weekly-presenter-photo-size, 88px);')
 assert(source.includes('.calendar-sessions[data-session-count="1"] .weekly-calendar-speakers.weekly-has-multiple-speakers {\n  grid-template-columns: minmax(0, 1fr);'), 'single-session posters must stack multiple speaker blocks so larger portraits leave readable text width');
 assert(source.includes('.calendar-sessions[data-session-count="2"] .weekly-calendar-speakers.weekly-has-multiple-speakers {\n  grid-template-columns: minmax(0, 1fr);'), 'two-session posters must stack multiple speaker blocks so larger portraits leave readable text width');
 assert(source.includes('font-size: calc(22px * var(--calendar-date-chip-scale, 1));'), 'the day/date size control must scale weekly date text');
+assert(source.includes('id="weekly-session-title-size" type="range" min="70" max="130" step="5" value="100"'), 'the weekly-only title size control must offer a bounded percentage range');
+assert(source.includes('label class="field-control weekly-filter-control" for="weekly-session-title-size"'), 'the session title size control must be hidden outside weekly mode');
+assert(source.includes('font-size: calc(9px * var(--weekly-session-title-scale, 1));')
+  && source.includes('font-size: calc(13px * var(--weekly-session-title-scale, 1)); line-height: 1.16;')
+  && source.includes('font-size: calc(8px * var(--weekly-session-title-scale, 1)); line-height: 1.1;'), 'the weekly title scale must apply across 1, 2, and 3 session layouts');
+assert(source.includes('justify-content: flex-start;\n  min-width: 0;\n  padding: 6px 8px;'), 'weekly session heading blocks must align from the top');
+assert(source.includes("selectedWeeklySessionTitleSize = loadFontSize(WEEKLY_SESSION_TITLE_SIZE_STORAGE_KEY, DEFAULT_WEEKLY_SESSION_TITLE_SIZE, layout);"), 'weekly title size must survive switching layouts through card-scoped storage');
+const titleScaleStart = source.indexOf('function applyWeeklySessionTitleSize()');
+const titleScaleEnd = source.indexOf('\nfunction refreshWeeklySessionTitleSizeControl', titleScaleStart);
+assert(titleScaleStart >= 0 && titleScaleEnd > titleScaleStart, 'weekly title scale updater must be present');
+const makeTitleScaleUpdater = (initialSize, weeklyLayout) => {
+  const rootStyles = new Map();
+  let syncCalls = 0;
+  const apply = new Function(
+    'initialSize',
+    'rootStyles',
+    'isWeeklyCalendarCardLayout',
+    'syncWeeklyCalendarCanvasSize',
+    `let selectedWeeklySessionTitleSize = initialSize;
+     const document = { documentElement: { style: { setProperty: (key, value) => rootStyles.set(key, value) } } };
+     ${source.slice(titleScaleStart, titleScaleEnd)}
+     return { applyWeeklySessionTitleSize, setSize: value => { selectedWeeklySessionTitleSize = value; } };`
+  )(initialSize, rootStyles, () => weeklyLayout, () => { syncCalls++; });
+  return { apply, rootStyles, getSyncCalls: () => syncCalls };
+};
+const scaledWeeklyTitle = makeTitleScaleUpdater('130', true);
+scaledWeeklyTitle.apply.applyWeeklySessionTitleSize();
+assert.strictEqual(scaledWeeklyTitle.rootStyles.get('--weekly-session-title-scale'), '1.3');
+assert.strictEqual(scaledWeeklyTitle.getSyncCalls(), 1, 'weekly title changes must resize one/two session canvases');
+scaledWeeklyTitle.apply.setSize('-1');
+scaledWeeklyTitle.apply.applyWeeklySessionTitleSize();
+assert.strictEqual(scaledWeeklyTitle.rootStyles.get('--weekly-session-title-scale'), '0.7', 'stored title scales must clamp to the supported minimum');
+const scaledMonthlyTitle = makeTitleScaleUpdater('100', false);
+scaledMonthlyTitle.apply.applyWeeklySessionTitleSize();
+assert.strictEqual(scaledMonthlyTitle.getSyncCalls(), 0, 'monthly cards must not run weekly canvas sizing');
 assert(source.includes('calc(82px * var(--calendar-date-chip-scale, 1))')
   && source.includes('calc(68px * var(--calendar-date-chip-scale, 1))')
   && source.includes('calc(60px * var(--calendar-date-chip-scale, 1))'), 'the day/date size control must scale all weekly date-panel widths');
@@ -989,7 +1024,7 @@ assert.strictEqual(trimmedDpiPng.readUInt32BE(16), 1440, 'trimmed weekly exports
 assert.strictEqual(trimmedDpiPng.readUInt32BE(20), 1250, 'trimmed weekly exports must retain the measured content height');
 
 promoTermsChecks().then(() => {
-  console.log('upcoming searchable week picker, poster layouts, registration QR integrity, speaker data, timezone, DPI metadata, and export checks passed');
+  console.log('upcoming searchable week picker, session-title sizing, poster layouts, registration QR integrity, speaker data, timezone, DPI metadata, and export checks passed');
 }).catch(error => {
   console.error(error);
   process.exitCode = 1;
