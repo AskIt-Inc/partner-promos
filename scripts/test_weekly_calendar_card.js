@@ -832,8 +832,42 @@ assert(source.includes('weekly-card-no-logo-bar .calendar-spotlight-band {\n  mi
 assert(source.includes("classList.toggle('weekly-card-no-logo-bar', noVisibleLogos)"));
 assert(source.includes('line.textContent = times.map(({ label, time }) => `${time} ${label}`).join(\' · \');'));
 assert(source.includes("className = 'weekly-calendar-speaker-registration'"));
-assert(source.includes("className = 'weekly-calendar-registration-item'"));
+assert(source.includes("registrationItem.className = registrationPlacement === 'inline'"));
+assert(source.includes("'weekly-calendar-registration-item weekly-calendar-inline-registration'"));
 assert(source.includes('registration.dataset.sessionCount = String(rows.length);'));
+assert(source.includes("registration.hidden = registrationPlacement !== 'shared';"), 'single-session cards must hide the shared registration footer');
+assert(source.includes("if (registrationPlacement === 'inline') heading.appendChild(registrationItem);"), 'single-session registration must sit beneath its session title and time');
+assert(source.includes("else if (registrationPlacement === 'shared' && registrationItems) registrationItems.appendChild(registrationItem);"), 'two- and three-session cards must keep each registration item in the shared footer');
+assert(source.includes('weekly-calendar-inline-registration .weekly-calendar-qr-block {')
+  && source.includes('weekly-calendar-inline-registration .weekly-calendar-register-cta {')
+  && source.includes('width: max-content;'), 'the inline QR must be visible and its Register CTA must stay content-sized');
+assert(source.includes('const category = getWeeklyCalendarCategoryForWeekday(')
+  && source.includes('calendarParseApiDate(session.date).weekday'), 'weekly category labels must follow the session date weekday');
+assert(source.includes('const indications = category ? [category] : [];'), 'weekly cards must render only the selected weekday category');
+const weeklyCategoryStart = source.indexOf('function getWeeklyCalendarCategoryForWeekday');
+const weeklyCategoryEnd = source.indexOf('\nfunction calendarGetIsoWeekFromDate', weeklyCategoryStart);
+assert(weeklyCategoryStart >= 0 && weeklyCategoryEnd > weeklyCategoryStart, 'weekday category mapping helper must be present');
+const getWeeklyCalendarCategoryForWeekday = new Function(
+  `${source.slice(weeklyCategoryStart, weeklyCategoryEnd)} return getWeeklyCalendarCategoryForWeekday;`
+)();
+assert.deepStrictEqual(
+  ['Monday', 'Tuesday', 'Wednesday', 'Thursday'].map(day => getWeeklyCalendarCategoryForWeekday(day, ['Amyloidosis', 'Neurology'])),
+  ['Patient Best Practices', 'Disease Specific', 'Disease Specific', 'Psycho-Social'],
+);
+assert.deepStrictEqual(
+  ['Mon', 'Tue', 'Wed', 'Thu'].map(day => getWeeklyCalendarCategoryForWeekday(day, ['Amyloidosis', 'Neurology'])),
+  ['Patient Best Practices', 'Disease Specific', 'Disease Specific', 'Psycho-Social'],
+);
+assert.strictEqual(getWeeklyCalendarCategoryForWeekday('Friday', ['Amyloidosis', 'Neurology']), '', 'Friday must not receive an invented weekday category');
+assert.strictEqual(getWeeklyCalendarCategoryForWeekday('Saturday', ['Psycho-Social', 'Disease Specific']), 'Psycho-Social', 'weekend cards may show an explicitly approved category, capped at one tag');
+assert.strictEqual(getWeeklyCalendarCategoryForWeekday('Sunday', ['Disease Specific']), 'Disease Specific');
+const registrationPlacementStart = source.indexOf('function getWeeklyCalendarRegistrationPlacement');
+const registrationPlacementEnd = source.indexOf('\nasync function renderWeeklyCalendarSessions', registrationPlacementStart);
+assert(registrationPlacementStart >= 0 && registrationPlacementEnd > registrationPlacementStart, 'weekly registration placement helper must be present');
+const getWeeklyCalendarRegistrationPlacement = new Function(
+  `${source.slice(registrationPlacementStart, registrationPlacementEnd)} return getWeeklyCalendarRegistrationPlacement;`
+)();
+assert.deepStrictEqual([0, 1, 2, 3].map(getWeeklyCalendarRegistrationPlacement), ['none', 'inline', 'shared', 'shared']);
 assert(source.includes('qr.width = 64;'));
 assert(source.includes('qr.height = 64;'));
 assert(source.includes('session?.card_color'));
@@ -928,7 +962,10 @@ assert(source.includes('function applyWeeklyCalendarPresenterSizes()')
 assert(source.includes('weekly-presenter-size-stack') && source.includes('weekly-presenter-photo-stacked'), 'large weekly presenter photos must reflow before overlapping labels');
 assert(source.includes('.weekly-calendar-speakers.weekly-has-multiple-speakers.weekly-grid-presenters.weekly-presenter-size-stack,')
   && source.includes('grid-template-columns: minmax(0, 1fr);'), 'large one/two-session portraits must override the two-column presenter grid when it would squeeze names');
-assert(source.includes('.calendar-sessions[data-session-count="1"] .weekly-calendar-speakers.weekly-has-multiple-speakers {\n  grid-template-columns: minmax(0, 1fr);'), 'single-session posters must stack multiple speaker blocks so larger portraits leave readable text width');
+assert(source.includes('.calendar-sessions[data-session-count="1"] .weekly-calendar-speakers .weekly-calendar-speaker {\n  align-items: center;\n  flex-direction: column;')
+  && source.includes('.calendar-sessions[data-session-count="1"] .weekly-calendar-speakers .weekly-calendar-speaker-copy {\n  align-self: stretch;'), 'single-session presenter blocks must place larger portraits above full-width readable text');
+assert(source.includes('overflow-wrap: break-word;\n  word-break: normal;'), 'single-session presenter labels must wrap at word boundaries instead of forming vertical letter columns');
+assert(source.includes('if (presenterCount > 1) {\n          photoSize = Math.min(photoSize, Math.max(24, Math.floor(cellWidth - 4)));'), 'single-session portraits must fit their profile columns without squeezing the text');
 assert(source.includes('.calendar-sessions[data-session-count="2"] .weekly-calendar-speakers.weekly-has-multiple-speakers {\n  grid-template-columns: minmax(0, 1fr);'), 'two-session posters must stack multiple speaker blocks so larger portraits leave readable text width');
 assert(source.includes('font-size: calc(22px * var(--calendar-date-chip-scale, 1));'), 'the day/date size control must scale weekly date text');
 assert(source.includes('id="weekly-session-title-size" type="range" min="70" max="130" step="5" value="100"'), 'the weekly-only title size control must offer a bounded percentage range');
