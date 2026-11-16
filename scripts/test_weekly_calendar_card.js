@@ -61,6 +61,8 @@ assert.strictEqual(unassignedEndpoint, 'https://local-sttt.somebodytotalkto.com:
 const unassignedRequest = new URL(weeklyPartnerHelpers.buildWeeklyCalendarUnassignedSessionsApiUrl(unassignedEndpoint, 2026, 47));
 assert.strictEqual(unassignedRequest.searchParams.get('week'), '2026-W47');
 assert.strictEqual(unassignedRequest.searchParams.get('card_type'), 'facebook-promo');
+assert(source.includes('const UNASSIGNED_WEEK_REQUEST_TIMEOUT_MS = 45000;'), 'the unassigned-week feed must tolerate the observed API response time with a bounded fallback timeout');
+assert(source.includes("fetchCalendarJson(requestUrl, 'Unassigned weekly sessions', 'no-store', UNASSIGNED_WEEK_REQUEST_TIMEOUT_MS)"), 'the longer timeout must apply only to the unassigned-week request');
 assert.strictEqual(weeklyPartnerHelpers.buildWeeklyCalendarUnassignedSessionsApiUrl(unassignedEndpoint, 1999, 47), '');
 assert.strictEqual(weeklyPartnerHelpers.buildWeeklyCalendarUnassignedSessionsApiUrl(unassignedEndpoint, 2026, 54), '');
 assert.strictEqual(weeklyPartnerHelpers.getWeeklyCalendarUnassignedSessionsApiEndpoint('http://localhost:8080'), '');
