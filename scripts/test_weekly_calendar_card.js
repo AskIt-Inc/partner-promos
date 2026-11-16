@@ -582,7 +582,8 @@ const weeklyTimeHelpers = new Function(
      getWeeklyTimezoneLabel,
      getWeeklySessionTimes,
      getWeeklySessionCardColor,
-     getWeeklyTimezonePresentation,
+     getWeeklyPresenterPhotoSize,
+     renderWeeklySessionTimes,
      getWeeklySessionCaptionLines
    };`
 )({
@@ -612,24 +613,6 @@ assert.deepStrictEqual(
   ],
   'weekly cards must render every available ET, CT, MT, and PT time in order',
 );
-assert.deepStrictEqual(
-  weeklyTimeHelpers.getWeeklyTimezonePresentation([['ET', 'CT', 'MT', 'PT'], ['ET', 'CT', 'MT', 'PT']]),
-  {
-    placement: 'legend',
-    legendLabels: ['ET', 'CT', 'MT', 'PT'],
-    sessionLabels: [[], []]
-  },
-  'matching timezone sets must be listed once in the card legend',
-);
-assert.deepStrictEqual(
-  weeklyTimeHelpers.getWeeklyTimezonePresentation([['ET', 'CT', 'MT', 'PT'], ['ET', 'PT']]),
-  {
-    placement: 'per-session',
-    legendLabels: [],
-    sessionLabels: [['ET', 'CT', 'MT', 'PT'], ['ET', 'PT']]
-  },
-  'different timezone sets must be labeled below each session title',
-);
 const locationModeHelpers = new Function(
   'TIMEZONE_OPTIONS',
   'selectedTimezone',
@@ -639,72 +622,68 @@ const locationModeHelpers = new Function(
   'calendarFormatWeeklySessionDate',
   'isWeeklyCalendarAggregateMode',
   'window',
-  `${source.slice(timezoneStart, timezoneEnd)} return { getWeeklySessionTimes, getWeeklyTimezonePresentation };`
+  `${source.slice(timezoneStart, timezoneEnd)} return { getWeeklySessionTimes, renderWeeklySessionTimes };`
 )({ ...weeklyTimeZones }, 'ET', 'location', normalizeSpaces,
   value => String(value || '').trim().replace(/\s+(ET|CT|MT|PT)$/i, '').trim(),
   session => session.date,
   () => false,
   { CSS: { supports: () => true } });
-assert.deepStrictEqual(
-  locationModeHelpers.getWeeklyTimezonePresentation([['ET', 'CT', 'MT', 'PT'], ['ET', 'CT', 'MT', 'PT']]).legendLabels,
-  ['ET · New York', 'CT · Chicago', 'MT · Denver', 'PT · Los Angeles'],
-  'location display mode must label the complete shared timezone set',
-);
-assert.deepStrictEqual(
-  locationModeHelpers.getWeeklyTimezonePresentation([['ET', 'CT', 'MT', 'PT'], ['ET', 'PT']]).sessionLabels,
-  [
-    ['ET · New York', 'CT · Chicago', 'MT · Denver', 'PT · Los Angeles'],
-    ['ET · New York', 'PT · Los Angeles']
-  ],
-  'location display mode must retain per-session labels when timezone sets differ',
-);
-const timezoneLegendStart = source.indexOf('function updateWeeklyTimezoneLegend');
-const timezoneLegendEnd = source.indexOf('\nfunction getWeeklyPostPageKey', timezoneLegendStart);
-assert(timezoneLegendStart >= 0 && timezoneLegendEnd > timezoneLegendStart, 'weekly timezone legend updater must be present');
-const makeTimezoneLegendHarness = mode => {
-  const legend = { textContent: '', hidden: true };
-  const update = new Function(
+const makeTimeLineDocument = () => ({
+  createElement: tag => ({
+    tag,
+    className: '',
+    textContent: '',
+    attributes: {},
+    setAttribute(name, value) { this.attributes[name] = value; }
+  })
+});
+const renderWeeklyTimes = (helpers, session) => {
+  const container = {
+    children: [],
+    replaceChildren() { this.children = []; },
+    appendChild(element) { this.children.push(element); }
+  };
+  const render = new Function(
     'document',
-    'getWeeklyTimezoneLabel',
-    `${source.slice(timezoneLegendStart, timezoneLegendEnd)} return updateWeeklyTimezoneLegend;`
-  )(
-    { getElementById: id => id === 'weekly-calendar-timezone-legend' ? legend : null },
-    zone => weeklyTimeHelpers.getWeeklyTimezoneLabel(zone, mode)
-  );
-  return { legend, update };
+    'getWeeklySessionTimes',
+    `${source.slice(source.indexOf('function renderWeeklySessionTimes'), source.indexOf('function getWeeklySessionCaptionLines'))}
+     return renderWeeklySessionTimes;`
+  )(makeTimeLineDocument(), helpers.getWeeklySessionTimes);
+  render(container, session);
+  return container.children[0];
 };
-const abbreviationLegend = makeTimezoneLegendHarness('abbreviation');
-abbreviationLegend.update(weeklyTimeHelpers.getWeeklyTimezonePresentation([['ET', 'CT', 'MT', 'PT']]));
-assert.strictEqual(abbreviationLegend.legend.textContent, 'ET · CT · MT · PT');
-assert.strictEqual(abbreviationLegend.legend.hidden, false);
-const locationLegend = makeTimezoneLegendHarness('location');
-locationLegend.update(locationModeHelpers.getWeeklyTimezonePresentation([['ET', 'CT', 'MT', 'PT']]));
 assert.strictEqual(
-  locationLegend.legend.textContent,
-  'ET · New York · CT · Chicago · MT · Denver · PT · Los Angeles',
-  'location mode must update the visible card legend as well as generated copy text'
+  renderWeeklyTimes(weeklyTimeHelpers, fourZoneSession).textContent,
+  '11:00 AM ET · 10:00 AM CT · 9:00 AM MT · 8:00 AM PT',
+  'each session must show the timezone beside its matching time, with no global legend dependency'
 );
-locationLegend.update(locationModeHelpers.getWeeklyTimezonePresentation([['ET', 'PT'], ['ET', 'CT']]));
 assert.strictEqual(
-  locationLegend.legend.textContent,
-  'ET · New York · CT · Chicago · MT · Denver · PT · Los Angeles',
-  'per-session timezone sets must still label every supported zone in the card legend'
+  renderWeeklyTimes(locationModeHelpers, fourZoneSession).textContent,
+  '11:00 AM ET · New York · 10:00 AM CT · Chicago · 9:00 AM MT · Denver · 8:00 AM PT · Los Angeles',
+  'city display mode must keep each city with its own time and abbreviation'
+);
+assert.deepStrictEqual(
+  [
+    [1, 1], [1, 3], [2, 1], [2, 3], [3, 1], [3, 3]
+  ].map(([sessions, presenters]) => weeklyTimeHelpers.getWeeklyPresenterPhotoSize(sessions, presenters)),
+  [88, 68, 76, 60, 64, 54],
+  'presenter photo size must grow for fewer sessions and scale down as each session adds presenters'
 );
 assert.deepStrictEqual(
   weeklyTimeHelpers.getWeeklySessionCaptionLines(fourZoneSession),
   [
     '• Example session — Monday, November 16, 2026',
-    '  ET: 11:00 AM',
-    '  CT: 10:00 AM',
-    '  MT: 9:00 AM',
-    '  PT: 8:00 AM',
+    '  11:00 AM ET',
+    '  10:00 AM CT',
+    '  9:00 AM MT',
+    '  8:00 AM PT',
     '  Register: https://somebodytotalkto.com/s/abc123def0',
     ''
   ],
   'caption output must include the date, all zone times, and the QR-linked alias',
 );
 const captionStart = source.indexOf('function getWeeklySessionCaptionLines');
-const captionEnd = source.indexOf('function updateWeeklyTimezoneLegend', captionStart);
+const captionEnd = source.indexOf('\nfunction getWeeklyPostPageKey', captionStart);
 const getAggregateCaptionLines = new Function(
   'calendarNormalizeSpaces',
   'calendarFormatWeeklySessionDate',
@@ -843,7 +822,7 @@ assert(source.includes('background: #EAF7FB;'), 'weekly posters must use the spe
 assert(source.includes('fill="#A4D95B"') && source.includes('fill="#A51BA6"'), 'the purple header must transition through the green and lavender wave');
 assert(source.includes('weekly-card-no-logo-bar .calendar-spotlight-band {\n  min-height: 113px;'), 'a poster without visible logos must keep the header within the target height range');
 assert(source.includes("classList.toggle('weekly-card-no-logo-bar', noVisibleLogos)"));
-assert(source.includes('line.dataset.zone = zone;'));
+assert(source.includes('line.textContent = times.map(({ label, time }) => `${time} ${label}`).join(\' · \');'));
 assert(source.includes("className = 'weekly-calendar-speaker-registration'"));
 assert(source.includes("className = 'weekly-calendar-registration-item'"));
 assert(source.includes('registration.dataset.sessionCount = String(rows.length);'));
@@ -854,7 +833,7 @@ assert(source.includes('background: #F3FBEA;'));
 assert(source.includes('border: 1px solid #159B36;'));
 assert(source.includes('color: #075B36;'));
 assert(source.includes('background: #C62828;'));
-assert(source.includes('flex: 0 0 34px;'));
+assert(source.includes('flex: 0 0 var(--weekly-presenter-photo-size, 64px);'));
 assert(source.includes('flex: 0 0 64px;'), 'exported weekly QR images must remain at least 200 raster pixels wide');
 assert(source.includes('width: 64px;'));
 assert(64 * (1440 / (4.8 * 96)) >= 200, 'weekly QR cards must preserve a scan-sized raster code at export scale');
@@ -865,13 +844,12 @@ assert(source.includes("condition.setAttribute('role', 'list');"));
 assert(source.includes('category.textContent = indication;'), 'session indications must render as separate readable category chips');
 
 assert(source.includes('const WEEKLY_CALENDAR_PAGE_SIZE = 3;'), 'weekly posters must paginate no more than three sessions per card');
-assert(source.includes('ET · CT · MT · PT'), 'the header must name the four supported time zones');
+assert(!source.includes('weekly-calendar-timezone-legend'), 'the banner must not contain a global timezone legend');
 assert(source.includes('presenter.institution_name') || source.includes('getPresenterEmployer(presenter)'), 'speaker affiliations must retain institution details when supplied');
 assert(source.includes('option value="abbreviation">Abbreviation only'));
 assert(source.includes('option value="location">Abbreviation + city'));
-assert(source.includes("className = 'weekly-calendar-session-timezone'"));
-assert(source.includes('Times: ${sessionLabels.join(\' · \')}'));
-assert(source.includes('legend.textContent = labels.join(\' · \');'), 'the timezone display control must update the visible weekly poster legend');
+assert(!source.includes('weekly-calendar-session-timezone'), 'timezone labels must sit beside each displayed time');
+assert(source.includes('weeklyTimezoneDisplayMode'), 'the abbreviation/city selector must drive the per-session labels');
 assert(source.includes("className = 'weekly-calendar-session-title'"));
 assert(source.includes("className = 'weekly-calendar-condition'"));
 assert(source.includes("className = 'weekly-calendar-speaker'"));
@@ -928,7 +906,9 @@ const weeklyPresenterMarkup = source.slice(weeklyPresenterMarkupStart, weeklyPre
 assert(weeklyPresenterMarkup.includes('getWeeklyPresenterDisplayName(presenter)'));
 assert(weeklyPresenterMarkup.includes('getWeeklyPresenterCredentials(presenter)'));
 assert(!/presenter\.(?:title|job_title|role|specialty|specialty_line_\d|biography|bio|description)\b/.test(weeklyPresenterMarkup), 'weekly presenter markup must not read role, specialty, biography, or other descriptive fields');
-assert(source.includes('flex-basis: 60px;') && source.includes('flex-basis: 42px;') && source.includes('flex-basis: 36px;'), 'weekly presenter photos must grow in every session-count layout');
+assert(source.includes('flex-basis: var(--weekly-presenter-photo-size, 88px);')
+  && source.includes('flex-basis: var(--weekly-presenter-photo-size, 76px);')
+  && source.includes('flex-basis: var(--weekly-presenter-photo-size, 64px);'), 'weekly presenter photos must grow in every session-count layout');
 assert(source.includes('.calendar-sessions[data-session-count="1"] .weekly-calendar-speakers.weekly-has-multiple-speakers {\n  grid-template-columns: minmax(0, 1fr);'), 'single-session posters must stack multiple speaker blocks so larger portraits leave readable text width');
 assert(source.includes('.calendar-sessions[data-session-count="2"] .weekly-calendar-speakers.weekly-has-multiple-speakers {\n  grid-template-columns: minmax(0, 1fr);'), 'two-session posters must stack multiple speaker blocks so larger portraits leave readable text width');
 assert(source.includes('font-size: calc(22px * var(--calendar-date-chip-scale, 1));'), 'the day/date size control must scale weekly date text');
@@ -938,7 +918,27 @@ assert(source.includes('calc(82px * var(--calendar-date-chip-scale, 1))')
 assert(source.includes('const sessionAdjustmentControlsVisible = sessionFontControlsVisible && !weeklyCalendarCard;'), 'generic session font controls must be hidden when their styles do not apply to weekly posters');
 assert(source.includes("el.style.display = ready && !weeklyCalendarCard\n      && (sessionLookupVisible || anyCalendarCard || isMultiPresenterFacebookPromo()) ? '' : 'none';"), 'the single-timezone selector must be hidden on weekly cards, which always display all four zones');
 assert(source.includes('&& !(weeklyCalendarCard && isWeeklyCalendarAggregateMode() && slot === 1);'), 'the partner logo selector and its size/position controls must be hidden when aggregate mode intentionally omits slot 1');
-assert(source.includes("return { pxW: 1440, pxH: 1800, wIn: 4.8, hIn: 6, tag: '4.8x6', orientation: 'portrait' }"));
+const canvasDimensionStart = source.indexOf('function getWeeklyCalendarCanvasDimensions');
+const canvasDimensionEnd = source.indexOf('\nfunction syncWeeklyCalendarCanvasSize', canvasDimensionStart);
+assert(canvasDimensionStart >= 0 && canvasDimensionEnd > canvasDimensionStart, 'weekly export sizing helper must be present');
+const getWeeklyCalendarCanvasDimensions = new Function(
+  `${source.slice(canvasDimensionStart, canvasDimensionEnd)} return getWeeklyCalendarCanvasDimensions;`
+)();
+const threeSessionCanvas = getWeeklyCalendarCanvasDimensions(3, 420);
+assert.deepStrictEqual(
+  [threeSessionCanvas.pxW, threeSessionCanvas.pxH, threeSessionCanvas.wIn, threeSessionCanvas.hIn],
+  [1440, 1800, 4.8, 6],
+  'three-session weekly posters must retain the full 1440 × 1800 canvas'
+);
+for (const count of [1, 2]) {
+  const trimmed = getWeeklyCalendarCanvasDimensions(count, 400);
+  assert.strictEqual(trimmed.pxW, 1440);
+  assert.strictEqual(trimmed.pxH, 1250, `${count}-session canvas height must follow the measured content`);
+  assert.strictEqual(trimmed.hIn, trimmed.pxH / 300, 'the export inches must match the 300 DPI pixel height');
+  assert(trimmed.pxH >= Math.ceil(1440 / 1.91) && trimmed.pxH <= 1800, 'trimmed canvases must remain within the feed image ratio bounds');
+}
+assert.strictEqual(getWeeklyCalendarCanvasDimensions(1, 100).pxH, Math.ceil(1440 / 1.91), 'short content must remain within the selected maximum feed width-to-height ratio');
+assert.strictEqual(getWeeklyCalendarCanvasDimensions(2, 700).pxH, 1800, 'long content must not exceed the 4:5 canvas limit');
 assert(source.includes("return { pxW: 1200, pxH: 1800, wIn: 4, hIn: 6, tag: '4x6', orientation: 'portrait' }"), 'monthly export dimensions must remain unchanged');
 
 const dpiHelperStart = source.indexOf('function addPngDpiMetadata');
@@ -979,6 +979,14 @@ assert.strictEqual(dpiChunk.readUInt32BE(4), 11811, 'weekly PNG vertical resolut
 assert.strictEqual(dpiChunk[8], 1, 'PNG pHYs units must be pixels per meter');
 assert.strictEqual(dpiPng.readUInt32BE(16), 1440, 'adding DPI metadata must preserve the configured PNG width');
 assert.strictEqual(dpiPng.readUInt32BE(20), 1800, 'adding DPI metadata must preserve the configured PNG height');
+const trimmedTestPng = Buffer.from(testPng);
+trimmedTestPng.writeUInt32BE(1250, 20);
+const trimmedDpiPng = Buffer.from(
+  addPngDpiMetadata(`data:image/png;base64,${trimmedTestPng.toString('base64')}`, 300).split(',')[1],
+  'base64'
+);
+assert.strictEqual(trimmedDpiPng.readUInt32BE(16), 1440, 'trimmed weekly exports must retain the full canvas width');
+assert.strictEqual(trimmedDpiPng.readUInt32BE(20), 1250, 'trimmed weekly exports must retain the measured content height');
 
 promoTermsChecks().then(() => {
   console.log('upcoming searchable week picker, poster layouts, registration QR integrity, speaker data, timezone, DPI metadata, and export checks passed');

@@ -258,6 +258,23 @@ body {
   width: 4.8in;
   height: 6in;
 }
+.print-surface.layout-weekly-calendar-card[data-weekly-session-count="1"],
+.print-surface.layout-weekly-calendar-card[data-weekly-session-count="2"] {
+  height: auto;
+}
+.print-surface.layout-weekly-calendar-card[data-weekly-session-count="1"] > .calendar-card-front-side,
+.print-surface.layout-weekly-calendar-card[data-weekly-session-count="2"] > .calendar-card-front-side {
+  flex: 0 0 auto;
+}
+.print-surface.layout-weekly-calendar-card[data-weekly-session-count="1"] .calendar-sessions,
+.print-surface.layout-weekly-calendar-card[data-weekly-session-count="2"] .calendar-sessions {
+  flex: 0 0 auto;
+}
+.print-surface.layout-weekly-calendar-card[data-weekly-session-count="1"] .weekly-calendar-session-row,
+.print-surface.layout-weekly-calendar-card[data-weekly-session-count="2"] .weekly-calendar-session-row {
+  flex: 0 0 auto;
+  min-height: 0;
+}
 .print-surface.layout-calendar-card > .front-side,
 .print-surface.layout-calendar-card > .card-back,
 .print-surface.layout-calendar-card > .session-back-side,
@@ -415,16 +432,6 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
   max-width: 100%;
   overflow-wrap: anywhere;
 }
-.weekly-calendar-timezone-legend {
-  color: #fff;
-  font-size: 7.25px;
-  font-weight: 700;
-  line-height: 1.15;
-  margin: 4px 0 0;
-  opacity: .96;
-  letter-spacing: .01em;
-}
-.weekly-calendar-timezone-legend[hidden] { display: none; }
 .print-surface.layout-weekly-calendar-card .calendar-card-footer {
   display: none;
 }
@@ -547,14 +554,6 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
   margin: 2px 0 0;
   overflow-wrap: anywhere;
 }
-.weekly-calendar-session-timezone {
-  color: #325F5C;
-  font-size: 5.8px;
-  font-weight: 600;
-  line-height: 1.15;
-  margin: 2px 0 0;
-}
-.weekly-calendar-session-timezone[hidden] { display: none; }
 .weekly-calendar-session-divider {
   border: 0;
   border-top: 1px solid #D9EBE7;
@@ -638,12 +637,12 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
   border-radius: 50%;
   color: #075B36;
   display: flex;
-  flex: 0 0 34px;
-  height: 34px;
+  flex: 0 0 var(--weekly-presenter-photo-size, 64px);
+  height: var(--weekly-presenter-photo-size, 64px);
   justify-content: center;
   object-fit: cover;
   overflow: hidden;
-  width: 34px;
+  width: var(--weekly-presenter-photo-size, 64px);
 }
 .weekly-calendar-speaker-fallback {
   font-size: 9px;
@@ -785,15 +784,25 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
 .calendar-sessions[data-session-count="1"] .weekly-calendar-session-body { padding: 10px; }
 .calendar-sessions[data-session-count="1"] .weekly-calendar-speaker img,
 .calendar-sessions[data-session-count="1"] .weekly-calendar-speaker-fallback {
-  flex-basis: 60px;
-  height: 60px;
-  width: 60px;
+  flex-basis: var(--weekly-presenter-photo-size, 88px);
+  height: var(--weekly-presenter-photo-size, 88px);
+  width: var(--weekly-presenter-photo-size, 88px);
 }
 .calendar-sessions[data-session-count="1"] .weekly-calendar-speaker-name { font-size: 8px; }
 .calendar-sessions[data-session-count="1"] .weekly-calendar-speaker-credentials,
 .calendar-sessions[data-session-count="1"] .weekly-calendar-speaker-partner { font-size: 7px; }
 .calendar-sessions[data-session-count="1"] .weekly-calendar-speakers.weekly-has-multiple-speakers {
   grid-template-columns: minmax(0, 1fr);
+}
+.calendar-sessions[data-session-count="1"] .weekly-calendar-speakers.weekly-has-multiple-speakers.weekly-grid-presenters,
+.calendar-sessions[data-session-count="2"] .weekly-calendar-speakers.weekly-has-multiple-speakers.weekly-grid-presenters {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.calendar-sessions[data-session-count="1"] .weekly-grid-presenters .weekly-calendar-speaker,
+.calendar-sessions[data-session-count="2"] .weekly-grid-presenters .weekly-calendar-speaker {
+  flex-direction: column;
+  gap: 2px;
+  text-align: center;
 }
 .calendar-sessions[data-session-count="2"] .weekly-calendar-session-row { grid-template-columns: calc(68px * var(--calendar-date-chip-scale, 1)) minmax(0, 1.2fr) minmax(0, 1fr); }
 .calendar-sessions[data-session-count="2"] .weekly-calendar-session-title { font-size: 9px; }
@@ -802,9 +811,9 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
 }
 .calendar-sessions[data-session-count="2"] .weekly-calendar-speaker img,
 .calendar-sessions[data-session-count="2"] .weekly-calendar-speaker-fallback {
-  flex-basis: 42px;
-  height: 42px;
-  width: 42px;
+  flex-basis: var(--weekly-presenter-photo-size, 76px);
+  height: var(--weekly-presenter-photo-size, 76px);
+  width: var(--weekly-presenter-photo-size, 76px);
 }
 .calendar-sessions[data-session-count="3"] .weekly-calendar-session-row { grid-template-columns: calc(60px * var(--calendar-date-chip-scale, 1)) minmax(0, 1.15fr) minmax(0, 1fr); }
 .calendar-sessions[data-session-count="3"] .weekly-calendar-session-heading { padding: 4px 6px; }
@@ -814,9 +823,9 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
 .calendar-sessions[data-session-count="3"] .weekly-calendar-session-body { padding: 3px 4px; }
 .calendar-sessions[data-session-count="3"] .weekly-calendar-speaker img,
 .calendar-sessions[data-session-count="3"] .weekly-calendar-speaker-fallback {
-  flex-basis: 36px;
-  height: 36px;
-  width: 36px;
+  flex-basis: var(--weekly-presenter-photo-size, 64px);
+  height: var(--weekly-presenter-photo-size, 64px);
+  width: var(--weekly-presenter-photo-size, 64px);
 }
 .calendar-sessions[data-session-count="3"] .weekly-calendar-speaker-name { font-size: 5.7px; }
 .calendar-sessions[data-session-count="3"] .weekly-calendar-speaker-credentials,
@@ -4486,7 +4495,6 @@ body[data-partner="vamp"] .session-back-title {
         </div>
         <p id="calendar-program-title" class="calendar-band-title">All Eligible Partners Amyloidosis Program</p>
         <p id="calendar-week-range" class="calendar-week-range"></p>
-        <p id="weekly-calendar-timezone-legend" class="weekly-calendar-timezone-legend" aria-label="Session time zones" aria-live="polite">ET · CT · MT · PT</p>
       </div>
 
       <div class="weekly-calendar-header-wave" aria-hidden="true">
@@ -7407,19 +7415,15 @@ function getWeeklySessionCardColor(session, sessionIndex = 0) {
   return palette[index % palette.length];
 }
 
-function getWeeklyTimezonePresentation(zoneSets) {
-  const labelSets = Array.isArray(zoneSets)
-    ? zoneSets.map(zones => (Array.isArray(zones) ? zones : []).map(zone => getWeeklyTimezoneLabel(zone)))
-    : [];
-  const firstSet = labelSets[0] || [];
-  const shared = firstSet.length > 0 && labelSets.every(labels =>
-    labels.length === firstSet.length && labels.every((label, index) => label === firstSet[index])
-  );
-  return {
-    placement: shared ? 'legend' : 'per-session',
-    legendLabels: shared ? firstSet : [],
-    sessionLabels: shared ? labelSets.map(() => []) : labelSets
-  };
+function getWeeklyPresenterPhotoSize(sessionCount, presenterCount) {
+  const sessionBase = { 1: 88, 2: 76, 3: 64 }[sessionCount] || 64;
+  const presenterStep = { 1: 8, 2: 8, 3: 5 }[sessionCount] || 5;
+  const floor = sessionCount === 3 ? 40 : 32;
+  let size = sessionBase - Math.max(0, presenterCount - 1) * presenterStep;
+  if (sessionCount < 3 && presenterCount >= 2) {
+    size = Math.min(size, sessionCount === 1 ? 68 : 60);
+  }
+  return Math.max(floor, size);
 }
 
 function renderWeeklySessionTimes(container, session) {
@@ -7433,14 +7437,11 @@ function renderWeeklySessionTimes(container, session) {
     container.appendChild(unavailable);
     return;
   }
-  times.forEach(({ zone, label, time }) => {
-    const line = document.createElement('p');
-    line.className = 'weekly-calendar-session-time';
-    line.dataset.zone = zone;
-    line.textContent = time;
-    line.setAttribute('aria-label', `${label}: ${time}`);
-    container.appendChild(line);
-  });
+  const line = document.createElement('p');
+  line.className = 'weekly-calendar-session-time';
+  line.textContent = times.map(({ label, time }) => `${time} ${label}`).join(' · ');
+  line.setAttribute('aria-label', line.textContent);
+  container.appendChild(line);
 }
 
 function getWeeklySessionCaptionLines(session) {
@@ -7452,24 +7453,12 @@ function getWeeklySessionCaptionLines(session) {
   }
   const times = getWeeklySessionTimes(session);
   if (times.length) {
-    lines.push(...times.map(({ label, time }) => `  ${label}: ${time}`));
+    lines.push(...times.map(({ label, time }) => `  ${time} ${label}`));
   } else {
     lines.push('  Time TBA');
   }
   lines.push(`  Register: ${session?.weekly_short_url || ''}`, '');
   return lines;
-}
-
-function updateWeeklyTimezoneLegend(presentation) {
-  const legend = document.getElementById('weekly-calendar-timezone-legend');
-  if (!legend) return;
-  const labels = presentation?.placement === 'legend'
-    && Array.isArray(presentation.legendLabels)
-    && presentation.legendLabels.length
-    ? presentation.legendLabels
-    : ['ET', 'CT', 'MT', 'PT'].map(zone => getWeeklyTimezoneLabel(zone));
-  legend.textContent = labels.join(' · ');
-  legend.hidden = false;
 }
 
 function getWeeklyPostPageKey() {
@@ -7512,9 +7501,6 @@ function updateWeeklyPostPanel(sessions) {
   list.replaceChildren();
   const rows = Array.isArray(sessions) ? sessions : [];
   const pageKey = getWeeklyPostPageKey();
-  const timezonePresentation = getWeeklyTimezonePresentation(
-    rows.map(session => getWeeklySessionTimes(session).map(({ zone }) => zone))
-  );
   if (!rows.length) {
     setWeeklyPostDraft(pageKey, '');
     const empty = document.createElement('p');
@@ -7528,14 +7514,11 @@ function updateWeeklyPostPanel(sessions) {
     ? weeklyAggregateBannerSettings.title
     : `${activePartnerConfig.label || 'Partner'} Amyloidosis Program`;
   const postLines = [`${postTitle} · ${calendarGetWeeklyLabel()}`, ''];
-  if (timezonePresentation.placement === 'legend' && timezonePresentation.legendLabels.length) {
-    postLines.push(`Time lines follow this order: ${timezonePresentation.legendLabels.join(' | ')}.`, '');
-  }
   rows.forEach(session => {
     const title = calendarNormalizeSpaces(session.title) || 'Untitled session';
     const date = calendarFormatWeeklySessionDate(session);
     const displayTimes = getWeeklySessionTimes(session)
-      .map(({ label, time }) => `${label}: ${time}`);
+      .map(({ label, time }) => `${time} ${label}`);
     const displayTime = displayTimes.length ? displayTimes.join(' · ') : 'Time TBA';
     const shortUrl = session.weekly_short_url;
     postLines.push(...getWeeklySessionCaptionLines(session));
@@ -7603,11 +7586,12 @@ async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
   list.classList.add('weekly-calendar-session-list');
   list.classList.remove('calendar-sessions-filtered', 'calendar-sessions-dense', 'calendar-sessions-compact');
   list.removeAttribute('data-session-count');
+  surface.removeAttribute('data-weekly-session-count');
+  surface.style.removeProperty('height');
   weeklyCardPageReady = false;
   updateControlAvailability();
 
   if (!sessions.length) {
-    updateWeeklyTimezoneLegend(null);
     weeklyCalendarStatus('No calendar sessions match the selected ISO week and days.');
     updateWeeklyPostPanel([]);
     updateControlAvailability();
@@ -7646,11 +7630,8 @@ async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
     }
     const rows = sessionResults.map(result => result.value);
     if (token !== weeklyPageLoadToken || !isWeeklyCalendarCardLayout()) return;
-    const timezonePresentation = getWeeklyTimezonePresentation(
-      rows.map(session => getWeeklySessionTimes(session).map(({ zone }) => zone))
-    );
-    updateWeeklyTimezoneLegend(timezonePresentation);
     list.dataset.sessionCount = String(rows.length);
+    surface.dataset.weeklySessionCount = String(rows.length);
     const qrImages = [];
     list.replaceChildren();
     const registration = document.getElementById('weekly-calendar-registration');
@@ -7660,11 +7641,14 @@ async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
       registration.dataset.sessionCount = String(rows.length);
       registration.hidden = false;
     }
-    rows.forEach((session, index) => {
+    rows.forEach(session => {
       const date = calendarParseApiDate(session.date);
       const dateLabel = calendarFormatWeeklySessionDate(session).replace(/, \d{4}$/, '');
+      const presenters = Array.isArray(session.presenters) ? session.presenters : [];
       const row = document.createElement('article');
       row.className = 'weekly-calendar-session-row';
+      row.dataset.presenterCount = String(presenters.length);
+      row.style.setProperty('--weekly-presenter-photo-size', `${getWeeklyPresenterPhotoSize(rows.length, presenters.length)}px`);
       const datePanel = document.createElement('div');
       datePanel.className = 'weekly-calendar-session-date-panel';
       const dayName = document.createElement('span');
@@ -7706,11 +7690,6 @@ async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
       partnerLabel.className = 'weekly-calendar-session-partner';
       partnerLabel.textContent = `Partner: ${calendarNormalizeSpaces(session.partner) || (hasSelectedPartner() ? activePartnerConfig.label : 'Partner details unavailable')}`;
       heading.appendChild(partnerLabel);
-      const timezone = document.createElement('p');
-      timezone.className = 'weekly-calendar-session-timezone';
-      const sessionLabels = timezonePresentation.sessionLabels[index] || [];
-      timezone.textContent = sessionLabels.length ? `Times: ${sessionLabels.join(' · ')}` : '';
-      timezone.hidden = !timezone.textContent;
       const divider = document.createElement('hr');
       divider.className = 'weekly-calendar-session-divider';
 
@@ -7719,15 +7698,15 @@ async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
       const times = document.createElement('div');
       times.className = 'weekly-calendar-session-times';
       renderWeeklySessionTimes(times, session);
-      dateTime.append(timezone, times);
+      dateTime.appendChild(times);
       heading.append(divider, dateTime);
 
       const body = document.createElement('div');
       body.className = 'weekly-calendar-session-body';
       const speakers = document.createElement('div');
       speakers.className = 'weekly-calendar-speakers';
-      const presenters = Array.isArray(session.presenters) ? session.presenters : [];
       if (presenters.length > 1) speakers.classList.add('weekly-has-multiple-speakers');
+      if (rows.length < 3 && presenters.length >= 2) speakers.classList.add('weekly-grid-presenters');
       if (!presenters.length) {
         const empty = document.createElement('p');
         empty.className = 'weekly-calendar-speaker-empty';
@@ -7814,6 +7793,8 @@ async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
       if (registrationItems) registrationItems.appendChild(registrationItem);
       qrImages.push(qr);
     });
+    syncWeeklyCalendarCanvasSize();
+    updateSizeLabel();
     const qrResults = await Promise.allSettled(qrImages.map(async image => {
       const payloadUrl = image.dataset.weeklyPayloadUrl;
       const dataUrl = weeklyQrDataUrlCache.get(payloadUrl) || '';
@@ -7838,6 +7819,8 @@ async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
     }
     if (token !== weeklyPageLoadToken || !isWeeklyCalendarCardLayout()) return;
     weeklyCardPageReady = rows.length > 0;
+    syncWeeklyCalendarCanvasSize();
+    updateSizeLabel();
     updateWeeklyPostPanel(rows);
     updateControlAvailability();
   } catch (error) {
@@ -7847,7 +7830,6 @@ async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
     } else if (error?.sessionUuid) {
       weeklyRegistrationRetrySessionUuids = new Set([error.sessionUuid]);
     }
-    updateWeeklyTimezoneLegend(null);
     weeklyCalendarStatus(
       `Registration links could not be prepared. ${error.message}`,
       true,
@@ -7866,21 +7848,13 @@ function refreshWeeklyCalendarTimeLabels() {
     (selectedWeeklyPage + 1) * WEEKLY_CALENDAR_PAGE_SIZE
   ).map(session => weeklySessionAliasCache.get(String(session.uuid || '')));
   if (!pageRows.length || pageRows.some(session => !session)) return;
-  const timezonePresentation = getWeeklyTimezonePresentation(
-    pageRows.map(session => getWeeklySessionTimes(session).map(({ zone }) => zone))
-  );
-  updateWeeklyTimezoneLegend(timezonePresentation);
   document.querySelectorAll('.weekly-calendar-session-row').forEach((row, index) => {
     const session = pageRows[index];
     const times = row.querySelector('.weekly-calendar-session-times');
-    const timezone = row.querySelector('.weekly-calendar-session-timezone');
     if (times && session) renderWeeklySessionTimes(times, session);
-    if (timezone) {
-      const labels = timezonePresentation.sessionLabels[index] || [];
-      timezone.textContent = labels.length ? `Times: ${labels.join(' · ')}` : '';
-      timezone.hidden = !timezone.textContent;
-    }
   });
+  syncWeeklyCalendarCanvasSize();
+  updateSizeLabel();
   updateWeeklyPostPanel(pageRows);
 }
 
@@ -9080,7 +9054,11 @@ function updateSizeLabel() {
     return;
   }
   if (isWeeklyCalendarCardLayout()) {
-    lbl.textContent = '4.8 × 6 inch · 1440 × 1800 px @ 300 DPI · ' + layoutLabel + ' · ' + sideLabel;
+    const weeklyDimensions = getExportDimensions();
+    const heightInches = weeklyDimensions.hIn === 6
+      ? '6'
+      : weeklyDimensions.hIn.toFixed(3).replace(/0+$/, '').replace(/\.$/, '');
+    lbl.textContent = `4.8 × ${heightInches} inch · ${weeklyDimensions.pxW} × ${weeklyDimensions.pxH} px @ 300 DPI · ${layoutLabel} · ${sideLabel}`;
     return;
   }
   lbl.textContent = is3x5
@@ -9675,6 +9653,10 @@ function setLayout(layout) {
   surface.classList.toggle('layout-coming-soon', isComingSoon);
   surface.classList.toggle('layout-calendar-card', isCalendarCard);
   surface.classList.toggle('layout-weekly-calendar-card', isWeeklyCalendarCard);
+  if (!isWeeklyCalendarCard) {
+    surface.removeAttribute('data-weekly-session-count');
+    surface.style.removeProperty('height');
+  }
   document.getElementById('btn-4x6').innerHTML = isWeeklyCalendarCard ? '4.8&times;6' : '4&times;6';
   if (!isFacebookPromo && !isFacebookPromoMulti) restoreStandardHeaderLogoLayout();
   loadCardScopedSettings(layout);
@@ -9744,9 +9726,71 @@ function setSize(s) {
   applyHeadshotSize();
 }
 
+function getWeeklyCalendarCanvasDimensions(sessionCount, contentHeight) {
+  const widthPx = 1440;
+  const fullHeightPx = 1800;
+  const widthInches = 4.8;
+  const dpi = 300;
+  const minimumHeightPx = Math.ceil(widthPx / 1.91);
+  const cssPixelsPerExportPixel = (widthInches * 96) / widthPx;
+  const pxH = sessionCount === 1 || sessionCount === 2
+    ? Math.min(fullHeightPx, Math.max(minimumHeightPx, Math.ceil(contentHeight / cssPixelsPerExportPixel - 1e-9)))
+    : fullHeightPx;
+  const hIn = pxH / dpi;
+  return {
+    pxW: widthPx,
+    pxH,
+    wIn: widthInches,
+    hIn,
+    tag: pxH === fullHeightPx ? '4.8x6' : `4.8x${hIn.toFixed(3)}`,
+    orientation: 'portrait'
+  };
+}
+
+function syncWeeklyCalendarCanvasSize() {
+  const widthPx = 1440;
+  const fullHeightPx = 1800;
+  const cssPixelsPerExportPixel = (4.8 * 96) / widthPx;
+  const sessionCount = Number(surface.dataset.weeklySessionCount || 0);
+  const fullCanvas = getWeeklyCalendarCanvasDimensions(0, 0);
+
+  if (!isWeeklyCalendarCardLayout()) return fullCanvas;
+  if (sessionCount === 3) {
+    surface.dataset.weeklySessionCount = '3';
+    surface.style.removeProperty('height');
+    return fullCanvas;
+  }
+  if (sessionCount !== 1 && sessionCount !== 2) {
+    surface.removeAttribute('data-weekly-session-count');
+    surface.style.removeProperty('height');
+    return fullCanvas;
+  }
+
+  surface.dataset.weeklySessionCount = String(sessionCount);
+  surface.style.height = 'auto';
+  const rows = Array.from(surface.querySelectorAll('.weekly-calendar-session-row'));
+  const maximumCssHeight = fullHeightPx * cssPixelsPerExportPixel;
+  let contentHeight = surface.getBoundingClientRect().height;
+  for (let attempt = 0; contentHeight > maximumCssHeight && attempt < 40; attempt += 1) {
+    let resized = false;
+    rows.forEach(row => {
+      const currentSize = Number.parseFloat(row.style.getPropertyValue('--weekly-presenter-photo-size'));
+      if (!Number.isFinite(currentSize) || currentSize <= 24) return;
+      row.style.setProperty('--weekly-presenter-photo-size', `${Math.max(24, currentSize - 2)}px`);
+      resized = true;
+    });
+    if (!resized) break;
+    contentHeight = surface.getBoundingClientRect().height;
+  }
+
+  const dimensions = getWeeklyCalendarCanvasDimensions(sessionCount, contentHeight);
+  surface.style.height = `${dimensions.pxH * cssPixelsPerExportPixel}px`;
+  return dimensions;
+}
+
 function getExportDimensions() {
   if (isWeeklyCalendarCardLayout()) {
-    return { pxW: 1440, pxH: 1800, wIn: 4.8, hIn: 6, tag: '4.8x6', orientation: 'portrait' };
+    return syncWeeklyCalendarCanvasSize();
   }
   if (isCalendarCardLayout()) {
     return { pxW: 1200, pxH: 1800, wIn: 4, hIn: 6, tag: '4x6', orientation: 'portrait' };
