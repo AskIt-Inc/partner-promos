@@ -74,9 +74,9 @@ assert.strictEqual(mergedWeeklyRows.length, 2, 'aggregate session lists must ded
 assert.strictEqual(mergedWeeklyRows[1].title, 'Unassigned Thursday', 'unassigned API fields must win on a UUID collision');
 assert.strictEqual(mergedWeeklyRows[1]._weeklyFromUnassignedApi, true, 'unassigned sessions must be marked for direct QR/link reuse');
 assert.strictEqual(weeklyPartnerHelpers.getWeeklyPartnerAvailabilityMessage('loading', [], false), 'Loading the current promo-card-enabled partner list…');
-assert.match(weeklyPartnerHelpers.getWeeklyPartnerAvailabilityMessage('error', [], false), /could not be loaded/);
-assert.match(weeklyPartnerHelpers.getWeeklyPartnerAvailabilityMessage('ready', [], false), /No promo-card-enabled partners/);
-assert.match(weeklyPartnerHelpers.getWeeklyPartnerAvailabilityMessage('ready', [], true), /selected partner is not currently promo-card enabled/);
+assert(/could not be loaded/.test(weeklyPartnerHelpers.getWeeklyPartnerAvailabilityMessage('error', [], false)));
+assert(/No promo-card-enabled partners/.test(weeklyPartnerHelpers.getWeeklyPartnerAvailabilityMessage('ready', [], false)));
+assert(/selected partner is not currently promo-card enabled/.test(weeklyPartnerHelpers.getWeeklyPartnerAvailabilityMessage('ready', [], true)));
 
 const bannerDefaultsStart = source.indexOf('const WEEKLY_AGGREGATE_BANNER_DEFAULTS = Object.freeze(');
 const bannerDefaultsEnd = source.indexOf('\nconst WEEKLY_AGGREGATE_BANNER_STORAGE_KEY', bannerDefaultsStart);
@@ -958,9 +958,9 @@ assert(52 * (1440 / (4.8 * 96)) >= 160 && 52 * (1440 / (4.8 * 96)) < 180,
 const inlineRegistrationCssStart = source.indexOf('.weekly-calendar-inline-registration {');
 const inlineRegistrationCssEnd = source.indexOf('\n.weekly-calendar-inline-registration .weekly-calendar-qr-block', inlineRegistrationCssStart);
 const inlineRegistrationCss = source.slice(inlineRegistrationCssStart, inlineRegistrationCssEnd);
-assert.match(inlineRegistrationCss, /background:\s*transparent;/);
-assert.match(inlineRegistrationCss, /border:\s*0;/);
-assert.match(inlineRegistrationCss, /padding:\s*0;/);
+assert(/background:\s*transparent;/.test(inlineRegistrationCss));
+assert(/border:\s*0;/.test(inlineRegistrationCss));
+assert(/padding:\s*0;/.test(inlineRegistrationCss));
 assert(!inlineRegistrationCss.includes('#F8FFF2') && !inlineRegistrationCss.includes('#BBDDB3'),
   'the QR must not sit inside a colored panel or border');
 assert(source.includes('.calendar-sessions[data-session-count="1"] .weekly-calendar-session-row'));
