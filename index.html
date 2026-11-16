@@ -260,24 +260,28 @@ body {
 }
 .print-surface.layout-weekly-calendar-card:not(.show-back)[data-weekly-session-count="1"],
 .print-surface.layout-weekly-calendar-card:not(.show-back)[data-weekly-session-count="2"],
-.print-surface.layout-weekly-calendar-card:not(.show-back)[data-weekly-session-count="3"] {
+.print-surface.layout-weekly-calendar-card:not(.show-back)[data-weekly-session-count="3"],
+.print-surface.layout-weekly-calendar-card:not(.show-back)[data-weekly-session-count="4"] {
   height: auto;
 }
 .print-surface.layout-weekly-calendar-card[data-weekly-session-count="1"] > .calendar-card-front-side,
 .print-surface.layout-weekly-calendar-card[data-weekly-session-count="2"] > .calendar-card-front-side,
-.print-surface.layout-weekly-calendar-card[data-weekly-session-count="3"] > .calendar-card-front-side {
+.print-surface.layout-weekly-calendar-card[data-weekly-session-count="3"] > .calendar-card-front-side,
+.print-surface.layout-weekly-calendar-card[data-weekly-session-count="4"] > .calendar-card-front-side {
   flex: 0 0 auto;
   min-height: auto;
 }
 .print-surface.layout-weekly-calendar-card[data-weekly-session-count="1"] .calendar-sessions,
 .print-surface.layout-weekly-calendar-card[data-weekly-session-count="2"] .calendar-sessions,
-.print-surface.layout-weekly-calendar-card[data-weekly-session-count="3"] .calendar-sessions {
+.print-surface.layout-weekly-calendar-card[data-weekly-session-count="3"] .calendar-sessions,
+.print-surface.layout-weekly-calendar-card[data-weekly-session-count="4"] .calendar-sessions {
   flex: 0 0 auto;
   min-height: auto;
 }
 .print-surface.layout-weekly-calendar-card[data-weekly-session-count="1"] .weekly-calendar-session-row,
 .print-surface.layout-weekly-calendar-card[data-weekly-session-count="2"] .weekly-calendar-session-row,
-.print-surface.layout-weekly-calendar-card[data-weekly-session-count="3"] .weekly-calendar-session-row {
+.print-surface.layout-weekly-calendar-card[data-weekly-session-count="3"] .weekly-calendar-session-row,
+.print-surface.layout-weekly-calendar-card[data-weekly-session-count="4"] .weekly-calendar-session-row {
   flex: 0 0 auto;
   min-height: min-content;
 }
@@ -453,6 +457,10 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
 .print-surface.layout-weekly-calendar-card[data-weekly-session-count="3"] .calendar-sessions {
   gap: 5px;
   padding: 6px 10px 5px;
+}
+.print-surface.layout-weekly-calendar-card[data-weekly-session-count="4"] .calendar-sessions {
+  gap: 3px;
+  padding: 4px 8px 4px;
 }
 .weekly-calendar-header-wave {
   background: #EAF7FB;
@@ -760,12 +768,17 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
   line-height: 1.1;
 }
 .calendar-sessions[data-session-count="2"] .weekly-calendar-inline-registration,
-.calendar-sessions[data-session-count="3"] .weekly-calendar-inline-registration {
+.calendar-sessions[data-session-count="3"] .weekly-calendar-inline-registration,
+.calendar-sessions[data-session-count="4"] .weekly-calendar-inline-registration {
   margin-top: 5px;
 }
 .calendar-sessions[data-session-count="3"] .weekly-calendar-inline-registration {
   gap: 3px;
   margin-top: 3px;
+}
+.calendar-sessions[data-session-count="4"] .weekly-calendar-inline-registration {
+  gap: 3px;
+  margin-top: 2px;
 }
 .weekly-calendar-registration-copy {
   display: flex;
@@ -859,6 +872,35 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
   gap: 2px;
 }
 .calendar-sessions[data-session-count="3"] .weekly-has-multiple-speakers .weekly-calendar-speaker {
+  flex-direction: column;
+  gap: 2px;
+  text-align: center;
+}
+.calendar-sessions[data-session-count="4"] .weekly-calendar-session-row {
+  grid-template-columns: calc(56px * var(--calendar-date-chip-scale, 1)) minmax(0, 1.15fr) minmax(0, 1fr);
+}
+.calendar-sessions[data-session-count="4"] .weekly-calendar-session-heading { padding: 2px 4px; }
+.calendar-sessions[data-session-count="4"] .weekly-calendar-conditions { margin-bottom: 1px; }
+.calendar-sessions[data-session-count="4"] .weekly-calendar-conditions .weekly-calendar-condition { padding: 1px 3px; }
+.calendar-sessions[data-session-count="4"] .weekly-calendar-session-title {
+  font-size: calc(7.5px * var(--weekly-session-title-scale, 1));
+  line-height: 1.08;
+}
+.calendar-sessions[data-session-count="4"] .weekly-calendar-session-partner { font-size: 5.5px; margin-top: 1px; }
+.calendar-sessions[data-session-count="4"] .weekly-calendar-session-divider { margin: 1px 0; }
+.calendar-sessions[data-session-count="4"] .weekly-calendar-session-time { font-size: 5.2px; }
+.calendar-sessions[data-session-count="4"] .weekly-calendar-session-body { padding: 2px 3px; }
+.calendar-sessions[data-session-count="4"] .weekly-calendar-speakers.weekly-has-multiple-speakers { gap: 2px; }
+.calendar-sessions[data-session-count="4"] .weekly-calendar-speaker img,
+.calendar-sessions[data-session-count="4"] .weekly-calendar-speaker-fallback {
+  flex-basis: var(--weekly-presenter-photo-size, 58px);
+  height: var(--weekly-presenter-photo-size, 58px);
+  width: var(--weekly-presenter-photo-size, 58px);
+}
+.calendar-sessions[data-session-count="4"] .weekly-calendar-speaker-name { font-size: 5.4px; }
+.calendar-sessions[data-session-count="4"] .weekly-calendar-speaker-credentials,
+.calendar-sessions[data-session-count="4"] .weekly-calendar-speaker-partner { font-size: 4.8px; }
+.calendar-sessions[data-session-count="4"] .weekly-has-multiple-speakers .weekly-calendar-speaker {
   flex-direction: column;
   gap: 2px;
   text-align: center;
@@ -3754,6 +3796,13 @@ body[data-partner="vamp"] .session-back-title {
         </div>
         <p class="weekly-calendar-range-label" id="weekly-calendar-range-label" aria-live="polite"></p>
       </div>
+      <label class="field-control weekly-filter-control" for="weekly-calendar-indication">
+        <span>Indication</span>
+        <select id="weekly-calendar-indication" aria-label="Filter weekly sessions by indication">
+          <option value="Amyloidosis" selected>Amyloidosis</option>
+          <option value="all">All Indications</option>
+        </select>
+      </label>
       <fieldset class="calendar-day-filter-group">
         <legend>Weekly Session Days</legend>
         <label class="calendar-day-option"><input class="weekly-calendar-day-checkbox" type="checkbox" value="Mon" checked><span>Monday</span></label>
@@ -4742,6 +4791,7 @@ const weeklyCalendarWeekMenu = document.getElementById('weekly-calendar-week-men
 const weeklyCalendarWeekSearch = document.getElementById('weekly-calendar-week-search');
 const weeklyCalendarWeekOptions = document.getElementById('weekly-calendar-week-options');
 const weeklyCalendarWeekEmpty = document.getElementById('weekly-calendar-week-empty');
+const weeklyCalendarIndicationSelect = document.getElementById('weekly-calendar-indication');
 const weeklyBannerEyebrowInput = document.getElementById('weekly-banner-eyebrow');
 const weeklyBannerTitleInput = document.getElementById('weekly-banner-title');
 const weeklyBannerColorInput = document.getElementById('weekly-banner-color');
@@ -5206,11 +5256,12 @@ let calendarLoadProgressValue = 10;
 let selectedCalendarFilters = new Set(['Mon', 'Tue', 'Wed', 'Thu']);
 let selectedCalendarRange = 'all';
 const WEEKLY_CALENDAR_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-const WEEKLY_CALENDAR_PAGE_SIZE = 3;
+const WEEKLY_CALENDAR_PAGE_SIZE = 4;
 const currentIsoWeek = calendarGetCurrentIsoWeek();
 let selectedWeeklyYear = currentIsoWeek.year;
 let selectedWeeklyWeek = currentIsoWeek.week;
 let selectedWeeklyDays = new Set(WEEKLY_CALENDAR_DAYS);
+let selectedWeeklyIndication = 'Amyloidosis';
 let selectedWeeklyPage = 0;
 let weeklyPageLoadToken = 0;
 let weeklyCardPageReady = false;
@@ -5303,6 +5354,7 @@ function buildWeeklyCalendarSessionsApiUrl(endpointUrl, partnerTids) {
     const url = new URL(String(endpointUrl));
     if (!url.pathname.endsWith('/sessions')) return '';
     url.searchParams.set('partner', tids.join(','));
+    url.searchParams.delete('indication');
     url.searchParams.set('status', 'all');
     return url.href;
   } catch (error) {
@@ -6843,7 +6895,50 @@ function calendarGetWeeklyLabel(year = selectedWeeklyYear, week = selectedWeekly
   return `Week ${week} · ${calendarFormatWeeklyRange(year, week)}`;
 }
 
-function calendarGetWeeklySessions(sessions) {
+function getWeeklyCalendarSessionIndications(session = {}) {
+  return (Array.isArray(session.indications) ? session.indications : [])
+    .map(indication => calendarNormalizeSpaces(
+      typeof indication === 'string' ? indication : ((indication && (indication.name || indication.label)) || '')
+    ))
+    .filter(Boolean);
+}
+
+function getWeeklyCalendarIndicationOptions(sessions) {
+  const indications = new Set(
+    calendarGetWeeklySessions(sessions, 'all', true)
+      .flatMap(getWeeklyCalendarSessionIndications)
+  );
+  indications.add('Amyloidosis');
+  return Array.from(indications).sort((a, b) => {
+    if (a === 'Amyloidosis') return -1;
+    if (b === 'Amyloidosis') return 1;
+    return a.localeCompare(b);
+  });
+}
+
+function refreshWeeklyCalendarIndicationOptions(sessions) {
+  if (!weeklyCalendarIndicationSelect) return;
+  const indicationNames = getWeeklyCalendarIndicationOptions(sessions);
+  if (selectedWeeklyIndication !== 'all' && !indicationNames.includes(selectedWeeklyIndication)) {
+    indicationNames.push(selectedWeeklyIndication);
+  }
+  weeklyCalendarIndicationSelect.replaceChildren();
+  const allOption = document.createElement('option');
+  allOption.value = 'all';
+  allOption.textContent = 'All Indications';
+  weeklyCalendarIndicationSelect.appendChild(allOption);
+  indicationNames.forEach(indication => {
+    const option = document.createElement('option');
+    option.value = indication;
+    option.textContent = indication;
+    weeklyCalendarIndicationSelect.appendChild(option);
+  });
+  weeklyCalendarIndicationSelect.value = selectedWeeklyIndication;
+}
+
+function calendarGetWeeklySessions(sessions, indicationFilter = selectedWeeklyIndication, includeAllDays = false) {
+  const selectedIndication = calendarNormalizeSpaces(indicationFilter || 'Amyloidosis');
+  const shouldFilterIndication = selectedIndication.toLocaleLowerCase() !== 'all';
   return (Array.isArray(sessions) ? sessions : [])
     .slice()
     .sort((a, b) => Number(a.timestamp || 0) - Number(b.timestamp || 0))
@@ -6853,7 +6948,9 @@ function calendarGetWeeklySessions(sessions) {
       const isoWeek = calendarGetIsoWeekFromDate(new Date(Date.UTC(date.year, date.monthIndex, date.dayNumber)));
       return isoWeek.year === selectedWeeklyYear
         && isoWeek.week === selectedWeeklyWeek
-        && selectedWeeklyDays.has(date.weekday);
+        && (includeAllDays || selectedWeeklyDays.has(date.weekday))
+        && (!shouldFilterIndication || getWeeklyCalendarSessionIndications(session)
+          .some(indication => indication.toLocaleLowerCase() === selectedIndication.toLocaleLowerCase()));
     });
 }
 
@@ -7137,13 +7234,9 @@ function applyCalendarBannerSettings(config, fallbackColor = '#006E8E') {
   }
 }
 
-function getWeeklyCalendarLogoVisibility(selectedLogos, aggregateMode) {
+function getWeeklyCalendarLogoVisibility(selectedLogos) {
   const logos = Array.isArray(selectedLogos) ? selectedLogos : [];
-  return [
-    Boolean(logos[0]) && !aggregateMode,
-    Boolean(logos[1]),
-    Boolean(logos[2])
-  ];
+  return logos.slice(0, 3).map(Boolean);
 }
 
 function syncCalendarCard() {
@@ -7201,10 +7294,7 @@ function syncCalendarCard() {
   ];
   const calendarLogoBar = document.querySelector('.calendar-logo-bar');
   if (calendarLogoBar && isWeeklyCalendarCardLayout()) {
-    const logoVisibility = getWeeklyCalendarLogoVisibility(
-      selectedCalendarLogos,
-      isWeeklyCalendarAggregateMode()
-    );
+    const logoVisibility = getWeeklyCalendarLogoVisibility(selectedCalendarLogos);
     const logoSlots = Array.from(calendarLogoBar.querySelectorAll('.calendar-logo-slot'));
     const logoDividers = Array.from(calendarLogoBar.querySelectorAll('.logo-divider'));
     logoSlots.forEach((slot, index) => {
@@ -7618,9 +7708,9 @@ function getWeeklySessionCardColor(session, sessionIndex = 0) {
 }
 
 function getWeeklyPresenterPhotoSize(sessionCount, presenterCount, selectedSize = DEFAULT_HEADSHOT_SIZE) {
-  const sessionBase = { 1: 88, 2: 76, 3: 64 }[sessionCount] || 64;
-  const presenterStep = { 1: 8, 2: 8, 3: 5 }[sessionCount] || 5;
-  const floor = sessionCount === 3 ? 40 : 32;
+  const sessionBase = { 1: 88, 2: 76, 3: 64, 4: 58 }[sessionCount] || 64;
+  const presenterStep = { 1: 8, 2: 8, 3: 5, 4: 4 }[sessionCount] || 5;
+  const floor = sessionCount >= 3 ? 40 : 32;
   let size = sessionBase - Math.max(0, presenterCount - 1) * presenterStep;
   if (sessionCount < 3 && presenterCount >= 2) {
     size = Math.min(size, sessionCount === 1 ? 68 : 60);
@@ -7829,6 +7919,7 @@ async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
     }
   }
   if (token !== weeklyPageLoadToken) return;
+  refreshWeeklyCalendarIndicationOptions(sessionsPool);
   const sessions = calendarGetWeeklySessions(sessionsPool);
   const pageCount = Math.ceil(sessions.length / WEEKLY_CALENDAR_PAGE_SIZE);
   if (pageCount && selectedWeeklyPage >= pageCount) selectedWeeklyPage = pageCount - 1;
@@ -7837,7 +7928,8 @@ async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
   updateControlAvailability();
 
   if (!sessions.length) {
-    weeklyCalendarStatus('No calendar sessions match the selected ISO week and days.');
+    const indicationLabel = selectedWeeklyIndication === 'all' ? '' : ` for ${selectedWeeklyIndication}`;
+    weeklyCalendarStatus(`No calendar sessions${indicationLabel} match the selected ISO week and days.`);
     updateWeeklyPostPanel([]);
     updateControlAvailability();
     return;
@@ -8258,6 +8350,11 @@ function initializeWeeklyCalendarControls() {
   });
   weeklyCalendarYearInput.addEventListener('change', () => {
     setWeeklyCalendarPeriod(weeklyCalendarYearInput.value, selectedWeeklyWeek);
+  });
+  weeklyCalendarIndicationSelect?.addEventListener('change', () => {
+    selectedWeeklyIndication = weeklyCalendarIndicationSelect.value || 'Amyloidosis';
+    selectedWeeklyPage = 0;
+    if (calendarSessionsLoaded && isWeeklyCalendarCardLayout()) renderWeeklyCalendarSessions();
   });
   document.querySelectorAll('.weekly-calendar-day-checkbox').forEach(input => {
     input.addEventListener('change', () => setWeeklyCalendarDay(input.value, input.checked));
@@ -8702,7 +8799,7 @@ function refreshWeeklySessionTitleSizeControl() {
 function applyWeeklyCalendarPresenterSizes() {
   if (!isWeeklyCalendarCardLayout() || currentSide !== 'front') return;
   const sessionCount = Number(surface.dataset.weeklySessionCount || 0);
-  if (![1, 2, 3].includes(sessionCount)) return;
+  if (![1, 2, 3, 4].includes(sessionCount)) return;
 
   surface.querySelectorAll('.weekly-calendar-session-row').forEach(row => {
     const presenterCount = Number(row.dataset.presenterCount || 0);
@@ -9479,8 +9576,7 @@ function updateControlAvailability() {
   const headerLogoControlsVisible = hasSelectedCard();
   const headerLogoCountVisible = isHeaderLogoConfigurableCard();
   const isHeaderLogoSlotVisible = slot => headerLogoControlsVisible
-    && (!headerLogoCountVisible || slot <= selectedHeaderLogoCount)
-    && !(weeklyCalendarCard && isWeeklyCalendarAggregateMode() && slot === 1);
+    && (!headerLogoCountVisible || slot <= selectedHeaderLogoCount);
   const btnBack = document.getElementById('btn-back');
   const btnPartnerBack = document.getElementById('btn-partner-back');
   const btn3x5 = document.getElementById('btn-3x5');
@@ -10078,7 +10174,7 @@ function getWeeklyCalendarCanvasDimensions(sessionCount, contentHeight) {
   const dpi = 300;
   const minimumHeightPx = Math.ceil(widthPx / 1.91);
   const cssPixelsPerExportPixel = (widthInches * 96) / widthPx;
-  const pxH = [1, 2, 3].includes(Number(sessionCount))
+  const pxH = [1, 2, 3, 4].includes(Number(sessionCount))
     ? Math.min(fullHeightPx, Math.max(minimumHeightPx, Math.ceil(contentHeight / cssPixelsPerExportPixel - 1e-9)))
     : fullHeightPx;
   const hIn = pxH / dpi;
@@ -10118,7 +10214,7 @@ function syncWeeklyCalendarCanvasSize() {
     surface.style.removeProperty('height');
     return fullCanvas;
   }
-  if (![1, 2, 3].includes(sessionCount)) {
+  if (![1, 2, 3, 4].includes(sessionCount)) {
     surface.removeAttribute('data-weekly-session-count');
     surface.style.removeProperty('height');
     return fullCanvas;

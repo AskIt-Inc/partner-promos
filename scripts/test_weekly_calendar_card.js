@@ -49,10 +49,11 @@ const aggregateRequest = new URL(weeklyPartnerHelpers.buildWeeklyCalendarSession
 assert.strictEqual(aggregateRequest.searchParams.get('partner'), '101,202', 'aggregate requests must use the complete sanitized live term ID list');
 assert.strictEqual(aggregateRequest.searchParams.get('status'), 'all');
 const selectedRequest = new URL(weeklyPartnerHelpers.buildWeeklyCalendarSessionsApiUrl(
-  'https://somebodytotalkto.com/api/spotlight/microsite/sessions?partner=101,202&status=active',
+  'https://somebodytotalkto.com/api/spotlight/microsite/sessions?partner=101,202&indication=4,12362&status=active',
   [202],
 ));
 assert.strictEqual(selectedRequest.searchParams.get('partner'), '202', 'selected requests must replace any configured partner list with the selected ID only');
+assert.strictEqual(selectedRequest.searchParams.get('indication'), null, 'weekly requests must fetch all indication rows before applying the selected indication filter to partner and unassigned sessions');
 assert.strictEqual(selectedRequest.searchParams.get('status'), 'all');
 assert.strictEqual(weeklyPartnerHelpers.buildWeeklyCalendarSessionsApiUrl(aggregateEndpoint, []), '', 'empty partner lists must never produce an unfiltered request');
 const unassignedEndpoint = weeklyPartnerHelpers.getWeeklyCalendarUnassignedSessionsApiEndpoint('https://local-sttt.somebodytotalkto.com:8443');
@@ -374,6 +375,7 @@ const weeklyHelpers = new Function(
   'selectedWeeklyYear',
   'selectedWeeklyWeek',
   'selectedWeeklyDays',
+  'selectedWeeklyIndication',
   `${source.slice(dateStart, dateEnd)}
    return {
      calendarGetIsoWeekFromDate,
@@ -383,9 +385,11 @@ const weeklyHelpers = new Function(
      calendarFormatWeeklyWeekOption,
      getWeeklyCalendarWeekOptions,
      calendarGetWeeklyLabel,
-     calendarGetWeeklySessions
+     calendarGetWeeklySessions,
+     getWeeklyCalendarSessionIndications,
+     getWeeklyCalendarIndicationOptions
    };`
-)(monthIndex, dayNames, normalizeSpaces, 2026, 47, new Set(['Mon', 'Sun']));
+)(monthIndex, dayNames, normalizeSpaces, 2026, 47, new Set(['Mon', 'Sun']), 'all');
 
 assert.deepStrictEqual(
   weeklyHelpers.calendarGetIsoWeekFromDate(new Date(Date.UTC(2021, 0, 1))),
@@ -427,13 +431,22 @@ const filterWeek47Sessions = new Function(
   'selectedWeeklyYear',
   'selectedWeeklyWeek',
   'selectedWeeklyDays',
+  'selectedWeeklyIndication',
   `${source.slice(dateStart, dateEnd)} return calendarGetWeeklySessions;`
-)(monthIndex, dayNames, normalizeSpaces, 2026, 47, new Set(['Mon', 'Tue', 'Wed', 'Thu']));
+)(monthIndex, dayNames, normalizeSpaces, 2026, 47, new Set(['Mon', 'Tue', 'Wed', 'Thu']), 'Amyloidosis');
 const week47PartnerRows = [
-  { uuid: 'monday', title: 'Monday session', partner: 'Partner One', date: 'Nov 16, 2026', timestamp: Date.UTC(2026, 10, 16) },
-  { uuid: 'tuesday', title: 'Tuesday session', partner: 'Partner Two', date: 'Nov 17, 2026', timestamp: Date.UTC(2026, 10, 17) },
-  { uuid: 'wednesday', title: 'Wednesday session', partner: 'Partner Three', date: 'Nov 18, 2026', timestamp: Date.UTC(2026, 10, 18) }
+  { uuid: 'monday', title: 'Monday session', partner: 'Partner One', date: 'Nov 16, 2026', timestamp: Date.UTC(2026, 10, 16), indications: ['Patient Best Practices', 'Amyloidosis'] },
+  { uuid: 'tuesday', title: 'Tuesday session', partner: 'Partner Two', date: 'Nov 17, 2026', timestamp: Date.UTC(2026, 10, 17), indications: ['Amyloidosis'] },
+  { uuid: 'wednesday', title: 'Wednesday session', partner: 'Partner Three', date: 'Nov 18, 2026', timestamp: Date.UTC(2026, 10, 18), indications: ['Amyloidosis'] }
 ];
+const week47UnassignedSickleCell = {
+  uuid: 'unassigned-sickle-cell-wednesday',
+  title: 'Sickle cell session',
+  partner: '',
+  date: 'Nov 18, 2026',
+  timestamp: Date.UTC(2026, 10, 18),
+  indications: ['Sickle Cell Disease']
+};
 const week47UnassignedThursday = {
   uuid: 'unassigned-thursday-uuid',
   title: 'Sadness, Anger and Fear: Coping With the Emotions of Illness',
@@ -445,8 +458,14 @@ const week47UnassignedThursday = {
   tracked_registration_url: 'https://somebodytotalkto.com/r/' + 'a'.repeat(43),
   qr_base64: 'data:image/png;base64,VGh1cnNkYXlRUi0='
 };
-const week47Rows = weeklyPartnerHelpers.mergeWeeklyCalendarSessions(week47PartnerRows, [week47UnassignedThursday]);
+const week47Rows = weeklyPartnerHelpers.mergeWeeklyCalendarSessions(week47PartnerRows, [week47UnassignedSickleCell, week47UnassignedThursday]);
 const filteredWeek47Rows = filterWeek47Sessions(week47Rows);
+const allWeek47Rows = filterWeek47Sessions(week47Rows, 'all');
+assert.deepStrictEqual(
+  weeklyHelpers.getWeeklyCalendarIndicationOptions(week47Rows),
+  ['Amyloidosis', 'Patient Best Practices', 'Rare Disease', 'Relationship Support', 'Sickle Cell Disease'],
+  'weekly indication options must come from the current week while keeping Amyloidosis available by default'
+);
 assert.deepStrictEqual(filteredWeek47Rows.map(row => row.uuid), [
   'monday', 'tuesday', 'wednesday', 'unassigned-thursday-uuid'
 ], 'the aggregate weekly card must merge the bounded Thursday session into ISO week 47');
@@ -454,14 +473,16 @@ const week47PageSizeMatch = source.match(/const WEEKLY_CALENDAR_PAGE_SIZE = (\d+
 const week47PageSize = Number(week47PageSizeMatch && week47PageSizeMatch[1]);
 const week47Pages = Array.from({ length: Math.ceil(filteredWeek47Rows.length / week47PageSize) }, (_, index) =>
   filteredWeek47Rows.slice(index * week47PageSize, (index + 1) * week47PageSize));
-assert.strictEqual(week47PageSize, 3, 'the card remains capped at three sessions per page');
-assert.strictEqual(week47Pages.length, 2, 'four ISO week 47 sessions must use two cards');
-assert.deepStrictEqual(week47Pages.map(page => page.map(row => row.uuid)), [
-  ['monday', 'tuesday', 'wednesday'],
-  ['unassigned-thursday-uuid']
-], 'page one stays Monday through Wednesday and page two contains Thursday');
-assert.strictEqual(week47Pages[1][0].partner, '', 'the unassigned Thursday has no invented partner');
-assert.strictEqual(week47Pages[1][0]._weeklyFromUnassignedApi, true);
+assert.strictEqual(week47PageSize, 4, 'weekly cards must fit up to four selected sessions per card');
+assert.strictEqual(filteredWeek47Rows.length, 4, 'Amyloidosis must include four matching partner and unassigned sessions');
+assert.strictEqual(week47Pages.length, 1, 'all four Amyloidosis sessions must appear on one card');
+assert.deepStrictEqual(week47Pages[0].map(row => row.uuid), [
+  'monday', 'tuesday', 'wednesday', 'unassigned-thursday-uuid'
+], 'the Amyloidosis card must include Monday through Thursday in date order');
+assert.strictEqual(allWeek47Rows.length, 5, 'All Indications must keep the additional Sickle Cell session available');
+assert.strictEqual(Math.ceil(allWeek47Rows.length / week47PageSize), 2, 'additional all-indication sessions must paginate after the first four');
+assert.strictEqual(week47Pages[0][3].partner, '', 'the unassigned Thursday has no invented partner');
+assert.strictEqual(week47Pages[0][3]._weeklyFromUnassignedApi, true);
 assert.strictEqual(weeklyHelpers.getWeeklyCalendarWeekOptions(2020, '', { year: 2020, week: 53 })[0].week, 53);
 assert.strictEqual(weeklyHelpers.getWeeklyCalendarWeekOptions(2021, '', { year: 2021, week: 52 })[0].week, 52);
 assert.strictEqual(weeklyHelpers.getWeeklyCalendarWeekOptions(2027, '', { year: 2026, week: 46 }).length, 52);
@@ -477,8 +498,8 @@ const getWeeklyCalendarLogoVisibility = new Function(
 )();
 assert.deepStrictEqual(
   getWeeklyCalendarLogoVisibility([true, true, true], true),
-  [false, true, true],
-  'aggregate weekly cards must omit the partner slot while retaining explicitly selected shared logos'
+  [true, true, true],
+  'aggregate weekly cards must expose all three selectable shared logo slots'
 );
 assert.deepStrictEqual(
   getWeeklyCalendarLogoVisibility([true, false, true], false),
@@ -570,7 +591,7 @@ assert.deepStrictEqual(
   [],
   'a selected ISO week with no matching selected weekdays must return no sessions',
 );
-assert(source.includes("weeklyCalendarStatus('No calendar sessions match the selected ISO week and days.')"), 'empty weekly filters must show the no-results state');
+assert(source.includes('No calendar sessions${indicationLabel} match the selected ISO week and days.'), 'empty weekly indication filters must show the selected indication in the no-results state');
 
 const weekPageStart = source.indexOf('function setWeeklyCalendarPeriod');
 const weekPageEnd = source.indexOf('function initializeWeeklyCalendarControls', weekPageStart);
@@ -893,7 +914,7 @@ assert(source.includes('postLines.push(...getWeeklySessionCaptionLines(session))
 assert(source.includes("className = 'weekly-calendar-session-partner'"), 'each session card must visibly label its partner');
 assert(source.includes('partnerName || !session._weeklyFromUnassignedApi'), 'unassigned aggregate rows must not show a missing-partner placeholder');
 assert(source.includes("className = 'weekly-post-session-partner'"), 'aggregate post rows must visibly label each session partner');
-assert(source.includes('list.dataset.sessionCount = String(rows.length);'), 'the visible card count must select the one-, two-, or three-session layout');
+assert(source.includes('list.dataset.sessionCount = String(rows.length);'), 'the visible card count must select a matching one- through four-session layout');
 assert(source.includes('background: #fff;'));
 assert(source.includes('background: #159B36;'), 'session dates must appear in green date panels');
 assert(source.includes('background: linear-gradient(112deg, #680078 0%, var(--weekly-banner-color, #85008C) 54%, #A51BA6 100%);'));
@@ -969,7 +990,15 @@ assert(source.includes('.calendar-sessions[data-session-count="3"] .weekly-calen
 assert(source.includes("condition.setAttribute('role', 'list');"));
 assert(source.includes('category.textContent = indication;'), 'session indications must render as separate readable category chips');
 
-assert(source.includes('const WEEKLY_CALENDAR_PAGE_SIZE = 3;'), 'weekly posters must paginate no more than three sessions per card');
+assert(source.includes('id="weekly-calendar-indication"') && source.includes('value="Amyloidosis" selected'),
+  'the weekly indication control must default to Amyloidosis');
+assert(source.includes('id="weekly-calendar-indication" aria-label="Filter weekly sessions by indication"'));
+assert(source.includes("weeklyCalendarIndicationSelect?.addEventListener('change'"), 'changing the weekly indication must rerender the card');
+assert(source.includes('const WEEKLY_CALENDAR_PAGE_SIZE = 4;'), 'weekly posters must place up to four sessions on one card');
+assert(source.includes('.calendar-sessions[data-session-count="4"] .weekly-calendar-session-row'));
+assert(source.includes('.calendar-sessions[data-session-count="4"] .weekly-calendar-session-title'));
+assert(source.includes('const isHeaderLogoSlotVisible = slot => headerLogoControlsVisible\n    && (!headerLogoCountVisible || slot <= selectedHeaderLogoCount);'),
+  'aggregate weekly mode must offer all three slots from the shared header logo selector');
 assert(!source.includes('weekly-calendar-timezone-legend'), 'the banner must not contain a global timezone legend');
 assert(source.includes('presenter.institution_name') || source.includes('getPresenterEmployer(presenter)'), 'speaker affiliations must retain institution details when supplied');
 assert(source.includes('option value="abbreviation">Abbreviation only'));
@@ -1096,7 +1125,7 @@ assert(source.includes('calc(82px * var(--calendar-date-chip-scale, 1))')
   && source.includes('calc(60px * var(--calendar-date-chip-scale, 1))'), 'the day/date size control must scale all weekly date-panel widths');
 assert(source.includes('const sessionAdjustmentControlsVisible = sessionFontControlsVisible && !weeklyCalendarCard;'), 'generic session font controls must be hidden when their styles do not apply to weekly posters');
 assert(source.includes("el.style.display = ready && !weeklyCalendarCard\n      && (sessionLookupVisible || anyCalendarCard || isMultiPresenterFacebookPromo()) ? '' : 'none';"), 'the single-timezone selector must be hidden on weekly cards, which always display all four zones');
-assert(source.includes('&& !(weeklyCalendarCard && isWeeklyCalendarAggregateMode() && slot === 1);'), 'the partner logo selector and its size/position controls must be hidden when aggregate mode intentionally omits slot 1');
+assert(!source.includes('&& !(weeklyCalendarCard && isWeeklyCalendarAggregateMode() && slot === 1);'), 'aggregate weekly cards must keep the first selectable header logo slot available');
 const canvasDimensionStart = source.indexOf('function getWeeklyCalendarCanvasDimensions');
 const canvasDimensionEnd = source.indexOf('\nfunction syncWeeklyCalendarCanvasSize', canvasDimensionStart);
 assert(canvasDimensionStart >= 0 && canvasDimensionEnd > canvasDimensionStart, 'weekly export sizing helper must be present');
@@ -1104,7 +1133,7 @@ const getWeeklyCalendarCanvasDimensions = new Function(
   `${source.slice(canvasDimensionStart, canvasDimensionEnd)} return getWeeklyCalendarCanvasDimensions;`
 )();
 const minimumCanvasHeight = Math.ceil(1440 / 1.91);
-for (const count of [1, 2, 3]) {
+for (const count of [1, 2, 3, 4]) {
   const trimmed = getWeeklyCalendarCanvasDimensions(count, 400);
   assert.strictEqual(trimmed.pxW, 1440);
   assert.strictEqual(trimmed.pxH, 1250, `${count}-session canvas height must follow the measured content`);
@@ -1114,6 +1143,7 @@ for (const count of [1, 2, 3]) {
   assert.strictEqual(getWeeklyCalendarCanvasDimensions(count, 700).pxH, 1800, 'long content must stop at the 4:5 canvas limit');
 }
 assert.strictEqual(getWeeklyCalendarCanvasDimensions(3, 420).pxH, 1313, 'three-session canvas height must follow rendered content instead of forcing the maximum');
+assert.strictEqual(getWeeklyCalendarCanvasDimensions(4, 420).pxH, 1313, 'four-session canvas height must follow rendered content while respecting the 1800px cap');
 assert.strictEqual(getWeeklyCalendarCanvasDimensions(0, 0).pxH, 1800, 'an unmeasured card must keep the safe full canvas size');
 const contentHeightStart = source.indexOf('function getWeeklyCalendarContentHeight');
 const contentHeightEnd = source.indexOf('\nfunction syncWeeklyCalendarCanvasSize', contentHeightStart);
