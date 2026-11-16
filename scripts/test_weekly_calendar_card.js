@@ -577,6 +577,7 @@ const weeklyTimeHelpers = new Function(
   'calendarFormatWeeklySessionDate',
   'isWeeklyCalendarAggregateMode',
   'window',
+  'DEFAULT_HEADSHOT_SIZE',
   `${source.slice(timezoneStart, timezoneEnd)}
    return {
      getWeeklyTimezoneLabel,
@@ -592,7 +593,8 @@ const weeklyTimeHelpers = new Function(
 value => String(value || '').trim().replace(/\s+(ET|CT|MT|PT)$/i, '').trim(),
 session => session.date,
 () => false,
-{ CSS: { supports: (property, value) => property === 'color' && /^#[\da-f]{3,8}$/i.test(value) } });
+{ CSS: { supports: (property, value) => property === 'color' && /^#[\da-f]{3,8}$/i.test(value) } },
+'94');
 assert.strictEqual(weeklyTimeHelpers.getWeeklyTimezoneLabel('PT'), 'PT');
 assert.strictEqual(weeklyTimeHelpers.getWeeklyTimezoneLabel('PT', 'location'), 'PT · Los Angeles');
 const fourZoneSession = {
@@ -669,6 +671,12 @@ assert.deepStrictEqual(
   [88, 68, 76, 60, 64, 54],
   'presenter photo size must grow for fewer sessions and scale down as each session adds presenters'
 );
+const photoSizeFixtures = [[1, 1], [1, 3], [2, 1], [2, 3], [3, 1], [3, 3]];
+const weeklyPhotoSizesAt = size => photoSizeFixtures.map(([sessions, presenters]) =>
+  weeklyTimeHelpers.getWeeklyPresenterPhotoSize(sessions, presenters, size));
+assert.deepStrictEqual(weeklyPhotoSizesAt(70), [66, 51, 57, 45, 48, 40], 'the existing low profile-size setting must scale weekly avatars down');
+assert.deepStrictEqual(weeklyPhotoSizesAt(94), [88, 68, 76, 60, 64, 54], 'the existing default profile-size setting must preserve weekly avatar sizes');
+assert.deepStrictEqual(weeklyPhotoSizesAt(124), [116, 90, 100, 79, 84, 71], 'the existing high profile-size setting must scale weekly avatars up');
 assert.deepStrictEqual(
   weeklyTimeHelpers.getWeeklySessionCaptionLines(fourZoneSession),
   [
@@ -909,6 +917,13 @@ assert(!/presenter\.(?:title|job_title|role|specialty|specialty_line_\d|biograph
 assert(source.includes('flex-basis: var(--weekly-presenter-photo-size, 88px);')
   && source.includes('flex-basis: var(--weekly-presenter-photo-size, 76px);')
   && source.includes('flex-basis: var(--weekly-presenter-photo-size, 64px);'), 'weekly presenter photos must grow in every session-count layout');
+assert.strictEqual((source.match(/id="headshot-image-size"/g) || []).length, 1, 'weekly sizing must reuse the existing profile image control');
+assert(source.includes("const imageSizeControlVisible = weeklyCalendarCard\n    ? ready && currentSide === 'front'"), 'the existing profile image control must appear on the weekly front only');
+assert(source.includes("sessionAdjustmentControlsVisible || (weeklyCalendarCard && ready && currentSide === 'front')"), 'the shared adjustment panel must remain visible when it contains the weekly profile image control');
+assert(source.includes('getWeeklyPresenterPhotoSize(rows.length, presenters.length, selectedHeadshotSize)'), 'new weekly session rows must use the selected profile size');
+assert(source.includes('function applyWeeklyCalendarPresenterSizes()')
+  && source.includes('applyWeeklyCalendarPresenterSizes();\n    syncWeeklyCalendarCanvasSize();'), 'profile size changes must reflow weekly presenters and recalculate the one/two-session canvas');
+assert(source.includes('weekly-presenter-size-stack') && source.includes('weekly-presenter-photo-stacked'), 'large weekly presenter photos must reflow before overlapping labels');
 assert(source.includes('.calendar-sessions[data-session-count="1"] .weekly-calendar-speakers.weekly-has-multiple-speakers {\n  grid-template-columns: minmax(0, 1fr);'), 'single-session posters must stack multiple speaker blocks so larger portraits leave readable text width');
 assert(source.includes('.calendar-sessions[data-session-count="2"] .weekly-calendar-speakers.weekly-has-multiple-speakers {\n  grid-template-columns: minmax(0, 1fr);'), 'two-session posters must stack multiple speaker blocks so larger portraits leave readable text width');
 assert(source.includes('font-size: calc(22px * var(--calendar-date-chip-scale, 1));'), 'the day/date size control must scale weekly date text');
@@ -1024,7 +1039,7 @@ assert.strictEqual(trimmedDpiPng.readUInt32BE(16), 1440, 'trimmed weekly exports
 assert.strictEqual(trimmedDpiPng.readUInt32BE(20), 1250, 'trimmed weekly exports must retain the measured content height');
 
 promoTermsChecks().then(() => {
-  console.log('upcoming searchable week picker, session-title sizing, poster layouts, registration QR integrity, speaker data, timezone, DPI metadata, and export checks passed');
+  console.log('upcoming searchable week picker, profile-image and session-title sizing, poster layouts, registration QR integrity, speaker data, timezone, DPI metadata, and export checks passed');
 }).catch(error => {
   console.error(error);
   process.exitCode = 1;
