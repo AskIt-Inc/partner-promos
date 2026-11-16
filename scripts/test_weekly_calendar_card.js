@@ -12,7 +12,10 @@ const weeklyPartnerHelpers = new Function(
      resolveWeeklyCalendarPartnerTids,
      getWeeklyPartnerAvailabilityMessage,
      getWeeklyCalendarSessionsApiEndpoint,
-     buildWeeklyCalendarSessionsApiUrl
+     buildWeeklyCalendarSessionsApiUrl,
+     getWeeklyCalendarUnassignedSessionsApiEndpoint,
+     buildWeeklyCalendarUnassignedSessionsApiUrl,
+     mergeWeeklyCalendarSessions
    };`
 )();
 assert.deepStrictEqual(
@@ -52,6 +55,24 @@ const selectedRequest = new URL(weeklyPartnerHelpers.buildWeeklyCalendarSessions
 assert.strictEqual(selectedRequest.searchParams.get('partner'), '202', 'selected requests must replace any configured partner list with the selected ID only');
 assert.strictEqual(selectedRequest.searchParams.get('status'), 'all');
 assert.strictEqual(weeklyPartnerHelpers.buildWeeklyCalendarSessionsApiUrl(aggregateEndpoint, []), '', 'empty partner lists must never produce an unfiltered request');
+const unassignedEndpoint = weeklyPartnerHelpers.getWeeklyCalendarUnassignedSessionsApiEndpoint('https://local-sttt.somebodytotalkto.com:8443');
+assert.strictEqual(unassignedEndpoint, 'https://local-sttt.somebodytotalkto.com:8443/api/spotlight/microsite/sessions/unassigned-week');
+const unassignedRequest = new URL(weeklyPartnerHelpers.buildWeeklyCalendarUnassignedSessionsApiUrl(unassignedEndpoint, 2026, 47));
+assert.strictEqual(unassignedRequest.searchParams.get('week'), '2026-W47');
+assert.strictEqual(unassignedRequest.searchParams.get('card_type'), 'facebook-promo');
+assert.strictEqual(weeklyPartnerHelpers.buildWeeklyCalendarUnassignedSessionsApiUrl(unassignedEndpoint, 1999, 47), '');
+assert.strictEqual(weeklyPartnerHelpers.buildWeeklyCalendarUnassignedSessionsApiUrl(unassignedEndpoint, 2026, 54), '');
+assert.strictEqual(weeklyPartnerHelpers.getWeeklyCalendarUnassignedSessionsApiEndpoint('http://localhost:8080'), '');
+const duplicateSessionId = 'unassigned-thursday-uuid';
+const mergedWeeklyRows = weeklyPartnerHelpers.mergeWeeklyCalendarSessions([
+  { uuid: 'partner-monday', title: 'Monday', partner: 'Partner One' },
+  { uuid: duplicateSessionId, title: 'Stale partner copy', partner: 'Partner One' }
+], [
+  { uuid: duplicateSessionId, title: 'Unassigned Thursday', partner: '', date: 'Thu, Nov 19, 2026' }
+]);
+assert.strictEqual(mergedWeeklyRows.length, 2, 'aggregate session lists must deduplicate by UUID');
+assert.strictEqual(mergedWeeklyRows[1].title, 'Unassigned Thursday', 'unassigned API fields must win on a UUID collision');
+assert.strictEqual(mergedWeeklyRows[1]._weeklyFromUnassignedApi, true, 'unassigned sessions must be marked for direct QR/link reuse');
 assert.strictEqual(weeklyPartnerHelpers.getWeeklyPartnerAvailabilityMessage('loading', [], false), 'Loading the current promo-card-enabled partner list…');
 assert.match(weeklyPartnerHelpers.getWeeklyPartnerAvailabilityMessage('error', [], false), /could not be loaded/);
 assert.match(weeklyPartnerHelpers.getWeeklyPartnerAvailabilityMessage('ready', [], false), /No promo-card-enabled partners/);
@@ -399,6 +420,47 @@ assert.deepStrictEqual(
   [],
   'past ISO years must not expose week options'
 );
+const filterWeek47Sessions = new Function(
+  'CALENDAR_MONTH_INDEX',
+  'CALENDAR_DAY_NAMES',
+  'calendarNormalizeSpaces',
+  'selectedWeeklyYear',
+  'selectedWeeklyWeek',
+  'selectedWeeklyDays',
+  `${source.slice(dateStart, dateEnd)} return calendarGetWeeklySessions;`
+)(monthIndex, dayNames, normalizeSpaces, 2026, 47, new Set(['Mon', 'Tue', 'Wed', 'Thu']));
+const week47PartnerRows = [
+  { uuid: 'monday', title: 'Monday session', partner: 'Partner One', date: 'Nov 16, 2026', timestamp: Date.UTC(2026, 10, 16) },
+  { uuid: 'tuesday', title: 'Tuesday session', partner: 'Partner Two', date: 'Nov 17, 2026', timestamp: Date.UTC(2026, 10, 17) },
+  { uuid: 'wednesday', title: 'Wednesday session', partner: 'Partner Three', date: 'Nov 18, 2026', timestamp: Date.UTC(2026, 10, 18) }
+];
+const week47UnassignedThursday = {
+  uuid: 'unassigned-thursday-uuid',
+  title: 'Sadness, Anger and Fear: Coping With the Emotions of Illness',
+  partner: '',
+  date: 'Nov 19, 2026',
+  timestamp: Date.UTC(2026, 10, 19),
+  indications: ['Relationship Support', 'Amyloidosis', 'Rare Disease', 'Sickle Cell Disease'],
+  qr_payload_url: 'https://somebodytotalkto.com/s/thu123abc456',
+  tracked_registration_url: 'https://somebodytotalkto.com/r/' + 'a'.repeat(43),
+  qr_base64: 'data:image/png;base64,VGh1cnNkYXlRUi0='
+};
+const week47Rows = weeklyPartnerHelpers.mergeWeeklyCalendarSessions(week47PartnerRows, [week47UnassignedThursday]);
+const filteredWeek47Rows = filterWeek47Sessions(week47Rows);
+assert.deepStrictEqual(filteredWeek47Rows.map(row => row.uuid), [
+  'monday', 'tuesday', 'wednesday', 'unassigned-thursday-uuid'
+], 'the aggregate weekly card must merge the bounded Thursday session into ISO week 47');
+const week47PageSize = Number(source.match(/const WEEKLY_CALENDAR_PAGE_SIZE = (\d+);/)?.[1]);
+const week47Pages = Array.from({ length: Math.ceil(filteredWeek47Rows.length / week47PageSize) }, (_, index) =>
+  filteredWeek47Rows.slice(index * week47PageSize, (index + 1) * week47PageSize));
+assert.strictEqual(week47PageSize, 3, 'the card remains capped at three sessions per page');
+assert.strictEqual(week47Pages.length, 2, 'four ISO week 47 sessions must use two cards');
+assert.deepStrictEqual(week47Pages.map(page => page.map(row => row.uuid)), [
+  ['monday', 'tuesday', 'wednesday'],
+  ['unassigned-thursday-uuid']
+], 'page one stays Monday through Wednesday and page two contains Thursday');
+assert.strictEqual(week47Pages[1][0].partner, '', 'the unassigned Thursday has no invented partner');
+assert.strictEqual(week47Pages[1][0]._weeklyFromUnassignedApi, true);
 assert.strictEqual(weeklyHelpers.getWeeklyCalendarWeekOptions(2020, '', { year: 2020, week: 53 })[0].week, 53);
 assert.strictEqual(weeklyHelpers.getWeeklyCalendarWeekOptions(2021, '', { year: 2021, week: 52 })[0].week, 52);
 assert.strictEqual(weeklyHelpers.getWeeklyCalendarWeekOptions(2027, '', { year: 2026, week: 46 }).length, 52);
@@ -517,6 +579,7 @@ const weekPageHarness = new Function(
   'calendarGetIsoWeeksInYear',
   'calendarGetCurrentIsoWeek',
   'calendarGetWeeklySessions',
+  'getWeeklyCalendarSessionPool',
   'WEEKLY_CALENDAR_PAGE_SIZE',
   'updateWeeklyCalendarRangeLabel',
   'refreshWeeklyCalendarWeekPicker',
@@ -535,7 +598,8 @@ const weekPageHarness = new Function(
      setWeeklyCalendarPage,
      getState: () => ({ year: selectedWeeklyYear, week: selectedWeeklyWeek, page: selectedWeeklyPage, yearMin: weeklyCalendarYearInput.min, banner: weeklyAggregateBannerSettings })
    };`
-)(year => year === 2026 ? 53 : 52, () => ({ year: 2026, week: 46 }), sessions => sessions, 3, () => {}, () => {}, () => { weeklyRenders++; });
+)(year => year === 2026 ? 53 : 52, () => ({ year: 2026, week: 46 }), sessions => sessions,
+  () => Array.from({ length: 6 }, (_, index) => ({ uuid: String(index) })), 3, () => {}, () => {}, () => { weeklyRenders++; });
 weekPageHarness.setWeeklyCalendarPeriod(2027, 4);
 weekPageHarness.setWeeklyCalendarPage(1);
 assert.deepStrictEqual(weekPageHarness.getState(), {
@@ -800,7 +864,7 @@ const resolveWeeklyRegistrationAssets = new Function(
   `${source.slice(registrationAssetsStart, registrationAssetsEnd)}
    return getWeeklySessionRegistrationAssets;`
 )(
-  value => value === 'https://somebodytotalkto.com/s/abc123def0' ? value : '',
+  value => ['https://somebodytotalkto.com/s/abc123def0', 'https://somebodytotalkto.com/s/thu123abc456'].includes(value) ? value : '',
   value => value === 'https://somebodytotalkto.com/r/' + 'a'.repeat(43),
 );
 assert.deepStrictEqual(
@@ -812,15 +876,21 @@ assert.deepStrictEqual(
   { shortUrl: 'https://somebodytotalkto.com/s/abc123def0', qrSrc: 'data:image/png;base64,ZmFrZQ==' },
   'the displayed alias and QR image must come from the same first-party API response',
 );
+assert.deepStrictEqual(
+  resolveWeeklyRegistrationAssets(week47UnassignedThursday),
+  { shortUrl: 'https://somebodytotalkto.com/s/thu123abc456', qrSrc: week47UnassignedThursday.qr_base64 },
+  'the unassigned Thursday must keep its own short URL and matching QR payload',
+);
 assert(source.includes('const dataUrl = weeklyQrDataUrlCache.get(payloadUrl) || \'\';'));
 assert(source.includes('image.src = dataUrl;'), 'each footer QR must use the verified image from its own registration alias');
 assert(source.includes('qr.dataset.weeklyPayloadUrl = session.weekly_short_url;'), 'each QR payload must use that session’s short URL');
-assert(source.includes('cta.href = session.weekly_short_url;'));
-assert(source.includes('cta.textContent = `REGISTER · ${registrationDate}`;'));
+assert(source.includes('shortUrl.href = session.weekly_short_url;'), 'each poster row must keep its short URL clickable beside the QR');
+assert(!source.includes("className = 'weekly-calendar-register-cta'"), 'weekly poster rows must not render the red Register CTA');
 assert(source.includes('shortUrl.textContent = session.weekly_short_url;'));
 assert(source.includes('link.textContent = shortUrl;'));
 assert(source.includes('postLines.push(...getWeeklySessionCaptionLines(session));'));
 assert(source.includes("className = 'weekly-calendar-session-partner'"), 'each session card must visibly label its partner');
+assert(source.includes('partnerName || !session._weeklyFromUnassignedApi'), 'unassigned aggregate rows must not show a missing-partner placeholder');
 assert(source.includes("className = 'weekly-post-session-partner'"), 'aggregate post rows must visibly label each session partner');
 assert(source.includes('list.dataset.sessionCount = String(rows.length);'), 'the visible card count must select the one-, two-, or three-session layout');
 assert(source.includes('background: #fff;'));
@@ -839,8 +909,7 @@ assert(source.includes('registration.hidden = true;'), 'weekly cards must hide t
 assert(source.includes("if (registrationPlacement === 'inline') heading.appendChild(registrationItem);"), 'every session registration must sit beneath its own title and time');
 assert(!source.includes('registrationItems.appendChild(registrationItem)'), 'weekly session QR items must never be duplicated in the shared footer');
 assert(source.includes('weekly-calendar-inline-registration .weekly-calendar-qr-block {')
-  && source.includes('weekly-calendar-inline-registration .weekly-calendar-register-cta {')
-  && source.includes('width: max-content;'), 'the inline QR must be visible and its Register CTA must stay content-sized');
+  && source.includes('shortUrl.href = session.weekly_short_url;'), 'the inline QR must retain a clickable per-session short URL');
 assert(source.includes('const category = getWeeklyCalendarCategoryForWeekday(')
   && source.includes('calendarParseApiDate(session.date).weekday'), 'weekly category labels must follow the session date weekday');
 assert(source.includes('const indications = category ? [category] : [];'), 'weekly cards must render only the selected weekday category');
@@ -858,6 +927,11 @@ assert.deepStrictEqual(
   ['Mon', 'Tue', 'Wed', 'Thu'].map(day => getWeeklyCalendarCategoryForWeekday(day, ['Amyloidosis', 'Neurology'])),
   ['Patient Best Practices', 'Disease Specific', 'Disease Specific', 'Psycho-Social'],
 );
+assert.strictEqual(
+  getWeeklyCalendarCategoryForWeekday('Thu', week47UnassignedThursday.indications),
+  'Psycho-Social',
+  'the actual Thursday session fixture must render its approved weekly category'
+);
 assert.strictEqual(getWeeklyCalendarCategoryForWeekday('Friday', ['Amyloidosis', 'Neurology']), '', 'Friday must not receive an invented weekday category');
 assert.strictEqual(getWeeklyCalendarCategoryForWeekday('Saturday', ['Psycho-Social', 'Disease Specific']), 'Psycho-Social', 'weekend cards may show an explicitly approved category, capped at one tag');
 assert.strictEqual(getWeeklyCalendarCategoryForWeekday('Sunday', ['Disease Specific']), 'Disease Specific');
@@ -868,17 +942,26 @@ const getWeeklyCalendarRegistrationPlacement = new Function(
   `${source.slice(registrationPlacementStart, registrationPlacementEnd)} return getWeeklyCalendarRegistrationPlacement;`
 )();
 assert.deepStrictEqual([0, 1, 2, 3].map(getWeeklyCalendarRegistrationPlacement), ['none', 'inline', 'inline', 'inline']);
-assert(source.includes('qr.width = 64;'));
-assert(source.includes('qr.height = 64;'));
+assert(source.includes('qr.width = 52;'));
+assert(source.includes('qr.height = 52;'));
 assert(source.includes('session?.card_color'));
 assert(source.includes('background: #F3FBEA;'));
 assert(source.includes('border: 1px solid #159B36;'));
 assert(source.includes('color: #075B36;'));
-assert(source.includes('background: #C62828;'));
+assert(!source.includes('background: #C62828;'), 'weekly poster registration must not render the red CTA');
 assert(source.includes('flex: 0 0 var(--weekly-presenter-photo-size, 64px);'));
-assert(source.includes('flex: 0 0 64px;'), 'exported weekly QR images must remain at least 200 raster pixels wide');
-assert(source.includes('width: 64px;'));
-assert(64 * (1440 / (4.8 * 96)) >= 200, 'weekly QR cards must preserve a scan-sized raster code at export scale');
+assert(source.includes('flex: 0 0 52px;'));
+assert(source.includes('width: 52px;'));
+assert(52 * (1440 / (4.8 * 96)) >= 160 && 52 * (1440 / (4.8 * 96)) < 180,
+  'the inline QR must render around 160px wide in the 1440px export');
+const inlineRegistrationCssStart = source.indexOf('.weekly-calendar-inline-registration {');
+const inlineRegistrationCssEnd = source.indexOf('\n.weekly-calendar-inline-registration .weekly-calendar-qr-block', inlineRegistrationCssStart);
+const inlineRegistrationCss = source.slice(inlineRegistrationCssStart, inlineRegistrationCssEnd);
+assert.match(inlineRegistrationCss, /background:\s*transparent;/);
+assert.match(inlineRegistrationCss, /border:\s*0;/);
+assert.match(inlineRegistrationCss, /padding:\s*0;/);
+assert(!inlineRegistrationCss.includes('#F8FFF2') && !inlineRegistrationCss.includes('#BBDDB3'),
+  'the QR must not sit inside a colored panel or border');
 assert(source.includes('.calendar-sessions[data-session-count="1"] .weekly-calendar-session-row'));
 assert(source.includes('.calendar-sessions[data-session-count="2"] .weekly-calendar-session-row'));
 assert(source.includes('.calendar-sessions[data-session-count="3"] .weekly-calendar-session-row'));
@@ -895,7 +978,7 @@ assert(source.includes('weeklyTimezoneDisplayMode'), 'the abbreviation/city sele
 assert(source.includes("className = 'weekly-calendar-session-title'"));
 assert(source.includes("className = 'weekly-calendar-condition'"));
 assert(source.includes("className = 'weekly-calendar-speaker'"));
-assert(source.includes("className = 'weekly-calendar-register-cta'"));
+assert(!source.includes('weekly-calendar-register-cta'));
 const weeklyPresenterHelperStart = source.indexOf('function getPresenterEmployer');
 const weeklyPresenterHelperEnd = source.indexOf('function getPresenterDisplay', weeklyPresenterHelperStart);
 assert(weeklyPresenterHelperStart >= 0 && weeklyPresenterHelperEnd > weeklyPresenterHelperStart, 'weekly presenter display helpers must be present');

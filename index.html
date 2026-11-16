@@ -686,35 +686,23 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
 }
 .weekly-calendar-qr-block img {
   background: #fff;
-  border: 1px solid #D5E7E4;
-  border-radius: 4px;
+  border: 0;
+  border-radius: 0;
   display: block;
-  flex: 0 0 64px;
-  height: 64px;
+  flex: 0 0 52px;
+  height: 52px;
   image-rendering: pixelated;
   object-fit: contain;
-  width: 64px;
-}
-.weekly-calendar-register-cta {
-  background: #C62828;
-  border-radius: 3px;
-  color: #fff;
-  display: block;
-  font-size: 6.2px;
-  font-weight: 900;
-  line-height: 1.12;
-  padding: 3px 4px;
-  text-align: center;
-  text-decoration: none;
-  max-width: 100%;
-  width: 100%;
+  width: 52px;
 }
 .weekly-calendar-short-url {
   color: #092E30;
+  display: block;
   font-size: 5.8px;
   font-weight: 600;
   line-height: 1.12;
   overflow-wrap: anywhere;
+  text-decoration: underline;
   width: 100%;
 }
 .weekly-calendar-registration {
@@ -744,17 +732,18 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
   align-items: center;
   display: grid;
   gap: 5px;
-  grid-template-columns: 64px minmax(0, 1fr);
+  grid-template-columns: 52px minmax(0, 1fr);
   min-width: 0;
 }
 .weekly-calendar-inline-registration {
   align-self: flex-start;
-  background: #F8FFF2;
-  border: 1px solid #BBDDB3;
-  border-radius: 6px;
-  margin-top: 7px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  gap: 4px;
+  margin-top: 5px;
   max-width: 100%;
-  padding: 4px;
+  padding: 0;
 }
 .weekly-calendar-inline-registration .weekly-calendar-qr-block {
   align-items: center;
@@ -766,14 +755,6 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
   align-items: flex-start;
   gap: 3px;
 }
-.weekly-calendar-inline-registration .weekly-calendar-register-cta {
-  align-self: flex-start;
-  display: inline-block;
-  font-size: 5.4px;
-  padding: 3px 4px;
-  white-space: nowrap;
-  width: max-content;
-}
 .weekly-calendar-inline-registration .weekly-calendar-short-url {
   font-size: 5.5px;
   line-height: 1.1;
@@ -781,12 +762,10 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
 .calendar-sessions[data-session-count="2"] .weekly-calendar-inline-registration,
 .calendar-sessions[data-session-count="3"] .weekly-calendar-inline-registration {
   margin-top: 5px;
-  padding: 3px;
 }
 .calendar-sessions[data-session-count="3"] .weekly-calendar-inline-registration {
   gap: 3px;
   margin-top: 3px;
-  padding: 1px;
 }
 .weekly-calendar-registration-copy {
   display: flex;
@@ -804,9 +783,6 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
 .weekly-calendar-registration .weekly-calendar-short-url {
   font-size: 5.5px;
   line-height: 1.08;
-}
-.weekly-calendar-registration .weekly-calendar-register-cta {
-  font-size: 6px;
 }
 .weekly-calendar-registration[data-session-count="2"] .weekly-calendar-registration-items {
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -5223,7 +5199,7 @@ const CALENDAR_MONTH_INDEX = {
 };
 let calendarSessionsLoaded = false;
 let calendarSessionsPromise = null;
-let calendarSessionsData = { sessions: [], profiles: [] };
+let calendarSessionsData = { sessions: [], partnerSessions: [], profiles: [] };
 let calendarSessionsSourceKey = '';
 let calendarLoadProgressTimer = null;
 let calendarLoadProgressValue = 10;
@@ -5241,6 +5217,8 @@ let weeklyCardPageReady = false;
 const weeklySessionAliasCache = new Map();
 const weeklySessionAliasPromises = new Map();
 const weeklyQrDataUrlCache = new Map();
+const weeklyUnassignedSessionsCache = new Map();
+const weeklyUnassignedSessionsPromises = new Map();
 let weeklyRegistrationRetrySessionUuids = null;
 const weeklyPostDraftCache = new Map();
 let weeklyPostDraftPageKey = '';
@@ -5330,6 +5308,59 @@ function buildWeeklyCalendarSessionsApiUrl(endpointUrl, partnerTids) {
   } catch (error) {
     return '';
   }
+}
+
+function getWeeklyCalendarUnassignedSessionsApiEndpoint(publicBaseUrl) {
+  try {
+    const base = new URL(String(publicBaseUrl || ''));
+    if (base.protocol !== 'https:' || base.username || base.password
+      || (base.pathname !== '/' && base.pathname !== '') || base.search || base.hash) return '';
+    return new URL('/api/spotlight/microsite/sessions/unassigned-week', base.origin).href;
+  } catch (error) {
+    return '';
+  }
+}
+
+function buildWeeklyCalendarUnassignedSessionsApiUrl(endpointUrl, year, week) {
+  const isoYear = Number(year);
+  const isoWeek = Number(week);
+  if (!Number.isInteger(isoYear) || isoYear < 2000 || isoYear > 2100
+    || !Number.isInteger(isoWeek) || isoWeek < 1 || isoWeek > 53) return '';
+  try {
+    const url = new URL(String(endpointUrl || ''));
+    if (url.protocol !== 'https:' || !url.pathname.endsWith('/sessions/unassigned-week')) return '';
+    url.search = '';
+    url.hash = '';
+    url.searchParams.set('week', `${isoYear}-W${String(isoWeek).padStart(2, '0')}`);
+    url.searchParams.set('card_type', 'facebook-promo');
+    return url.href;
+  } catch (error) {
+    return '';
+  }
+}
+
+function mergeWeeklyCalendarSessions(partnerSessions, unassignedSessions) {
+  const merged = [];
+  const indexes = new Map();
+  const append = (session, fromUnassignedApi) => {
+    if (!session || typeof session !== 'object') return;
+    const uuid = String(session.uuid || '').trim();
+    const row = fromUnassignedApi ? { ...session, _weeklyFromUnassignedApi: true } : session;
+    if (!uuid) {
+      merged.push(row);
+      return;
+    }
+    if (!indexes.has(uuid)) {
+      indexes.set(uuid, merged.length);
+      merged.push(row);
+      return;
+    }
+    const index = indexes.get(uuid);
+    merged[index] = { ...merged[index], ...row };
+  };
+  (Array.isArray(partnerSessions) ? partnerSessions : []).forEach(session => append(session, false));
+  (Array.isArray(unassignedSessions) ? unassignedSessions : []).forEach(session => append(session, true));
+  return merged;
 }
 
 function getEmployerPartnerKey(term) {
@@ -6944,7 +6975,7 @@ function resetCalendarSessionState() {
   calendarLoadProgressTimer = null;
   calendarSessionsLoaded = false;
   calendarSessionsPromise = null;
-  calendarSessionsData = { sessions: [], profiles: [] };
+  calendarSessionsData = { sessions: [], partnerSessions: [], profiles: [] };
 }
 
 function setCalendarLoadProgress(percent) {
@@ -6985,6 +7016,60 @@ async function fetchCalendarJson(url, label, cacheMode = 'default', timeoutMs = 
   } finally {
     window.clearTimeout(timeout);
   }
+}
+
+function getWeeklyUnassignedSessionsRequestUrl(year = selectedWeeklyYear, week = selectedWeeklyWeek) {
+  const endpointUrl = getWeeklyCalendarUnassignedSessionsApiEndpoint(promoRuntimeConfig.stttPublicBaseUrl);
+  return buildWeeklyCalendarUnassignedSessionsApiUrl(endpointUrl, year, week);
+}
+
+function getWeeklyCalendarSessionPool() {
+  const partnerSessions = Array.isArray(calendarSessionsData.partnerSessions)
+    ? calendarSessionsData.partnerSessions
+    : calendarSessionsData.sessions;
+  if (!isWeeklyCalendarAggregateMode()) return partnerSessions;
+  const requestUrl = getWeeklyUnassignedSessionsRequestUrl();
+  return mergeWeeklyCalendarSessions(partnerSessions, weeklyUnassignedSessionsCache.get(requestUrl) || []);
+}
+
+async function loadWeeklyCalendarSessionPool() {
+  const partnerSessions = Array.isArray(calendarSessionsData.partnerSessions)
+    ? calendarSessionsData.partnerSessions
+    : calendarSessionsData.sessions;
+  if (!isWeeklyCalendarAggregateMode()) return partnerSessions;
+
+  const requestUrl = getWeeklyUnassignedSessionsRequestUrl();
+  if (!requestUrl) throw new Error('The bounded unassigned-session endpoint is not configured.');
+  if (weeklyUnassignedSessionsCache.has(requestUrl)) {
+    return mergeWeeklyCalendarSessions(partnerSessions, weeklyUnassignedSessionsCache.get(requestUrl));
+  }
+  if (weeklyUnassignedSessionsPromises.has(requestUrl)) {
+    const rows = await weeklyUnassignedSessionsPromises.get(requestUrl);
+    return mergeWeeklyCalendarSessions(partnerSessions, rows);
+  }
+
+  const requestWeek = new URL(requestUrl).searchParams.get('week');
+  let request;
+  request = fetchCalendarJson(requestUrl, 'Unassigned weekly sessions', 'no-store')
+    .then(response => {
+      if (response?.meta?.week !== requestWeek || response?.meta?.card_type !== 'facebook-promo') {
+        throw new Error('The unassigned-session service returned a different week or card type.');
+      }
+      if (!Array.isArray(response.data)
+        || response.data.some(row => !row || !String(row.uuid || '').trim() || calendarNormalizeSpaces(row.partner))) {
+        throw new Error('The unassigned-session service returned invalid session data.');
+      }
+      weeklyUnassignedSessionsCache.set(requestUrl, response.data);
+      return response.data;
+    })
+    .finally(() => {
+      if (weeklyUnassignedSessionsPromises.get(requestUrl) === request) {
+        weeklyUnassignedSessionsPromises.delete(requestUrl);
+      }
+    });
+  weeklyUnassignedSessionsPromises.set(requestUrl, request);
+  const unassignedSessions = await request;
+  return mergeWeeklyCalendarSessions(partnerSessions, unassignedSessions);
 }
 
 function renderCalendarLoadError(message) {
@@ -7239,8 +7324,10 @@ function renderCalendarSessionsFromApi(sessions, profiles) {
   const list = document.getElementById('calendar-sessions-list');
   if (!list) return;
 
+  const partnerSessions = Array.isArray(sessions) ? sessions : [];
   calendarSessionsData = {
-    sessions: Array.isArray(sessions) ? sessions : [],
+    sessions: partnerSessions,
+    partnerSessions,
     profiles: Array.isArray(profiles) ? profiles : []
   };
   const profileMap = calendarBuildProfileMap(Array.isArray(profiles) ? profiles : []);
@@ -7435,12 +7522,14 @@ async function getWeeklySessionWithAlias(session) {
 
   let request;
   request = (async () => {
-    const detailJson = await fetchCalendarJson(
-      getWeeklySessionAliasApiUrl(session),
-      'Registration link',
-      'no-store',
-      REGISTRATION_LINK_REQUEST_TIMEOUT_MS
-    );
+    const detailJson = session._weeklyFromUnassignedApi
+      ? { data: [session] }
+      : await fetchCalendarJson(
+        getWeeklySessionAliasApiUrl(session),
+        'Registration link',
+        'no-store',
+        REGISTRATION_LINK_REQUEST_TIMEOUT_MS
+      );
     const rows = Array.isArray(detailJson.data) ? detailJson.data : (detailJson.data ? [detailJson.data] : []);
     const detail = rows.find(row => String(row.uuid || '') === uuid);
     if (!detail) throw new Error('The registration service did not return this session.');
@@ -7469,7 +7558,7 @@ async function getWeeklySessionWithAlias(session) {
 }
 
 function retryWeeklyCalendarRegistrationLinks() {
-  const sessions = calendarGetWeeklySessions(calendarSessionsData.sessions);
+  const sessions = calendarGetWeeklySessions(getWeeklyCalendarSessionPool());
   const pageRows = sessions.slice(
     selectedWeeklyPage * WEEKLY_CALENDAR_PAGE_SIZE,
     (selectedWeeklyPage + 1) * WEEKLY_CALENDAR_PAGE_SIZE
@@ -7564,8 +7653,9 @@ function getWeeklySessionCaptionLines(session) {
   const title = calendarNormalizeSpaces(session?.title) || 'Untitled session';
   const date = calendarFormatWeeklySessionDate(session);
   const lines = [`• ${title} — ${date}`];
-  if (isWeeklyCalendarAggregateMode()) {
-    lines.push(`  Partner: ${calendarNormalizeSpaces(session?.partner) || 'Partner details unavailable'}`);
+  const partner = calendarNormalizeSpaces(session?.partner);
+  if (isWeeklyCalendarAggregateMode() && (partner || !session?._weeklyFromUnassignedApi)) {
+    lines.push(`  Partner: ${partner || 'Partner details unavailable'}`);
   }
   const times = getWeeklySessionTimes(session);
   if (times.length) {
@@ -7644,9 +7734,11 @@ function updateWeeklyPostPanel(sessions) {
     const titleEl = document.createElement('div');
     titleEl.className = 'weekly-post-session-title';
     titleEl.textContent = title;
+    const partnerName = calendarNormalizeSpaces(session.partner);
+    const showPartner = isWeeklyCalendarAggregateMode() && (partnerName || !session._weeklyFromUnassignedApi);
     const partnerEl = document.createElement('div');
     partnerEl.className = 'weekly-post-session-partner';
-    partnerEl.textContent = `Partner: ${calendarNormalizeSpaces(session.partner) || 'Partner details unavailable'}`;
+    partnerEl.textContent = `Partner: ${partnerName || 'Partner details unavailable'}`;
     const meta = document.createElement('div');
     meta.className = 'weekly-post-session-meta';
     meta.textContent = `${date} · ${displayTime}`;
@@ -7682,7 +7774,8 @@ function updateWeeklyPostPanel(sessions) {
       }
     });
     linkRow.append(link, copy);
-    if (isWeeklyCalendarAggregateMode()) item.append(titleEl, partnerEl, meta, linkRow);
+    if (showPartner) item.append(titleEl, partnerEl, meta, linkRow);
+    else if (isWeeklyCalendarAggregateMode()) item.append(titleEl, meta, linkRow);
     else item.append(titleEl, meta, linkRow);
     list.appendChild(item);
   });
@@ -7706,17 +7799,41 @@ async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
   if (registrationItems) registrationItems.replaceChildren();
   const token = ++weeklyPageLoadToken;
   weeklyRegistrationRetrySessionUuids = null;
-  const sessions = calendarGetWeeklySessions(calendarSessionsData.sessions);
-  const pageCount = Math.ceil(sessions.length / WEEKLY_CALENDAR_PAGE_SIZE);
-  if (pageCount && selectedWeeklyPage >= pageCount) selectedWeeklyPage = pageCount - 1;
-  updateWeeklyCalendarRangeLabel();
-  updateWeeklyPagination(sessions.length);
   list.classList.add('weekly-calendar-session-list');
   list.classList.remove('calendar-sessions-filtered', 'calendar-sessions-dense', 'calendar-sessions-compact');
   list.removeAttribute('data-session-count');
   surface.removeAttribute('data-weekly-session-count');
   surface.style.removeProperty('height');
   weeklyCardPageReady = false;
+  updateControlAvailability();
+  let sessionsPool = getWeeklyCalendarSessionPool();
+  if (isWeeklyCalendarAggregateMode()) {
+    weeklyCalendarStatus('Loading sessions for the selected week…');
+    try {
+      sessionsPool = await loadWeeklyCalendarSessionPool();
+    } catch (error) {
+      if (token !== weeklyPageLoadToken) return;
+      const requestUrl = getWeeklyUnassignedSessionsRequestUrl();
+      weeklyCalendarStatus(
+        `Unassigned sessions for ${calendarGetWeeklyLabel()} could not be loaded. ${error?.message || 'Please try again.'}`,
+        true,
+        () => {
+          if (requestUrl) weeklyUnassignedSessionsCache.delete(requestUrl);
+          return renderWeeklyCalendarSessions();
+        },
+        'Retry weekly sessions'
+      );
+      updateWeeklyPostPanel([]);
+      updateControlAvailability();
+      return;
+    }
+  }
+  if (token !== weeklyPageLoadToken) return;
+  const sessions = calendarGetWeeklySessions(sessionsPool);
+  const pageCount = Math.ceil(sessions.length / WEEKLY_CALENDAR_PAGE_SIZE);
+  if (pageCount && selectedWeeklyPage >= pageCount) selectedWeeklyPage = pageCount - 1;
+  updateWeeklyCalendarRangeLabel();
+  updateWeeklyPagination(sessions.length);
   updateControlAvailability();
 
   if (!sessions.length) {
@@ -7769,7 +7886,6 @@ async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
     }
     rows.forEach(session => {
       const date = calendarParseApiDate(session.date);
-      const dateLabel = calendarFormatWeeklySessionDate(session).replace(/, \d{4}$/, '');
       const presenters = Array.isArray(session.presenters) ? session.presenters : [];
       const row = document.createElement('article');
       row.className = 'weekly-calendar-session-row';
@@ -7814,10 +7930,13 @@ async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
       title.className = 'weekly-calendar-session-title';
       title.textContent = calendarNormalizeSpaces(session.title) || 'Untitled session';
       heading.append(condition, title);
-      const partnerLabel = document.createElement('p');
-      partnerLabel.className = 'weekly-calendar-session-partner';
-      partnerLabel.textContent = `Partner: ${calendarNormalizeSpaces(session.partner) || (hasSelectedPartner() ? activePartnerConfig.label : 'Partner details unavailable')}`;
-      heading.appendChild(partnerLabel);
+      const partnerName = calendarNormalizeSpaces(session.partner);
+      if (partnerName || !session._weeklyFromUnassignedApi) {
+        const partnerLabel = document.createElement('p');
+        partnerLabel.className = 'weekly-calendar-session-partner';
+        partnerLabel.textContent = `Partner: ${partnerName || (hasSelectedPartner() ? activePartnerConfig.label : 'Partner details unavailable')}`;
+        heading.appendChild(partnerLabel);
+      }
       const divider = document.createElement('hr');
       divider.className = 'weekly-calendar-session-divider';
 
@@ -7896,26 +8015,22 @@ async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
       registrationItem.setAttribute('aria-label', `Registration for ${calendarNormalizeSpaces(session.title)}`);
       const qrBlock = document.createElement('div');
       qrBlock.className = 'weekly-calendar-qr-block';
-      const cta = document.createElement('a');
-      cta.className = 'weekly-calendar-register-cta';
-      cta.href = session.weekly_short_url;
-      cta.target = '_blank';
-      cta.rel = 'noopener noreferrer';
-      const registrationDate = [date.month, date.day].filter(Boolean).join(' ') || 'Date TBA';
-      cta.textContent = `REGISTER · ${registrationDate}`;
-      cta.setAttribute('aria-label', `Register for ${calendarNormalizeSpaces(session.title)} on ${dateLabel}`);
       const qr = document.createElement('img');
       qr.dataset.weeklyPayloadUrl = session.weekly_short_url;
       qr.dataset.weeklySessionUuid = String(session.uuid || '').trim();
       qr.alt = `Registration QR code for ${calendarNormalizeSpaces(session.title)}`;
-      qr.width = 64;
-      qr.height = 64;
-      const shortUrl = document.createElement('span');
+      qr.width = 52;
+      qr.height = 52;
+      const shortUrl = document.createElement('a');
       shortUrl.className = 'weekly-calendar-short-url';
+      shortUrl.href = session.weekly_short_url;
+      shortUrl.target = '_blank';
+      shortUrl.rel = 'noopener noreferrer';
       shortUrl.textContent = session.weekly_short_url;
+      shortUrl.setAttribute('aria-label', `Open registration link for ${calendarNormalizeSpaces(session.title)}`);
       const registrationCopy = document.createElement('div');
       registrationCopy.className = 'weekly-calendar-registration-copy';
-      registrationCopy.append(cta, shortUrl);
+      registrationCopy.appendChild(shortUrl);
       qrBlock.appendChild(qr);
       registrationItem.append(qrBlock, registrationCopy);
       if (registrationPlacement === 'inline') heading.appendChild(registrationItem);
@@ -7974,7 +8089,7 @@ async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
 
 function refreshWeeklyCalendarTimeLabels() {
   if (!isWeeklyCalendarCardLayout() || !calendarSessionsLoaded) return;
-  const sessions = calendarGetWeeklySessions(calendarSessionsData.sessions);
+  const sessions = calendarGetWeeklySessions(getWeeklyCalendarSessionPool());
   const pageRows = sessions.slice(
     selectedWeeklyPage * WEEKLY_CALENDAR_PAGE_SIZE,
     (selectedWeeklyPage + 1) * WEEKLY_CALENDAR_PAGE_SIZE
@@ -7992,7 +8107,7 @@ function refreshWeeklyCalendarTimeLabels() {
 
 function refreshWeeklyCalendarPostPanel() {
   if (!isWeeklyCalendarCardLayout() || !calendarSessionsLoaded) return;
-  const sessions = calendarGetWeeklySessions(calendarSessionsData.sessions);
+  const sessions = calendarGetWeeklySessions(getWeeklyCalendarSessionPool());
   const pageRows = sessions.slice(
     selectedWeeklyPage * WEEKLY_CALENDAR_PAGE_SIZE,
     (selectedWeeklyPage + 1) * WEEKLY_CALENDAR_PAGE_SIZE
@@ -8078,7 +8193,7 @@ function setWeeklyCalendarPeriod(year, week) {
 }
 
 function setWeeklyCalendarPage(page) {
-  const sessions = calendarGetWeeklySessions(calendarSessionsData.sessions);
+  const sessions = calendarGetWeeklySessions(getWeeklyCalendarSessionPool());
   const pageCount = Math.ceil(sessions.length / WEEKLY_CALENDAR_PAGE_SIZE);
   if (!pageCount) return;
   const safePage = Math.max(0, Math.min(pageCount - 1, Number(page) || 0));
