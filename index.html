@@ -5275,6 +5275,7 @@ const weeklyPostDraftCache = new Map();
 let weeklyPostDraftPageKey = '';
 let weeklyPostDraftDirty = false;
 const CALENDAR_REQUEST_TIMEOUT_MS = 10000;
+const UNASSIGNED_WEEK_REQUEST_TIMEOUT_MS = 45000;
 const REGISTRATION_LINK_REQUEST_TIMEOUT_MS = 30000;
 const partnerBackSeriesMonthRequests = new Map();
 const partnerBackEmployerRequests = new Map();
@@ -7147,7 +7148,7 @@ async function loadWeeklyCalendarSessionPool() {
 
   const requestWeek = new URL(requestUrl).searchParams.get('week');
   let request;
-  request = fetchCalendarJson(requestUrl, 'Unassigned weekly sessions', 'no-store')
+  request = fetchCalendarJson(requestUrl, 'Unassigned weekly sessions', 'no-store', UNASSIGNED_WEEK_REQUEST_TIMEOUT_MS)
     .then(response => {
       if (response?.meta?.week !== requestWeek || response?.meta?.card_type !== 'facebook-promo') {
         throw new Error('The unassigned-session service returned a different week or card type.');
