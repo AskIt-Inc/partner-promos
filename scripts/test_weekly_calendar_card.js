@@ -926,6 +926,8 @@ assert(source.includes('getWeeklyPresenterPhotoSize(rows.length, presenters.leng
 assert(source.includes('function applyWeeklyCalendarPresenterSizes()')
   && source.includes('applyWeeklyCalendarPresenterSizes();\n    syncWeeklyCalendarCanvasSize();'), 'profile size changes must reflow weekly presenters and recalculate the one/two-session canvas');
 assert(source.includes('weekly-presenter-size-stack') && source.includes('weekly-presenter-photo-stacked'), 'large weekly presenter photos must reflow before overlapping labels');
+assert(source.includes('.weekly-calendar-speakers.weekly-has-multiple-speakers.weekly-grid-presenters.weekly-presenter-size-stack,')
+  && source.includes('grid-template-columns: minmax(0, 1fr);'), 'large one/two-session portraits must override the two-column presenter grid when it would squeeze names');
 assert(source.includes('.calendar-sessions[data-session-count="1"] .weekly-calendar-speakers.weekly-has-multiple-speakers {\n  grid-template-columns: minmax(0, 1fr);'), 'single-session posters must stack multiple speaker blocks so larger portraits leave readable text width');
 assert(source.includes('.calendar-sessions[data-session-count="2"] .weekly-calendar-speakers.weekly-has-multiple-speakers {\n  grid-template-columns: minmax(0, 1fr);'), 'two-session posters must stack multiple speaker blocks so larger portraits leave readable text width');
 assert(source.includes('font-size: calc(22px * var(--calendar-date-chip-scale, 1));'), 'the day/date size control must scale weekly date text');
@@ -942,28 +944,32 @@ assert(titleScaleStart >= 0 && titleScaleEnd > titleScaleStart, 'weekly title sc
 const makeTitleScaleUpdater = (initialSize, weeklyLayout) => {
   const rootStyles = new Map();
   let syncCalls = 0;
+  let labelCalls = 0;
   const apply = new Function(
     'initialSize',
     'rootStyles',
     'isWeeklyCalendarCardLayout',
     'syncWeeklyCalendarCanvasSize',
+    'updateSizeLabel',
     `let selectedWeeklySessionTitleSize = initialSize;
      const document = { documentElement: { style: { setProperty: (key, value) => rootStyles.set(key, value) } } };
      ${source.slice(titleScaleStart, titleScaleEnd)}
      return { applyWeeklySessionTitleSize, setSize: value => { selectedWeeklySessionTitleSize = value; } };`
-  )(initialSize, rootStyles, () => weeklyLayout, () => { syncCalls++; });
-  return { apply, rootStyles, getSyncCalls: () => syncCalls };
+  )(initialSize, rootStyles, () => weeklyLayout, () => { syncCalls++; }, () => { labelCalls++; });
+  return { apply, rootStyles, getSyncCalls: () => syncCalls, getLabelCalls: () => labelCalls };
 };
 const scaledWeeklyTitle = makeTitleScaleUpdater('130', true);
 scaledWeeklyTitle.apply.applyWeeklySessionTitleSize();
 assert.strictEqual(scaledWeeklyTitle.rootStyles.get('--weekly-session-title-scale'), '1.3');
-assert.strictEqual(scaledWeeklyTitle.getSyncCalls(), 1, 'weekly title changes must resize one/two session canvases');
+assert.strictEqual(scaledWeeklyTitle.getSyncCalls(), 1, 'weekly title changes must recalculate the measured canvas for every session count');
+assert.strictEqual(scaledWeeklyTitle.getLabelCalls(), 1, 'weekly title changes must refresh the displayed export dimensions');
 scaledWeeklyTitle.apply.setSize('-1');
 scaledWeeklyTitle.apply.applyWeeklySessionTitleSize();
 assert.strictEqual(scaledWeeklyTitle.rootStyles.get('--weekly-session-title-scale'), '0.7', 'stored title scales must clamp to the supported minimum');
 const scaledMonthlyTitle = makeTitleScaleUpdater('100', false);
 scaledMonthlyTitle.apply.applyWeeklySessionTitleSize();
 assert.strictEqual(scaledMonthlyTitle.getSyncCalls(), 0, 'monthly cards must not run weekly canvas sizing');
+assert.strictEqual(scaledMonthlyTitle.getLabelCalls(), 0, 'monthly cards must not refresh the weekly canvas label');
 assert(source.includes('calc(82px * var(--calendar-date-chip-scale, 1))')
   && source.includes('calc(68px * var(--calendar-date-chip-scale, 1))')
   && source.includes('calc(60px * var(--calendar-date-chip-scale, 1))'), 'the day/date size control must scale all weekly date-panel widths');
@@ -976,21 +982,84 @@ assert(canvasDimensionStart >= 0 && canvasDimensionEnd > canvasDimensionStart, '
 const getWeeklyCalendarCanvasDimensions = new Function(
   `${source.slice(canvasDimensionStart, canvasDimensionEnd)} return getWeeklyCalendarCanvasDimensions;`
 )();
-const threeSessionCanvas = getWeeklyCalendarCanvasDimensions(3, 420);
-assert.deepStrictEqual(
-  [threeSessionCanvas.pxW, threeSessionCanvas.pxH, threeSessionCanvas.wIn, threeSessionCanvas.hIn],
-  [1440, 1800, 4.8, 6],
-  'three-session weekly posters must retain the full 1440 × 1800 canvas'
-);
-for (const count of [1, 2]) {
+const minimumCanvasHeight = Math.ceil(1440 / 1.91);
+for (const count of [1, 2, 3]) {
   const trimmed = getWeeklyCalendarCanvasDimensions(count, 400);
   assert.strictEqual(trimmed.pxW, 1440);
   assert.strictEqual(trimmed.pxH, 1250, `${count}-session canvas height must follow the measured content`);
   assert.strictEqual(trimmed.hIn, trimmed.pxH / 300, 'the export inches must match the 300 DPI pixel height');
-  assert(trimmed.pxH >= Math.ceil(1440 / 1.91) && trimmed.pxH <= 1800, 'trimmed canvases must remain within the feed image ratio bounds');
+  assert(trimmed.pxH >= minimumCanvasHeight && trimmed.pxH < 1800, 'shorter content must not be forced to the maximum canvas height');
+  assert.strictEqual(getWeeklyCalendarCanvasDimensions(count, 100).pxH, minimumCanvasHeight, 'short content must stay within the supported feed image ratio');
+  assert.strictEqual(getWeeklyCalendarCanvasDimensions(count, 700).pxH, 1800, 'long content must stop at the 4:5 canvas limit');
 }
-assert.strictEqual(getWeeklyCalendarCanvasDimensions(1, 100).pxH, Math.ceil(1440 / 1.91), 'short content must remain within the selected maximum feed width-to-height ratio');
-assert.strictEqual(getWeeklyCalendarCanvasDimensions(2, 700).pxH, 1800, 'long content must not exceed the 4:5 canvas limit');
+assert.strictEqual(getWeeklyCalendarCanvasDimensions(3, 420).pxH, 1313, 'three-session canvas height must follow rendered content instead of forcing the maximum');
+assert.strictEqual(getWeeklyCalendarCanvasDimensions(0, 0).pxH, 1800, 'an unmeasured card must keep the safe full canvas size');
+const contentHeightStart = source.indexOf('function getWeeklyCalendarContentHeight');
+const contentHeightEnd = source.indexOf('\nfunction syncWeeklyCalendarCanvasSize', contentHeightStart);
+assert(contentHeightStart >= 0 && contentHeightEnd > contentHeightStart, 'weekly content measurement helper must be present');
+const getWeeklyCalendarContentHeight = new Function(
+  `${source.slice(contentHeightStart, contentHeightEnd)} return getWeeklyCalendarContentHeight;`
+)();
+const contentFixtureNode = (top, bottom, hidden = false) => ({
+  hidden,
+  getClientRects: () => hidden ? [] : [{}],
+  getBoundingClientRect: () => ({ top, bottom, height: bottom - top })
+});
+const measuredBanner = contentFixtureNode(110, 180);
+const measuredLongTitleRow = contentFixtureNode(205, 425);
+const measuredQrFooter = contentFixtureNode(460, 600);
+const hiddenOldFooter = contentFixtureNode(610, 999, true);
+const renderedFrontFixture = {
+  scrollHeight: 400,
+  getClientRects: () => [{}],
+  getBoundingClientRect: () => ({ top: 100, bottom: 500, height: 400 }),
+  querySelectorAll: () => [measuredBanner, measuredLongTitleRow, measuredQrFooter, hiddenOldFooter]
+};
+const renderedSurfaceFixture = {
+  scrollHeight: 420,
+  getBoundingClientRect: () => ({ top: 100, bottom: 500, height: 400 })
+};
+assert.strictEqual(
+  getWeeklyCalendarContentHeight(renderedSurfaceFixture, renderedFrontFixture),
+  500,
+  'canvas measurement must include the furthest visible banner, session row, and QR footer content while excluding hidden content'
+);
+assert(source.includes('Number(front.scrollHeight) || 0') && source.includes('visualBottom - surfaceRect.top'), 'weekly canvas measurement must include overflow beyond the card and nested rendered content');
+const syncCanvasStart = source.indexOf('function syncWeeklyCalendarCanvasSize');
+const syncCanvasEnd = source.indexOf('\nfunction getExportDimensions', syncCanvasStart);
+assert(syncCanvasStart >= 0 && syncCanvasEnd > syncCanvasStart, 'weekly canvas synchronization helper must be present');
+const makeCanvasSynchronizer = (fixtureSurface, measureContent) => new Function(
+  'surface',
+  'isWeeklyCalendarCardLayout',
+  'currentSide',
+  'getWeeklyCalendarCanvasDimensions',
+  'getWeeklyCalendarContentHeight',
+  `${source.slice(syncCanvasStart, syncCanvasEnd)} return syncWeeklyCalendarCanvasSize;`
+)(fixtureSurface, () => true, 'front', getWeeklyCalendarCanvasDimensions, measureContent);
+const oversizedPresenterRows = Array.from({ length: 2 }, () => {
+  const rowStyle = {
+    photoSize: '79px',
+    getPropertyValue: () => rowStyle.photoSize,
+    setProperty: (_key, value) => { rowStyle.photoSize = value; }
+  };
+  return { style: rowStyle };
+});
+const oversizedFront = { querySelectorAll: () => oversizedPresenterRows };
+const oversizedSurface = {
+  dataset: { weeklySessionCount: '2' },
+  style: { height: '', removeProperty: key => { if (key === 'height') oversizedSurface.style.height = ''; } },
+  querySelector: () => oversizedFront
+};
+const measureOversizedContent = () => 592.8125 - oversizedPresenterRows.reduce(
+  (removedHeight, row) => removedHeight + (79 - Number.parseFloat(row.style.photoSize)) * 2,
+  0
+);
+const synchronizedOversizedCanvas = makeCanvasSynchronizer(oversizedSurface, measureOversizedContent)();
+assert(synchronizedOversizedCanvas.pxH <= 1800, 'oversized weekly content must stay within the 4:5 canvas limit');
+assert(measureOversizedContent() <= 1800 * 0.32, 'presenter photos must shrink only as needed to prevent clipping at the maximum canvas height');
+assert.strictEqual(oversizedPresenterRows[0].style.photoSize, '73px', 'canvas fitting must preserve large portraits unless a bounded reduction is needed');
+assert(Math.abs(Number.parseFloat(oversizedSurface.style.height) - synchronizedOversizedCanvas.pxH * 0.32) < 1e-9, 'synchronized surface height must match its measured PNG dimensions');
+assert(source.includes("if (currentSide !== 'front')"), 'weekly back cards must keep their existing full-height canvas');
 assert(source.includes("return { pxW: 1200, pxH: 1800, wIn: 4, hIn: 6, tag: '4x6', orientation: 'portrait' }"), 'monthly export dimensions must remain unchanged');
 
 const dpiHelperStart = source.indexOf('function addPngDpiMetadata');

@@ -258,22 +258,28 @@ body {
   width: 4.8in;
   height: 6in;
 }
-.print-surface.layout-weekly-calendar-card[data-weekly-session-count="1"],
-.print-surface.layout-weekly-calendar-card[data-weekly-session-count="2"] {
+.print-surface.layout-weekly-calendar-card:not(.show-back)[data-weekly-session-count="1"],
+.print-surface.layout-weekly-calendar-card:not(.show-back)[data-weekly-session-count="2"],
+.print-surface.layout-weekly-calendar-card:not(.show-back)[data-weekly-session-count="3"] {
   height: auto;
 }
 .print-surface.layout-weekly-calendar-card[data-weekly-session-count="1"] > .calendar-card-front-side,
-.print-surface.layout-weekly-calendar-card[data-weekly-session-count="2"] > .calendar-card-front-side {
+.print-surface.layout-weekly-calendar-card[data-weekly-session-count="2"] > .calendar-card-front-side,
+.print-surface.layout-weekly-calendar-card[data-weekly-session-count="3"] > .calendar-card-front-side {
   flex: 0 0 auto;
+  min-height: auto;
 }
 .print-surface.layout-weekly-calendar-card[data-weekly-session-count="1"] .calendar-sessions,
-.print-surface.layout-weekly-calendar-card[data-weekly-session-count="2"] .calendar-sessions {
+.print-surface.layout-weekly-calendar-card[data-weekly-session-count="2"] .calendar-sessions,
+.print-surface.layout-weekly-calendar-card[data-weekly-session-count="3"] .calendar-sessions {
   flex: 0 0 auto;
+  min-height: auto;
 }
 .print-surface.layout-weekly-calendar-card[data-weekly-session-count="1"] .weekly-calendar-session-row,
-.print-surface.layout-weekly-calendar-card[data-weekly-session-count="2"] .weekly-calendar-session-row {
+.print-surface.layout-weekly-calendar-card[data-weekly-session-count="2"] .weekly-calendar-session-row,
+.print-surface.layout-weekly-calendar-card[data-weekly-session-count="3"] .weekly-calendar-session-row {
   flex: 0 0 auto;
-  min-height: 0;
+  min-height: min-content;
 }
 .print-surface.layout-calendar-card > .front-side,
 .print-surface.layout-calendar-card > .card-back,
@@ -839,8 +845,8 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
   gap: 2px;
   text-align: center;
 }
-.calendar-sessions[data-session-count="1"] .weekly-calendar-speakers.weekly-presenter-size-stack,
-.calendar-sessions[data-session-count="2"] .weekly-calendar-speakers.weekly-presenter-size-stack {
+.calendar-sessions[data-session-count="1"] .weekly-calendar-speakers.weekly-has-multiple-speakers.weekly-grid-presenters.weekly-presenter-size-stack,
+.calendar-sessions[data-session-count="2"] .weekly-calendar-speakers.weekly-has-multiple-speakers.weekly-grid-presenters.weekly-presenter-size-stack {
   grid-template-columns: minmax(0, 1fr);
 }
 .calendar-sessions[data-session-count="1"] .weekly-calendar-speakers.weekly-presenter-size-stack .weekly-calendar-speaker,
@@ -8468,7 +8474,10 @@ function refreshCalendarDateChipSizeControl() {
 function applyWeeklySessionTitleSize() {
   const size = Math.max(70, Math.min(130, Number(selectedWeeklySessionTitleSize) || 100));
   document.documentElement.style.setProperty('--weekly-session-title-scale', String(size / 100));
-  if (isWeeklyCalendarCardLayout()) syncWeeklyCalendarCanvasSize();
+  if (isWeeklyCalendarCardLayout()) {
+    syncWeeklyCalendarCanvasSize();
+    updateSizeLabel();
+  }
 }
 
 function refreshWeeklySessionTitleSizeControl() {
@@ -8553,6 +8562,7 @@ function applyHeadshotSize() {
   if (isWeeklyCalendarCardLayout() && currentSide === 'front') {
     applyWeeklyCalendarPresenterSizes();
     syncWeeklyCalendarCanvasSize();
+    updateSizeLabel();
   }
 }
 
@@ -9852,7 +9862,7 @@ function getWeeklyCalendarCanvasDimensions(sessionCount, contentHeight) {
   const dpi = 300;
   const minimumHeightPx = Math.ceil(widthPx / 1.91);
   const cssPixelsPerExportPixel = (widthInches * 96) / widthPx;
-  const pxH = sessionCount === 1 || sessionCount === 2
+  const pxH = [1, 2, 3].includes(Number(sessionCount))
     ? Math.min(fullHeightPx, Math.max(minimumHeightPx, Math.ceil(contentHeight / cssPixelsPerExportPixel - 1e-9)))
     : fullHeightPx;
   const hIn = pxH / dpi;
@@ -9866,20 +9876,33 @@ function getWeeklyCalendarCanvasDimensions(sessionCount, contentHeight) {
   };
 }
 
+function getWeeklyCalendarContentHeight(surface, front) {
+  const surfaceRect = surface.getBoundingClientRect();
+  const visibleContent = [front, ...front.querySelectorAll('*')]
+    .filter(element => !element.hidden && element.getClientRects().length > 0);
+  const visualBottom = visibleContent.reduce((bottom, element) =>
+    Math.max(bottom, element.getBoundingClientRect().bottom), surfaceRect.top);
+
+  return Math.max(
+    surfaceRect.height,
+    Number(surface.scrollHeight) || 0,
+    Number(front.scrollHeight) || 0,
+    visualBottom - surfaceRect.top
+  );
+}
+
 function syncWeeklyCalendarCanvasSize() {
   const widthPx = 1440;
-  const fullHeightPx = 1800;
   const cssPixelsPerExportPixel = (4.8 * 96) / widthPx;
   const sessionCount = Number(surface.dataset.weeklySessionCount || 0);
   const fullCanvas = getWeeklyCalendarCanvasDimensions(0, 0);
 
   if (!isWeeklyCalendarCardLayout()) return fullCanvas;
-  if (sessionCount === 3) {
-    surface.dataset.weeklySessionCount = '3';
+  if (currentSide !== 'front') {
     surface.style.removeProperty('height');
     return fullCanvas;
   }
-  if (sessionCount !== 1 && sessionCount !== 2) {
+  if (![1, 2, 3].includes(sessionCount)) {
     surface.removeAttribute('data-weekly-session-count');
     surface.style.removeProperty('height');
     return fullCanvas;
@@ -9887,9 +9910,11 @@ function syncWeeklyCalendarCanvasSize() {
 
   surface.dataset.weeklySessionCount = String(sessionCount);
   surface.style.height = 'auto';
-  const rows = Array.from(surface.querySelectorAll('.weekly-calendar-session-row'));
-  const maximumCssHeight = fullHeightPx * cssPixelsPerExportPixel;
-  let contentHeight = surface.getBoundingClientRect().height;
+  const front = surface.querySelector('.calendar-card-front-side');
+  if (!front) return fullCanvas;
+  const maximumCssHeight = fullCanvas.pxH * cssPixelsPerExportPixel;
+  const rows = Array.from(front.querySelectorAll('.weekly-calendar-session-row'));
+  let contentHeight = getWeeklyCalendarContentHeight(surface, front);
   for (let attempt = 0; contentHeight > maximumCssHeight && attempt < 40; attempt += 1) {
     let resized = false;
     rows.forEach(row => {
@@ -9899,9 +9924,8 @@ function syncWeeklyCalendarCanvasSize() {
       resized = true;
     });
     if (!resized) break;
-    contentHeight = surface.getBoundingClientRect().height;
+    contentHeight = getWeeklyCalendarContentHeight(surface, front);
   }
-
   const dimensions = getWeeklyCalendarCanvasDimensions(sessionCount, contentHeight);
   surface.style.height = `${dimensions.pxH * cssPixelsPerExportPixel}px`;
   return dimensions;
