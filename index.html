@@ -7463,7 +7463,12 @@ function getWeeklySessionCaptionLines(session) {
 function updateWeeklyTimezoneLegend(presentation) {
   const legend = document.getElementById('weekly-calendar-timezone-legend');
   if (!legend) return;
-  legend.textContent = 'ET · CT · MT · PT';
+  const labels = presentation?.placement === 'legend'
+    && Array.isArray(presentation.legendLabels)
+    && presentation.legendLabels.length
+    ? presentation.legendLabels
+    : ['ET', 'CT', 'MT', 'PT'].map(zone => getWeeklyTimezoneLabel(zone));
+  legend.textContent = labels.join(' · ');
   legend.hidden = false;
 }
 

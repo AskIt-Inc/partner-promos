@@ -658,6 +658,38 @@ assert.deepStrictEqual(
   ],
   'location display mode must retain per-session labels when timezone sets differ',
 );
+const timezoneLegendStart = source.indexOf('function updateWeeklyTimezoneLegend');
+const timezoneLegendEnd = source.indexOf('\nfunction getWeeklyPostPageKey', timezoneLegendStart);
+assert(timezoneLegendStart >= 0 && timezoneLegendEnd > timezoneLegendStart, 'weekly timezone legend updater must be present');
+const makeTimezoneLegendHarness = mode => {
+  const legend = { textContent: '', hidden: true };
+  const update = new Function(
+    'document',
+    'getWeeklyTimezoneLabel',
+    `${source.slice(timezoneLegendStart, timezoneLegendEnd)} return updateWeeklyTimezoneLegend;`
+  )(
+    { getElementById: id => id === 'weekly-calendar-timezone-legend' ? legend : null },
+    zone => weeklyTimeHelpers.getWeeklyTimezoneLabel(zone, mode)
+  );
+  return { legend, update };
+};
+const abbreviationLegend = makeTimezoneLegendHarness('abbreviation');
+abbreviationLegend.update(weeklyTimeHelpers.getWeeklyTimezonePresentation([['ET', 'CT', 'MT', 'PT']]));
+assert.strictEqual(abbreviationLegend.legend.textContent, 'ET · CT · MT · PT');
+assert.strictEqual(abbreviationLegend.legend.hidden, false);
+const locationLegend = makeTimezoneLegendHarness('location');
+locationLegend.update(locationModeHelpers.getWeeklyTimezonePresentation([['ET', 'CT', 'MT', 'PT']]));
+assert.strictEqual(
+  locationLegend.legend.textContent,
+  'ET · New York · CT · Chicago · MT · Denver · PT · Los Angeles',
+  'location mode must update the visible card legend as well as generated copy text'
+);
+locationLegend.update(locationModeHelpers.getWeeklyTimezonePresentation([['ET', 'PT'], ['ET', 'CT']]));
+assert.strictEqual(
+  locationLegend.legend.textContent,
+  'ET · New York · CT · Chicago · MT · Denver · PT · Los Angeles',
+  'per-session timezone sets must still label every supported zone in the card legend'
+);
 assert.deepStrictEqual(
   weeklyTimeHelpers.getWeeklySessionCaptionLines(fourZoneSession),
   [
@@ -839,7 +871,7 @@ assert(source.includes('option value="abbreviation">Abbreviation only'));
 assert(source.includes('option value="location">Abbreviation + city'));
 assert(source.includes("className = 'weekly-calendar-session-timezone'"));
 assert(source.includes('Times: ${sessionLabels.join(\' · \')}'));
-assert(source.includes("legend.textContent = 'ET · CT · MT · PT';"));
+assert(source.includes('legend.textContent = labels.join(\' · \');'), 'the timezone display control must update the visible weekly poster legend');
 assert(source.includes("className = 'weekly-calendar-session-title'"));
 assert(source.includes("className = 'weekly-calendar-condition'"));
 assert(source.includes("className = 'weekly-calendar-speaker'"));
