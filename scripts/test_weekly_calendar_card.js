@@ -164,6 +164,7 @@ assert(source.includes('id="weekly-banner-eyebrow" type="text"'));
 assert(source.includes('id="weekly-banner-title" type="text"'));
 assert(source.includes('id="weekly-banner-color" type="color"'));
 assert(source.includes("input?.addEventListener('input', () => setWeeklyAggregateBannerSetting(key, input.value))"), 'banner input changes must be wired to the live preview updater');
+assert(source.includes('? weeklyAggregateBannerSettings.title'), 'aggregate weekly post text must use the editable banner title');
 assert(source.includes('const pngDataUrl = await domtoimage.toPng(surface, {'), 'PNG export must capture the same surface updated by the banner renderer');
 assert(source.includes('width: pxW, height: pxH,'), 'the PNG renderer must use the configured 1440 × 1800 export dimensions');
 assert(source.includes('return isWeeklyCalendarCardLayout() ? addPngDpiMetadata(pngDataUrl, 300) : pngDataUrl;'), 'weekly exports must include 300-DPI metadata where supported');
@@ -174,12 +175,14 @@ const bannerSetterEnd = source.indexOf('function loadSelectedHeaderLogos', banne
 let bannerSaveCalls = 0;
 let bannerRefreshCalls = 0;
 let bannerSyncCalls = 0;
+let bannerPostRefreshCalls = 0;
 const bannerSetterHarness = new Function(
   'isWeeklyCalendarAggregateMode',
   'normalizeWeeklyAggregateBannerSettings',
   'saveWeeklyAggregateBannerSettings',
   'refreshWeeklyAggregateBannerControls',
   'syncCalendarCard',
+  'refreshWeeklyCalendarPostPanel',
   'initialSettings',
   `let weeklyAggregateBannerSettings = initialSettings;
    ${source.slice(bannerSetterStart, bannerSetterEnd)}
@@ -187,24 +190,25 @@ const bannerSetterHarness = new Function(
      setWeeklyAggregateBannerSetting,
      getSettings: () => weeklyAggregateBannerSettings
    };`
-)(() => true, normalizeWeeklyBanner, () => { bannerSaveCalls++; }, () => { bannerRefreshCalls++; }, () => { bannerSyncCalls++; }, { ...weeklyBannerDefaults });
+)(() => true, normalizeWeeklyBanner, () => { bannerSaveCalls++; }, () => { bannerRefreshCalls++; }, () => { bannerSyncCalls++; }, () => { bannerPostRefreshCalls++; }, { ...weeklyBannerDefaults });
 bannerSetterHarness.setWeeklyAggregateBannerSetting('title', 'Edited live title');
 assert.strictEqual(bannerSetterHarness.getSettings().title, 'Edited live title');
-assert.deepStrictEqual([bannerSaveCalls, bannerRefreshCalls, bannerSyncCalls], [1, 1, 1], 'aggregate banner edits must persist and refresh the preview immediately');
+assert.deepStrictEqual([bannerSaveCalls, bannerRefreshCalls, bannerSyncCalls, bannerPostRefreshCalls], [1, 1, 1, 1], 'aggregate title edits must refresh both the poster and generated post text');
 const selectedBannerSetter = new Function(
   'isWeeklyCalendarAggregateMode',
   'normalizeWeeklyAggregateBannerSettings',
   'saveWeeklyAggregateBannerSettings',
   'refreshWeeklyAggregateBannerControls',
   'syncCalendarCard',
+  'refreshWeeklyCalendarPostPanel',
   'initialSettings',
   `let weeklyAggregateBannerSettings = initialSettings;
    ${source.slice(bannerSetterStart, bannerSetterEnd)}
    return { setWeeklyAggregateBannerSetting, getSettings: () => weeklyAggregateBannerSettings };`
-)(() => false, normalizeWeeklyBanner, () => { bannerSaveCalls++; }, () => { bannerRefreshCalls++; }, () => { bannerSyncCalls++; }, { ...weeklyBannerDefaults });
+)(() => false, normalizeWeeklyBanner, () => { bannerSaveCalls++; }, () => { bannerRefreshCalls++; }, () => { bannerSyncCalls++; }, () => { bannerPostRefreshCalls++; }, { ...weeklyBannerDefaults });
 selectedBannerSetter.setWeeklyAggregateBannerSetting('title', 'Must not leak');
 assert.deepStrictEqual(selectedBannerSetter.getSettings(), weeklyBannerDefaults, 'partner-selected mode must ignore aggregate banner edits');
-assert.deepStrictEqual([bannerSaveCalls, bannerRefreshCalls, bannerSyncCalls], [1, 1, 1]);
+assert.deepStrictEqual([bannerSaveCalls, bannerRefreshCalls, bannerSyncCalls, bannerPostRefreshCalls], [1, 1, 1, 1]);
 
 const bannerVisibilityStart = source.indexOf('function shouldShowWeeklyAggregateBannerControls');
 const bannerVisibilityEnd = source.indexOf('function isAnyCalendarCardLayout', bannerVisibilityStart);
@@ -840,6 +844,68 @@ assert(source.includes("className = 'weekly-calendar-session-title'"));
 assert(source.includes("className = 'weekly-calendar-condition'"));
 assert(source.includes("className = 'weekly-calendar-speaker'"));
 assert(source.includes("className = 'weekly-calendar-register-cta'"));
+const weeklyPresenterHelperStart = source.indexOf('function getPresenterEmployer');
+const weeklyPresenterHelperEnd = source.indexOf('function getPresenterDisplay', weeklyPresenterHelperStart);
+assert(weeklyPresenterHelperStart >= 0 && weeklyPresenterHelperEnd > weeklyPresenterHelperStart, 'weekly presenter display helpers must be present');
+const weeklyPresenterHelpers = new Function(
+  'calendarNormalizeSpaces',
+  'calendarNormalizeSuffix',
+  `${source.slice(weeklyPresenterHelperStart, weeklyPresenterHelperEnd)}
+   return { getPresenterEmployer, getWeeklyPresenterDisplayName, getWeeklyPresenterCredentials };`
+)(
+  value => String(value || '').replace(/\s{2,}/g, ' ').trim(),
+  value => String(value || '').replace(/\s{2,}/g, ' ').trim().replace(/\./g, '').split(',').map(part => part.trim()).filter(Boolean).join(', ')
+);
+const presenterFixture = {
+  first_name: 'Alexandra',
+  last_name: 'Whitcomb',
+  display_name: 'Ignored Display Name',
+  name_suffix: 'MD, Ph.D.',
+  credentials: ['FACC', 'MD'],
+  credential: 'FACC, DO',
+  professional_credentials: 'PhD',
+  title: 'MD, FACC',
+  job_title: 'Center Director',
+  role: 'Chief',
+  specialty: 'Amyloidosis',
+  specialty_line_1: 'Advanced Imaging',
+  specialty_line_2: 'Cardiology',
+  biography: 'Must not appear on the poster',
+  employer: 'Mayo Clinic'
+};
+assert.strictEqual(weeklyPresenterHelpers.getWeeklyPresenterDisplayName(presenterFixture), 'Alexandra Whitcomb');
+assert.strictEqual(
+  weeklyPresenterHelpers.getWeeklyPresenterCredentials(presenterFixture),
+  'MD, PhD, FACC, DO',
+  'weekly presenter text must include only de-duplicated suffix and credential fields'
+);
+assert.strictEqual(
+  weeklyPresenterHelpers.getWeeklyPresenterCredentials({ title: 'MD, FACC' }),
+  'MD, FACC',
+  'credential abbreviations from the API title field must remain available'
+);
+assert.strictEqual(
+  weeklyPresenterHelpers.getWeeklyPresenterCredentials({ title: 'Professor of Cardiology' }),
+  '',
+  'job titles and specialty prose must not appear as presenter credentials'
+);
+assert.strictEqual(weeklyPresenterHelpers.getPresenterEmployer(presenterFixture), 'Mayo Clinic');
+const weeklyPresenterMarkupStart = source.indexOf('presenters.forEach(presenter => {', source.indexOf('async function renderWeeklyCalendarSessions'));
+const weeklyPresenterMarkupEnd = source.indexOf('const speakerRegistration =', weeklyPresenterMarkupStart);
+const weeklyPresenterMarkup = source.slice(weeklyPresenterMarkupStart, weeklyPresenterMarkupEnd);
+assert(weeklyPresenterMarkup.includes('getWeeklyPresenterDisplayName(presenter)'));
+assert(weeklyPresenterMarkup.includes('getWeeklyPresenterCredentials(presenter)'));
+assert(!/presenter\.(?:title|job_title|role|specialty|specialty_line_\d|biography|bio|description)\b/.test(weeklyPresenterMarkup), 'weekly presenter markup must not read role, specialty, biography, or other descriptive fields');
+assert(source.includes('flex-basis: 60px;') && source.includes('flex-basis: 42px;') && source.includes('flex-basis: 36px;'), 'weekly presenter photos must grow in every session-count layout');
+assert(source.includes('.calendar-sessions[data-session-count="1"] .weekly-calendar-speakers.weekly-has-multiple-speakers {\n  grid-template-columns: minmax(0, 1fr);'), 'single-session posters must stack multiple speaker blocks so larger portraits leave readable text width');
+assert(source.includes('.calendar-sessions[data-session-count="2"] .weekly-calendar-speakers.weekly-has-multiple-speakers {\n  grid-template-columns: minmax(0, 1fr);'), 'two-session posters must stack multiple speaker blocks so larger portraits leave readable text width');
+assert(source.includes('font-size: calc(22px * var(--calendar-date-chip-scale, 1));'), 'the day/date size control must scale weekly date text');
+assert(source.includes('calc(82px * var(--calendar-date-chip-scale, 1))')
+  && source.includes('calc(68px * var(--calendar-date-chip-scale, 1))')
+  && source.includes('calc(60px * var(--calendar-date-chip-scale, 1))'), 'the day/date size control must scale all weekly date-panel widths');
+assert(source.includes('const sessionAdjustmentControlsVisible = sessionFontControlsVisible && !weeklyCalendarCard;'), 'generic session font controls must be hidden when their styles do not apply to weekly posters');
+assert(source.includes("el.style.display = ready && !weeklyCalendarCard\n      && (sessionLookupVisible || anyCalendarCard || isMultiPresenterFacebookPromo()) ? '' : 'none';"), 'the single-timezone selector must be hidden on weekly cards, which always display all four zones');
+assert(source.includes('&& !(weeklyCalendarCard && isWeeklyCalendarAggregateMode() && slot === 1);'), 'the partner logo selector and its size/position controls must be hidden when aggregate mode intentionally omits slot 1');
 assert(source.includes("return { pxW: 1440, pxH: 1800, wIn: 4.8, hIn: 6, tag: '4.8x6', orientation: 'portrait' }"));
 assert(source.includes("return { pxW: 1200, pxH: 1800, wIn: 4, hIn: 6, tag: '4x6', orientation: 'portrait' }"), 'monthly export dimensions must remain unchanged');
 
