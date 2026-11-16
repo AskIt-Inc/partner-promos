@@ -835,9 +835,9 @@ assert(source.includes("className = 'weekly-calendar-speaker-registration'"));
 assert(source.includes("registrationItem.className = registrationPlacement === 'inline'"));
 assert(source.includes("'weekly-calendar-registration-item weekly-calendar-inline-registration'"));
 assert(source.includes('registration.dataset.sessionCount = String(rows.length);'));
-assert(source.includes("registration.hidden = registrationPlacement !== 'shared';"), 'single-session cards must hide the shared registration footer');
-assert(source.includes("if (registrationPlacement === 'inline') heading.appendChild(registrationItem);"), 'single-session registration must sit beneath its session title and time');
-assert(source.includes("else if (registrationPlacement === 'shared' && registrationItems) registrationItems.appendChild(registrationItem);"), 'two- and three-session cards must keep each registration item in the shared footer');
+assert(source.includes('registration.hidden = true;'), 'weekly cards must hide the shared registration footer for every session count');
+assert(source.includes("if (registrationPlacement === 'inline') heading.appendChild(registrationItem);"), 'every session registration must sit beneath its own title and time');
+assert(!source.includes('registrationItems.appendChild(registrationItem)'), 'weekly session QR items must never be duplicated in the shared footer');
 assert(source.includes('weekly-calendar-inline-registration .weekly-calendar-qr-block {')
   && source.includes('weekly-calendar-inline-registration .weekly-calendar-register-cta {')
   && source.includes('width: max-content;'), 'the inline QR must be visible and its Register CTA must stay content-sized');
@@ -867,7 +867,7 @@ assert(registrationPlacementStart >= 0 && registrationPlacementEnd > registratio
 const getWeeklyCalendarRegistrationPlacement = new Function(
   `${source.slice(registrationPlacementStart, registrationPlacementEnd)} return getWeeklyCalendarRegistrationPlacement;`
 )();
-assert.deepStrictEqual([0, 1, 2, 3].map(getWeeklyCalendarRegistrationPlacement), ['none', 'inline', 'shared', 'shared']);
+assert.deepStrictEqual([0, 1, 2, 3].map(getWeeklyCalendarRegistrationPlacement), ['none', 'inline', 'inline', 'inline']);
 assert(source.includes('qr.width = 64;'));
 assert(source.includes('qr.height = 64;'));
 assert(source.includes('session?.card_color'));

@@ -450,6 +450,10 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
   overflow: visible;
   padding: 9px 12px 8px;
 }
+.print-surface.layout-weekly-calendar-card[data-weekly-session-count="3"] .calendar-sessions {
+  gap: 5px;
+  padding: 6px 10px 5px;
+}
 .weekly-calendar-header-wave {
   background: #EAF7FB;
   flex: 0 0 18px;
@@ -774,6 +778,16 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
   font-size: 5.5px;
   line-height: 1.1;
 }
+.calendar-sessions[data-session-count="2"] .weekly-calendar-inline-registration,
+.calendar-sessions[data-session-count="3"] .weekly-calendar-inline-registration {
+  margin-top: 5px;
+  padding: 3px;
+}
+.calendar-sessions[data-session-count="3"] .weekly-calendar-inline-registration {
+  gap: 3px;
+  margin-top: 3px;
+  padding: 1px;
+}
 .weekly-calendar-registration-copy {
   display: flex;
   flex-direction: column;
@@ -847,9 +861,12 @@ body[data-partner="vamp"] .calendar-band-eyebrow-text {
   width: var(--weekly-presenter-photo-size, 76px);
 }
 .calendar-sessions[data-session-count="3"] .weekly-calendar-session-row { grid-template-columns: calc(60px * var(--calendar-date-chip-scale, 1)) minmax(0, 1.15fr) minmax(0, 1fr); }
-.calendar-sessions[data-session-count="3"] .weekly-calendar-session-heading { padding: 4px 6px; }
+.calendar-sessions[data-session-count="3"] .weekly-calendar-session-heading { padding: 2px 4px; }
+.calendar-sessions[data-session-count="3"] .weekly-calendar-conditions { margin-bottom: 1px; }
+.calendar-sessions[data-session-count="3"] .weekly-calendar-conditions .weekly-calendar-condition { padding: 1px 3px; }
 .calendar-sessions[data-session-count="3"] .weekly-calendar-session-title { font-size: calc(8px * var(--weekly-session-title-scale, 1)); line-height: 1.1; }
-.calendar-sessions[data-session-count="3"] .weekly-calendar-session-partner { font-size: 5.8px; }
+.calendar-sessions[data-session-count="3"] .weekly-calendar-session-partner { font-size: 5.8px; margin-top: 1px; }
+.calendar-sessions[data-session-count="3"] .weekly-calendar-session-divider { margin: 2px 0 1px; }
 .calendar-sessions[data-session-count="3"] .weekly-calendar-session-time { font-size: 5.5px; }
 .calendar-sessions[data-session-count="3"] .weekly-calendar-session-body { padding: 3px 4px; }
 .calendar-sessions[data-session-count="3"] .weekly-calendar-speaker img,
@@ -7674,13 +7691,19 @@ function updateWeeklyPostPanel(sessions) {
 
 function getWeeklyCalendarRegistrationPlacement(sessionCount) {
   const count = Number(sessionCount) || 0;
-  if (count === 1) return 'inline';
-  return count > 1 ? 'shared' : 'none';
+  return count > 0 ? 'inline' : 'none';
 }
 
 async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
   const list = document.getElementById('calendar-sessions-list');
   if (!list || !isWeeklyCalendarCardLayout()) return;
+  const registration = document.getElementById('weekly-calendar-registration');
+  const registrationItems = document.getElementById('weekly-calendar-registration-items');
+  if (registration) {
+    registration.hidden = true;
+    registration.dataset.sessionCount = '0';
+  }
+  if (registrationItems) registrationItems.replaceChildren();
   const token = ++weeklyPageLoadToken;
   weeklyRegistrationRetrySessionUuids = null;
   const sessions = calendarGetWeeklySessions(calendarSessionsData.sessions);
@@ -7739,13 +7762,10 @@ async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
     surface.dataset.weeklySessionCount = String(rows.length);
     const qrImages = [];
     list.replaceChildren();
-    const registration = document.getElementById('weekly-calendar-registration');
-    const registrationItems = document.getElementById('weekly-calendar-registration-items');
     const registrationPlacement = getWeeklyCalendarRegistrationPlacement(rows.length);
-    if (registrationItems) registrationItems.replaceChildren();
     if (registration) {
       registration.dataset.sessionCount = String(rows.length);
-      registration.hidden = registrationPlacement !== 'shared';
+      registration.hidden = true;
     }
     rows.forEach(session => {
       const date = calendarParseApiDate(session.date);
@@ -7899,7 +7919,6 @@ async function renderWeeklyCalendarSessions(retryingRegistrationLinks = false) {
       qrBlock.appendChild(qr);
       registrationItem.append(qrBlock, registrationCopy);
       if (registrationPlacement === 'inline') heading.appendChild(registrationItem);
-      else if (registrationPlacement === 'shared' && registrationItems) registrationItems.appendChild(registrationItem);
 
       row.append(datePanel, heading, body);
       list.appendChild(row);
