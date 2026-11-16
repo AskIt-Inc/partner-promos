@@ -450,7 +450,8 @@ const filteredWeek47Rows = filterWeek47Sessions(week47Rows);
 assert.deepStrictEqual(filteredWeek47Rows.map(row => row.uuid), [
   'monday', 'tuesday', 'wednesday', 'unassigned-thursday-uuid'
 ], 'the aggregate weekly card must merge the bounded Thursday session into ISO week 47');
-const week47PageSize = Number(source.match(/const WEEKLY_CALENDAR_PAGE_SIZE = (\d+);/)?.[1]);
+const week47PageSizeMatch = source.match(/const WEEKLY_CALENDAR_PAGE_SIZE = (\d+);/);
+const week47PageSize = Number(week47PageSizeMatch && week47PageSizeMatch[1]);
 const week47Pages = Array.from({ length: Math.ceil(filteredWeek47Rows.length / week47PageSize) }, (_, index) =>
   filteredWeek47Rows.slice(index * week47PageSize, (index + 1) * week47PageSize));
 assert.strictEqual(week47PageSize, 3, 'the card remains capped at three sessions per page');
